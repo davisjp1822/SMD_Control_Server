@@ -8,7 +8,7 @@
 
 #include "SMD_Utilities.h"
 
-uint16_t convert_string_to_long_int(char *str) {
+long int convert_string_to_long_int(char *str) {
 	
 	//convert the token from string to long int
 	char *end;

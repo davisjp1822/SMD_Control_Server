@@ -132,10 +132,11 @@ int parse_socket_input(char *input, int cl) {
 		char *array_of_commands[2];
 		
 		int num_tokens = 0;			//how many tokens do we have?
-		char smd_ip[16];
+		char smd_ip[32];
 		
 		//reset our values
 		memset(&smd_ip[0], 0, sizeof(smd_ip));
+		string = strdup(input);
 		
 		//check bounds first - we should only have 5 tokens
 		while ((token = strsep(&string, ",")) != NULL) {
@@ -152,6 +153,7 @@ int parse_socket_input(char *input, int cl) {
 			
 			int i;
 			num_tokens = 0;
+			string = strdup(input);
 			
 			//re-tokenize the input
 			while ((token = strsep(&string, ",")) != NULL) {
@@ -166,6 +168,7 @@ int parse_socket_input(char *input, int cl) {
 				//skip the actual command, "connect"
 				//the ip address
 				if(i == 1) {
+					
 					strncpy(smd_ip, array_of_commands[i], strlen(array_of_commands[i]));
 				}
 			}
@@ -195,7 +198,7 @@ int parse_socket_input(char *input, int cl) {
 		// steps/s
 		
 		char *token = NULL;
-		char *string = NULL;
+		char *string = strdup(input);
 		char *array_of_commands[5];
 		
 		int num_tokens = 0;			//how many tokens do we have?
@@ -220,6 +223,7 @@ int parse_socket_input(char *input, int cl) {
 			
 			int i;
 			num_tokens = 0;
+			string = strdup(input);
 			
 			//re-tokenize the input
 			while ((token = strsep(&string, ",")) != NULL) {
@@ -262,7 +266,7 @@ int parse_socket_input(char *input, int cl) {
 				//speed
 				if(i == 4) {
 					//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-					speed = convert_string_to_long_int(array_of_commands[i]);
+					speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
 					
 					if(speed < 0 || speed > 3000000)
 						return SMD_RETURN_INVALID_PARAMETER;
@@ -283,7 +287,7 @@ int parse_socket_input(char *input, int cl) {
 	
 	else if(strncmp(input, DISCONNECT, sizeof(&input)) == 0) {
 		close_smd_command_connection();
-		return SMD_RETURN_DISABLE_SUCCESS;
+		return SMD_RETURN_DISCONNECT_SUCCESS;
 	}
 	
 	else if(strstr(input, "disable") == NULL && strstr(input, DRIVE_ENABLE) !=NULL) {
@@ -341,8 +345,6 @@ int parse_socket_input(char *input, int cl) {
 }
 
 void parse_smd_response(int smd_response, char *input, int fd, int cl) {
-	
-	smd_response = 0;
 	
 	//successful run - tell the client
 	if((smd_response=parse_socket_input(input,cl)) == SMD_RETURN_COMMAND_SUCCESS ) {
