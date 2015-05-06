@@ -14,6 +14,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-long int convert_string_to_long_int(char *str);
+struct Words {
+	int32_t lower_word, upper_word;
+};
+
+
+int32_t convert_string_to_long_int(char *str);
+struct Words convert_int_to_words(int32_t number);
 
 #endif /* SMD_UTILITIES_H */

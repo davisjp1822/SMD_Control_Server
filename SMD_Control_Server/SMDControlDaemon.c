@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <syslog.h>
 #include <sys/stat.h>
+#include "assert.h"
 
 #include "SMD_Constants.h"
 #include "SMD_Utilities.h"
@@ -27,6 +28,7 @@
 char DEVICE_IP[32];
 
 modbus_t *smd_command_connection = NULL;
+int configMode = 0;
 
 //function declarations - server setup
 void daemonize();
@@ -46,7 +48,10 @@ int drive_disable();
 int reset_errors();
 int immed_stop();
 int hold_move();
-
+int preset_encoder_position(int32_t pos);
+int preset_motor_position(int32_t pos);
+int set_configuration_mode();
+int set_command_mode();
 
 int main(int argc, char *argv[]) {
 	
@@ -111,6 +116,7 @@ void open_server_socket() {
 		
 		//close the socket after each client disconnects
 		if(rc == 0) {
+			configMode = 0;
 			close(cl);
 			close_smd_command_connection();
 			
@@ -124,7 +130,7 @@ void open_server_socket() {
 
 int parse_socket_input(char *input, int cl) {
 	
-	if(strstr(input, "dis") == NULL && strstr(input, CONNECT) !=NULL) {
+	if(strncmp(input, CONNECT, strlen(CONNECT)-1) == 0) {
 		
 		//we should only have one argument - an IP of the SMD itself
 		char *token = NULL;
@@ -132,10 +138,9 @@ int parse_socket_input(char *input, int cl) {
 		char *array_of_commands[2];
 		
 		int num_tokens = 0;			//how many tokens do we have?
-		char smd_ip[32];
+		char *smd_ip = NULL;
 		
 		//reset our values
-		memset(&smd_ip[0], 0, sizeof(smd_ip));
 		string = strdup(input);
 		
 		//check bounds first - we should only have 5 tokens
@@ -166,10 +171,12 @@ int parse_socket_input(char *input, int cl) {
 			for(i=0; i<2; i++) {
 				
 				//skip the actual command, "connect"
-				//the ip address
+				//just get the ip address
 				if(i == 1) {
+					smd_ip = malloc(sizeof(char) * (strlen(array_of_commands[i]))+1);
 					
-					strncpy(smd_ip, array_of_commands[i], strlen(array_of_commands[i]));
+					if(smd_ip)
+						strncpy(smd_ip, array_of_commands[i], strlen(array_of_commands[i]));
 				}
 			}
 			
@@ -178,15 +185,53 @@ int parse_socket_input(char *input, int cl) {
 			}
 			
 			//now try and connect
-			strncpy(DEVICE_IP, smd_ip, strlen(smd_ip));
+			if(smd_ip) {
+				
+				strncpy(DEVICE_IP, smd_ip, strlen(smd_ip));
+				
+				if( open_smd_command_connection() == -1) {
+					free(smd_ip);
+					return SMD_RETURN_NO_ROUTE_TO_HOST;
+				}
+				
+				else {
+					free(smd_ip);
+					return SMD_RETURN_CONNECT_SUCCESS;
+				}
+			}
 			
-			if( open_smd_command_connection() == -1) {
+			//should never get here - smd_ip would have to NULL
+			else {
+				free(smd_ip);
 				return SMD_RETURN_NO_ROUTE_TO_HOST;
 			}
-			
-			else {
-				return SMD_RETURN_CONNECT_SUCCESS;
-			}
+		}
+	}
+	
+	else if(strncmp(input, DISCONNECT, strlen(DISCONNECT)-1) == 0) {
+		
+		close_smd_command_connection();
+		return SMD_RETURN_DISCONNECT_SUCCESS;
+	}
+	
+	else if(strncmp(input, ENABLE_COMMAND_MODE, strlen(ENABLE_COMMAND_MODE)-1) == 0) {
+		
+		if(set_command_mode() < 0)
+			return SMD_RETURN_COMMAND_FAILED;
+		else {
+			configMode = 0;
+			fprintf(stderr, "should be returning command mode success\n");
+			return SMD_RETURN_COMMAND_MODE_SUCCESS;
+		}
+	}
+	
+	else if(strncmp(input, ENABLE_CONFIGURATION_MODE, strlen(ENABLE_CONFIGURATION_MODE)-1) == 0) {
+		
+		if(set_configuration_mode() < 0)
+			return SMD_RETURN_COMMAND_FAILED;
+		else {
+			configMode = 1;
+			return SMD_RETURN_CONFIGURATION_MODE_SUCCESS;
 		}
 	}
 	
@@ -285,12 +330,7 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
-	else if(strncmp(input, DISCONNECT, sizeof(&input)) == 0) {
-		close_smd_command_connection();
-		return SMD_RETURN_DISCONNECT_SUCCESS;
-	}
-	
-	else if(strstr(input, "disable") == NULL && strstr(input, DRIVE_ENABLE) !=NULL) {
+	else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)-1) == 0) {
 		
 		if(drive_enable() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -298,7 +338,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_ENABLE_SUCCESS;
 	}
 	
-	else if(strncmp(input, DRIVE_DISABLE, sizeof(&input)) == 0) {
+	else if(strncmp(input, DRIVE_DISABLE, strlen(DRIVE_DISABLE)-1) == 0) {
 		
 		if(drive_disable() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -306,7 +346,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_DISABLE_SUCCESS;
 	}
 	
-	else if(strncmp(input, HOLD_MOVE, sizeof(&input)) == 0) {
+	else if(strncmp(input, HOLD_MOVE, strlen(HOLD_MOVE)-1) == 0) {
 		
 		if(hold_move() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -314,7 +354,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_COMMAND_SUCCESS;
 	}
 	
-	else if(strncmp(input, IMMED_STOP, sizeof(&input)) == 0) {
+	else if(strncmp(input, IMMED_STOP, strlen(IMMED_STOP)-1) == 0) {
 		
 		if(immed_stop() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -322,7 +362,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_COMMAND_SUCCESS;
 	}
 	
-	else if(strncmp(input, RESET_ERRORS, sizeof(&input)) == 0) {
+	else if(strncmp(input, RESET_ERRORS, strlen(RESET_ERRORS)-1) == 0) {
 		
 		if(reset_errors() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -330,12 +370,90 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_COMMAND_SUCCESS;
 	}
 
-	else if(strncmp(input, READ_INPUT_REGISTERS, sizeof(&input)) == 0) {
+	else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)-1) == 0) {
 		
 		if(read_input_registers(cl) < 0)
 			return SMD_RETURN_COMMAND_FAILED;
 		else
 			return SMD_RETURN_HANDLED_BY_CLIENT;
+	}
+	
+	else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)-1) == 0) {
+		
+		char *token = NULL;
+		char *string = strdup(input);
+		char *array_of_commands[2];
+		
+		int num_tokens = 0;			//how many tokens do we have?
+		int32_t pos;
+	
+		num_tokens = 0;
+		string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		//loop through the input and convert to int
+		if(num_tokens == 2) {
+			
+			pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+			
+			if(pos < -8388607 || pos > 8388607)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			//preset the position
+			if(preset_motor_position(pos) < 0)
+				return SMD_RETURN_INVALID_PARAMETER;
+			else
+				return SMD_RETURN_PRESET_POS_SUCCESS;
+		}
+		
+		else {
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
+	}
+	
+	else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)-1) == 0) {
+		
+		char *token = NULL;
+		char *string = strdup(input);
+		char *array_of_commands[2];
+		
+		int num_tokens = 0;			//how many tokens do we have?
+		int32_t pos;
+		
+		num_tokens = 0;
+		string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		//loop through the input and convert to int
+		if(num_tokens == 2) {
+			
+			pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+			
+			if(pos < -8388607 || pos > 8388607)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			//preset the position
+			if(preset_encoder_position(pos) < 0)
+				return SMD_RETURN_INVALID_PARAMETER;
+			else
+				return SMD_RETURN_PRESET_ENC_SUCCESS;
+		}
+		
+		else {
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
 	}
 	
 	//invalid input/command
@@ -416,6 +534,38 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 			perror("Error writing to client");
 		}
 	}
+	
+	//preset encoder success
+	if(smd_response == SMD_RETURN_PRESET_ENC_SUCCESS) {
+		if(write(cl, PRESET_ENCODER_SUCCESS , sizeof(PRESET_ENCODER_SUCCESS)) == -1) {
+			perror("Error writing to client");
+		}
+	}
+	
+	//preset motor success
+	if(smd_response == SMD_RETURN_PRESET_POS_SUCCESS) {
+		if(write(cl, PRESET_POSITION_SUCCESS , sizeof(PRESET_POSITION_SUCCESS)) == -1) {
+			perror("Error writing to client");
+		}
+	}
+	
+	//set configuration mode success
+	if(smd_response == SMD_RETURN_CONFIGURATION_MODE_SUCCESS) {
+		if(write(cl, CONFIG_MODE_SUCCESS, sizeof(CONFIG_MODE_SUCCESS)) == -1) {
+			perror("Error writing to client");
+		}
+	}
+	
+	//set command mode success
+	if(smd_response == SMD_RETURN_COMMAND_MODE_SUCCESS) {
+		
+		fprintf(stderr, "about to write to client\n");
+		
+		if(write(cl, COMMAND_MODE_SUCCESS , sizeof(COMMAND_MODE_SUCCESS)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
 }
 
 int open_smd_command_connection() {
@@ -423,13 +573,15 @@ int open_smd_command_connection() {
 	smd_command_connection = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if(modbus_connect(smd_command_connection) == -1) {
+	if(strlen(DEVICE_IP) == 0 || modbus_connect(smd_command_connection) == -1) {
 		modbus_free(smd_command_connection);
 		return -1;
 	}
 	else {
 		return 0;
 	}
+	
+	return 0;
 }
 
 void close_smd_command_connection() {
@@ -505,7 +657,7 @@ int read_input_registers(int cl) {
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -535,7 +687,12 @@ int read_input_registers(int cl) {
 				snprintf(temp, 8, "0x%X", tab_reg[i]);
 				
 				if(i==0) {
-					snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
+					if(configMode == 1) {
+						snprintf(client_write_string, sizeof(client_write_string), ",,,%s", temp);
+					}
+					else {
+						snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
+					}
 				}
 				
 				else {
@@ -564,7 +721,7 @@ int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -611,7 +768,7 @@ int drive_enable() {
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -643,7 +800,7 @@ int drive_disable() {
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -675,7 +832,7 @@ int hold_move() {
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -707,7 +864,7 @@ int immed_stop() {
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -739,7 +896,7 @@ int reset_errors() {
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
-	if( modbus_connect(ctx) == -1 ) {
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_free(ctx);
 		return -3;
 	}
@@ -766,3 +923,136 @@ int reset_errors() {
 
 }
 
+int preset_encoder_position(int32_t pos) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc,i;
+		struct Words returnWords = convert_int_to_words(pos);
+		
+		//write the registers
+		int registers[4] = {1025, 1026, 1027, 1024};
+		int values[4] = {32768, returnWords.upper_word, returnWords.lower_word, 16384};
+		
+		for(i=0; i<4; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int preset_motor_position(int32_t pos) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc,i;
+		struct Words returnWords = convert_int_to_words(pos);
+		
+		//write the registers
+		int registers[4] = {1025, 1026, 1027, 1024};
+		int values[4] = {32768, returnWords.upper_word, returnWords.lower_word, 512};
+		
+		for(i=0; i<4; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int set_configuration_mode() {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc, i;
+		
+		//write the registers
+		int registers[2] = {1025, 1024};
+		int values[2] =	{34816, 32768};
+		
+		for(i=0; i<2; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int set_command_mode() {
+	
+	//going back into command mode is essentially enabling the drive
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc, i;
+		
+		//write the registers
+		int registers[1] = {1024};
+		int values[1] =	{0};
+		
+		for(i=0; i<1; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				fprintf(stderr, "%s", modbus_strerror(errno));
+				return -1;
+			}
+		}
+		
+		fprintf(stderr, "command mode successfully set\n");
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+
+}
