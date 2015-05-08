@@ -220,7 +220,6 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_COMMAND_FAILED;
 		else {
 			configMode = 0;
-			fprintf(stderr, "should be returning command mode success\n");
 			return SMD_RETURN_COMMAND_MODE_SUCCESS;
 		}
 	}
@@ -558,8 +557,6 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 	
 	//set command mode success
 	if(smd_response == SMD_RETURN_COMMAND_MODE_SUCCESS) {
-		
-		fprintf(stderr, "about to write to client\n");
 		
 		if(write(cl, COMMAND_MODE_SUCCESS , sizeof(COMMAND_MODE_SUCCESS)) == -1) {
 			fprintf(stderr, "wrote to client");
@@ -1055,7 +1052,6 @@ int set_command_mode() {
 			}
 		}
 		
-		fprintf(stderr, "command mode successfully set\n");
 		modbus_close(ctx);
 		modbus_free(ctx);
 		return 0;
