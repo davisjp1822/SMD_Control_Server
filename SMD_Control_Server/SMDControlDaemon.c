@@ -681,10 +681,16 @@ int read_input_registers(int cl) {
 			for( i=0; i < rc; i++ ) {
 				//fprintf(stderr, "reg[%d]=\t\t\t%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
 				
-				char temp[8];
+				char temp[16];
 				
 				memset(&temp, 0, sizeof(temp));
-				snprintf(temp, 8, "0x%X", tab_reg[i]);
+				
+				//only add leading 0x for items that are legitimately in hex
+				//probably need to adjust this to account for config mode vs. command mode
+				if(i == 0 || i == 1)
+					snprintf(temp, 16, "0x%X", tab_reg[i]);
+				else
+					snprintf(temp, 16, "%d", tab_reg[i]);
 				
 				if(i==0) {
 					if(configMode == 1) {
