@@ -43,6 +43,7 @@ void close_smd_command_connection();
 //function declarations - motor commands
 int read_input_registers(int cl);
 int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed);
+int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed);
 int drive_enable();
 int drive_disable();
 int reset_errors();
@@ -52,6 +53,7 @@ int preset_encoder_position(int32_t pos);
 int preset_motor_position(int32_t pos);
 int set_configuration_mode();
 int set_command_mode();
+int set_configuration(int16_t control_word, int16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
 
 int main(int argc, char *argv[]) {
 	
@@ -133,20 +135,21 @@ int parse_socket_input(char *input, int cl) {
 	if(strncmp(input, CONNECT, strlen(CONNECT)-1) == 0) {
 		
 		//we should only have one argument - an IP of the SMD itself
-		char *token = NULL;
-		char *string = NULL;
+		char *token, *string, *tofree;
 		char *array_of_commands[2];
 		
 		int num_tokens = 0;			//how many tokens do we have?
 		char *smd_ip = NULL;
 		
 		//reset our values
-		string = strdup(input);
+		tofree = string = strdup(input);
 		
 		//check bounds first - we should only have 5 tokens
 		while ((token = strsep(&string, ",")) != NULL) {
 			num_tokens++;
 		}
+		
+		free(tofree);
 		
 		//should have 2 commands only (connect and device ip)
 		if(num_tokens != 2) {
@@ -158,7 +161,7 @@ int parse_socket_input(char *input, int cl) {
 			
 			int i;
 			num_tokens = 0;
-			string = strdup(input);
+			tofree = string = strdup(input);
 			
 			//re-tokenize the input
 			while ((token = strsep(&string, ",")) != NULL) {
@@ -166,6 +169,8 @@ int parse_socket_input(char *input, int cl) {
 				strcpy(array_of_commands[num_tokens], token);
 				num_tokens++;
 			}
+			
+			free(tofree);
 			
 			//loop through the input and convert to int
 			for(i=0; i<2; i++) {
@@ -234,6 +239,123 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
+	else if(strncmp(input, SAVE_CONFIG_TO_DRIVE, strlen(SAVE_CONFIG_TO_DRIVE)-1) == 0) {
+		
+		char *token, *string, *tofree;
+		char *array_of_commands[8];
+		
+		int num_tokens = 0;
+		int16_t control_word = 0;
+		int16_t config_word = 0;
+		int32_t starting_speed = 0;
+		int16_t steps_per_turn = 0;
+		int16_t enc_pulses_per_turn = 0;
+		int16_t idle_current_percentage = 0;
+		int16_t motor_current = 0;
+		tofree = string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		free(tofree);
+		
+		if(num_tokens == 8) {
+			
+			for(int i=0; i<num_tokens; i++) {
+				
+				//control word
+				if(i == 1) {
+					
+					control_word = convert_string_to_long_int(array_of_commands[i]);
+					
+					if( strlen(array_of_commands[i]) != 16)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//config word
+				if(i == 2) {
+					
+					config_word = convert_string_to_long_int(array_of_commands[i]);
+					
+					if( strlen(array_of_commands[i]) != 16)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//starting speed
+				if(i == 3) {
+					
+					starting_speed = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(starting_speed < 1 || starting_speed > 1999999)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//motor steps/turn
+				if(i == 4) {
+					
+					steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(steps_per_turn < 200 || steps_per_turn > 32767)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//encoder pulses/turn
+				if(i == 5) {
+					
+					enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(enc_pulses_per_turn != 1024)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//idle current percentage
+				if(i == 6) {
+					
+					idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(idle_current_percentage < 0 || idle_current_percentage > 100)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//motor current
+				if(i == 7) {
+					
+					motor_current = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(motor_current < 10 || motor_current > 1024)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+			}
+			
+			//clean-up
+			for(int i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
+			if(set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
+				return SMD_RETURN_COMMAND_FAILED;
+			else
+				return SMD_RETURN_COMMAND_SUCCESS;
+		}
+		
+		else {
+			
+			//clean-up
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
+		
+	}
+	
 	else if(strstr(input, JOG_CW) !=NULL || strstr(input, JOG_CCW) !=NULL) {
 		
 		//search for the jog substring - if it is found, then parse out:
@@ -241,8 +363,7 @@ int parse_socket_input(char *input, int cl) {
 		// decel
 		// steps/s
 		
-		char *token = NULL;
-		char *string = strdup(input);
+		char *token, *string, *tofree;
 		char *array_of_commands[5];
 		
 		int num_tokens = 0;			//how many tokens do we have?
@@ -252,13 +373,24 @@ int parse_socket_input(char *input, int cl) {
 		int16_t jerk = 0;
 		int32_t speed = 0;
 		
+		tofree = string = strdup(input);
+		
 		//check bounds first - we should only have 5 tokens
 		while ((token = strsep(&string, ",")) != NULL) {
 			num_tokens++;
 		}
 		
+		free(tofree);
+		
 		//should have 5 commands only
 		if(num_tokens != 5) {
+			
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
 			return SMD_RETURN_INVALID_PARAMETER;
 		}
 		
@@ -329,6 +461,98 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
+	else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)-1) == 0) {
+		
+		char *token, *string, *tofree;
+		char *array_of_commands[6];
+		
+		int num_tokens = 0;
+		int32_t rel_pos = 0;
+		int32_t speed = 0;
+		int16_t accel = 0;
+		int16_t decel = 0;
+		int16_t jerk = 0;
+		tofree = string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		free(tofree);
+		
+		//loop through the input and convert to int
+		if(num_tokens == 6) {
+			
+			for(int i=0; i<num_tokens; i++) {
+				
+				//relative position
+				if(i==1) {
+					rel_pos = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(rel_pos < -8388607 || rel_pos > 8388607)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//accel
+				if(i==2) {
+					accel = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(accel < 0 || accel > 5001)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//decel
+				if(i==3) {
+					decel = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(decel < 0 || decel > 5001)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//jerk
+				if(i==4) {
+					jerk = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(jerk < 0 || jerk > 5001)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//speed
+				if(i==5) {
+					speed = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(speed < 0 || speed > 2999999)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+			}
+			
+			//clean-up
+			for(int i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
+			if(relative_move(rel_pos, accel, decel, jerk, speed) < 0)
+				return SMD_RETURN_COMMAND_FAILED;
+			else
+				return SMD_RETURN_COMMAND_SUCCESS;
+		}
+		
+		else {
+			
+			//clean-up
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
+	}
+	
 	else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)-1) == 0) {
 		
 		if(drive_enable() < 0)
@@ -379,15 +603,14 @@ int parse_socket_input(char *input, int cl) {
 	
 	else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)-1) == 0) {
 		
-		char *token = NULL;
-		char *string = strdup(input);
+		char *token, *string, *tofree;
 		char *array_of_commands[2];
 		
 		int num_tokens = 0;			//how many tokens do we have?
 		int32_t pos;
 	
 		num_tokens = 0;
-		string = strdup(input);
+		tofree = string = strdup(input);
 		
 		//re-tokenize the input
 		while ((token = strsep(&string, ",")) != NULL) {
@@ -396,37 +619,52 @@ int parse_socket_input(char *input, int cl) {
 			num_tokens++;
 		}
 		
+		free(tofree);
+		
 		//loop through the input and convert to int
 		if(num_tokens == 2) {
 			
+			int i;
 			pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+			
+			//clean-up
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
 			
 			if(pos < -8388607 || pos > 8388607)
 				return SMD_RETURN_INVALID_PARAMETER;
 			
 			//preset the position
 			if(preset_motor_position(pos) < 0)
-				return SMD_RETURN_INVALID_PARAMETER;
+				return SMD_RETURN_PRESET_POS_FAIL;
 			else
 				return SMD_RETURN_PRESET_POS_SUCCESS;
 		}
 		
 		else {
+			
+			//clean-up
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
 			return SMD_RETURN_INVALID_PARAMETER;
 		}
 	}
 	
 	else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)-1) == 0) {
 		
-		char *token = NULL;
-		char *string = strdup(input);
+		char *token, *string, *tofree;
 		char *array_of_commands[2];
 		
 		int num_tokens = 0;			//how many tokens do we have?
 		int32_t pos;
 		
 		num_tokens = 0;
-		string = strdup(input);
+		tofree = string = strdup(input);
 		
 		//re-tokenize the input
 		while ((token = strsep(&string, ",")) != NULL) {
@@ -435,22 +673,37 @@ int parse_socket_input(char *input, int cl) {
 			num_tokens++;
 		}
 		
+		free(tofree);
+		
 		//loop through the input and convert to int
 		if(num_tokens == 2) {
 			
+			int i;
 			pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+			
+			//clean-up
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
 			
 			if(pos < -8388607 || pos > 8388607)
 				return SMD_RETURN_INVALID_PARAMETER;
 			
 			//preset the position
 			if(preset_encoder_position(pos) < 0)
-				return SMD_RETURN_INVALID_PARAMETER;
+				return SMD_RETURN_PRESET_ENC_FAIL;
 			else
 				return SMD_RETURN_PRESET_ENC_SUCCESS;
 		}
 		
 		else {
+			
+			//clean-up
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
 			return SMD_RETURN_INVALID_PARAMETER;
 		}
 	}
@@ -541,9 +794,23 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 		}
 	}
 	
+	//preset encoder fail
+	if(smd_response == SMD_RETURN_PRESET_ENC_FAIL) {
+		if(write(cl, PRESET_ENCODER_FAIL , sizeof(PRESET_ENCODER_FAIL)) == -1) {
+			perror("Error writing to client");
+		}
+	}
+	
 	//preset motor success
 	if(smd_response == SMD_RETURN_PRESET_POS_SUCCESS) {
 		if(write(cl, PRESET_POSITION_SUCCESS , sizeof(PRESET_POSITION_SUCCESS)) == -1) {
+			perror("Error writing to client");
+		}
+	}
+	
+	//preset motor fail
+	if(smd_response == SMD_RETURN_PRESET_POS_FAIL) {
+		if(write(cl, PRESET_POSITION_FAIL , sizeof(PRESET_POSITION_FAIL)) == -1) {
 			perror("Error writing to client");
 		}
 	}
@@ -559,6 +826,24 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 	if(smd_response == SMD_RETURN_COMMAND_MODE_SUCCESS) {
 		
 		if(write(cl, COMMAND_MODE_SUCCESS , sizeof(COMMAND_MODE_SUCCESS)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//save config to drive success
+	if(smd_response == SMD_RETURN_SAVE_CONFIG_SUCCESS) {
+		
+		if(write(cl, CONFIG_SAVE_SUCCESS, sizeof(CONFIG_SAVE_SUCCESS)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//save config to drive fail
+	if(smd_response == SMD_RETURN_SAVE_CONFIG_FAIL) {
+		
+		if(write(cl, CONFIG_SAVE_SUCCESS, sizeof(CONFIG_SAVE_FAIL)) == -1) {
 			fprintf(stderr, "wrote to client");
 			perror("Error writing to client");
 		}
@@ -745,11 +1030,65 @@ int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed
 			speed_LW = speed;
 		}
 		
-		//fprintf(stderr, "accel: %d\ndecel: %d\njerk: %d\ndirection: %d\nspeed upper: %d\nspeed lower: %d\n", accel, decel, jerk, direc, speed_UW, speed_LW);
-		
 		//write the registers
 		int registers[9] = {1025, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1024};
 		int values[9] = {32768, 0, speed_UW, speed_LW, accel, decel, 0, jerk, direc};
+		
+		for(i=0; i<9; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc,i;
+		int16_t speed_UW = 0;
+		int16_t speed_LW = 0;
+		int16_t pos_UW = 0;
+		int16_t pos_LW = 0;
+		
+		//determine our speed upper words and lower words
+		if(speed / 1000 > 0) {
+			speed_LW = speed % 1000;
+			speed_UW = (speed - (speed % 1000)) / 1000;
+		}
+		
+		else {
+			speed_LW = speed;
+		}
+		
+		//determine our position upper words and lower words
+		if(rel_pos / 1000 > 0) {
+			pos_LW = rel_pos % 1000;
+			pos_UW = (rel_pos - (rel_pos % 1000)) / 1000;
+		}
+		
+		else {
+			pos_LW = rel_pos;
+		}
+		
+		//write the registers
+		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
+		int values[9] = {32768, pos_UW, pos_LW, speed_UW, speed_LW, accel, decel, jerk, 2};
 		
 		for(i=0; i<9; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
@@ -1057,4 +1396,49 @@ int set_command_mode() {
 		return 0;
 	}
 
+}
+
+int set_configuration(int16_t control_word, int16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens - we also have to be in config mode
+	if( (strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1) || configMode == 0) {
+		modbus_free(ctx);
+		return -3;
+	}
+	
+	else {
+		
+		int rc, i;
+		int16_t starting_speed_UW = 0;
+		int16_t starting_speed_LW = 0;
+		
+		//calc starting speed
+		if(starting_speed / 1000 > 0) {
+			starting_speed_LW = starting_speed % 1000;
+			starting_speed_UW = (starting_speed - (starting_speed % 1000)) / 1000;
+		}
+		
+		else {
+			starting_speed_LW = starting_speed;
+		}
+		
+		//write the registers
+		int registers[8] = {1024, 1025, 1026, 1027, 1028, 1030, 1031, 1032};
+		int values[8] = {control_word, config_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
+		
+		for(i=0; i<8; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
 }
