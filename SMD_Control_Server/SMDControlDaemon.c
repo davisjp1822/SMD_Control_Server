@@ -269,20 +269,12 @@ int parse_socket_input(char *input, int cl) {
 				
 				//control word
 				if(i == 1) {
-					
 					control_word = convert_string_to_long_int(array_of_commands[i]);
-					
-					if( strlen(array_of_commands[i]) != 16)
-						return SMD_RETURN_INVALID_PARAMETER;
 				}
 				
 				//config word
 				if(i == 2) {
-					
 					config_word = convert_string_to_long_int(array_of_commands[i]);
-					
-					if( strlen(array_of_commands[i]) != 16)
-						return SMD_RETURN_INVALID_PARAMETER;
 				}
 				
 				//starting speed
