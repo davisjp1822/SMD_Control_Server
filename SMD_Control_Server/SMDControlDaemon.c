@@ -53,7 +53,7 @@ int preset_encoder_position(int32_t pos);
 int preset_motor_position(int32_t pos);
 int set_configuration_mode();
 int set_command_mode();
-int set_configuration(int16_t control_word, int16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
+int set_configuration(uint16_t control_word, uint16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
 
 int main(int argc, char *argv[]) {
 	
@@ -1390,7 +1390,7 @@ int set_command_mode() {
 
 }
 
-int set_configuration(int16_t control_word, int16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
+int set_configuration(uint16_t control_word, uint16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
 	
 	modbus_t *ctx = NULL;
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
