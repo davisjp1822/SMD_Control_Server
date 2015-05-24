@@ -326,7 +326,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					motor_current = convert_string_to_long_int(array_of_commands[i]);
 					
-					if(motor_current < 10 || motor_current > 1024)
+					if(motor_current < 10 || motor_current > 34)
 						return SMD_RETURN_INVALID_PARAMETER;
 				}
 			}
