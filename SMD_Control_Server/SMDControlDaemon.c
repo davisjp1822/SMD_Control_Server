@@ -1077,7 +1077,7 @@ int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, i
 		else {
 			pos_LW = rel_pos;
 		}
-		
+	
 		//write the registers
 		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
 		int values[9] = {32768, pos_UW, pos_LW, speed_UW, speed_LW, accel, decel, jerk, 2};
@@ -1416,7 +1416,7 @@ int set_configuration(uint16_t control_word, uint16_t config_word, int32_t start
 		else {
 			starting_speed_LW = starting_speed;
 		}
-		
+	
 		//write the registers
 		int registers[8] = {1024, 1025, 1026, 1027, 1028, 1030, 1031, 1032};
 		int values[8] = {control_word, config_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
