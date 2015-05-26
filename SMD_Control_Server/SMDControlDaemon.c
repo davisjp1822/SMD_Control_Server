@@ -246,7 +246,9 @@ int parse_socket_input(char *input, int cl) {
 		
 		if(num_tokens == 8) {
 			
-			for(int i=0; i<num_tokens; i++) {
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
 				
 				//control word
 				if(i == 1) {
@@ -305,8 +307,10 @@ int parse_socket_input(char *input, int cl) {
 			}
 			
 			//clean-up
-			for(int i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
 			}
 			
 			if(set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
@@ -315,9 +319,17 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_SAVE_CONFIG_SUCCESS;
 		}
 		
-		else
+		else {
+			
+			//clean-up
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
 			return SMD_RETURN_SAVE_CONFIG_FAIL;
-		
+		}
 	}
 	
 	else if(strstr(input, JOG_CW) !=NULL || strstr(input, JOG_CCW) !=NULL) {
@@ -443,7 +455,9 @@ int parse_socket_input(char *input, int cl) {
 		//loop through the input and convert to int
 		if(num_tokens == 6) {
 			
-			for(int i=0; i<num_tokens; i++) {
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
 				
 				//relative position
 				if(i==1) {
@@ -487,8 +501,10 @@ int parse_socket_input(char *input, int cl) {
 			}
 			
 			//clean-up
-			for(int i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
 			}
 			
 			if(relative_move(rel_pos, accel, decel, jerk, speed) < 0)
@@ -497,8 +513,18 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_COMMAND_SUCCESS;
 		}
 		
-		else
+		else {
+			
+			//clean-up
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
 			return SMD_RETURN_INVALID_PARAMETER;
+		}
+		
 	}
 	
 	else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)-1) == 0) {
@@ -598,8 +624,17 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_PRESET_POS_SUCCESS;
 		}
 		
-		else
+		else {
+			
+			//clean-up
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
 			return SMD_RETURN_INVALID_PARAMETER;
+		}
 	}
 	
 	else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)-1) == 0) {
@@ -625,12 +660,12 @@ int parse_socket_input(char *input, int cl) {
 		//loop through the input and convert to int
 		if(num_tokens == 2) {
 			
-			int i;
+			int j;
 			pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 			
 			//clean-up
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
 			}
 			
 			if(pos < -8388607 || pos > 8388607)
@@ -643,8 +678,17 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_PRESET_ENC_SUCCESS;
 		}
 		
-		else
+		else {
+			
+			//clean-up
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
 			return SMD_RETURN_INVALID_PARAMETER;
+		}
 	}
 	
 	//invalid input/command
