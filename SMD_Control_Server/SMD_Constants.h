@@ -25,14 +25,13 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_INVALID_INPUT,
 	SMD_RETURN_NO_ROUTE_TO_HOST,
 	SMD_RETURN_INVALID_PARAMETER,
-	SMD_RETURN_COMMAND_MODE_SUCCESS,
-	SMD_RETURN_CONFIGURATION_MODE_SUCCESS,
 	SMD_RETURN_PRESET_POS_SUCCESS,
 	SMD_RETURN_PRESET_ENC_SUCCESS,
 	SMD_RETURN_PRESET_POS_FAIL,
 	SMD_RETURN_PRESET_ENC_FAIL,
 	SMD_RETURN_SAVE_CONFIG_SUCCESS,
-	SMD_RETURN_SAVE_CONFIG_FAIL
+	SMD_RETURN_SAVE_CONFIG_FAIL,
+	SMD_RETURN_READ_CURRENT_CONFIG_FAIL
 	
 	
 }SMD_RESPONSE_CODES;
@@ -51,25 +50,23 @@ static const char PRESET_ENCODER_SUCCESS[32] = "PRESET_ENCODER_SUCCESS\n";
 static const char PRESET_POSITION_SUCCESS[32] = "PRESET_POSITION_SUCCESS\n";
 static const char PRESET_ENCODER_FAIL[32] = "PRESET_ENCODER_FAIL\n";
 static const char PRESET_POSITION_FAIL[32] = "PRESET_POSITION_FAIL\n";
-static const char CONFIG_MODE_SUCCESS[32] = "CONFIG_MODE_SUCCESS\n";
-static const char COMMAND_MODE_SUCCESS[32] = "COMMAND_MODE_SUCCESS\n";
 static const char CONFIG_SAVE_SUCCESS[24] = "CONFIG_SAVE_SUCCESS\n";
 static const char CONFIG_SAVE_FAIL[24] = "CONFIG_SAVE_FAIL\n";
+static const char GET_CURRENT_CONFIG_FAIL[32] = "GET_CURRENT_CONFIG_FAIL\n";
 
 //command constants (used by client and server)
-static const char CONNECT[24] = "connect\n";
-static const char DISCONNECT[24] = "disconnect\n";
-static const char DRIVE_ENABLE[24] = "driveEnable\n";
-static const char DRIVE_DISABLE[24] = "driveDisable\n";
+static const char CONNECT[24] = "connect";
+static const char DISCONNECT[24] = "disconnect";
+static const char DRIVE_ENABLE[24] = "driveEnable";
+static const char DRIVE_DISABLE[24] = "driveDisable";
 static const char JOG_CW[24] = "jogCW";
 static const char JOG_CCW[24] = "jogCCW";
 static const char RELATIVE_MOVE[24] = "relativeMove";
-static const char HOLD_MOVE[24] = "holdMove\n";
-static const char IMMED_STOP[24] = "immedStop\n";
-static const char RESET_ERRORS[24] = "resetErrors\n";
-static const char READ_INPUT_REGISTERS[32] = "readInputRegisters\n";
-static const char ENABLE_CONFIGURATION_MODE[32] = "enableConfigurationMode\n";
-static const char ENABLE_COMMAND_MODE[32] = "enableCommandMode\n";
-static const char PRESET_MOTOR_POSITION[32] = "presetMotorPosition\n";
-static const char PRESET_ENCODER_POSITION[32] = "presetEncoderPosition\n";
-static const char SAVE_CONFIG_TO_DRIVE[24] = "saveConfig\n";
+static const char HOLD_MOVE[24] = "holdMove";
+static const char IMMED_STOP[24] = "immedStop";
+static const char RESET_ERRORS[24] = "resetErrors";
+static const char READ_INPUT_REGISTERS[32] = "readInputRegisters";
+static const char PRESET_MOTOR_POSITION[32] = "presetMotorPosition";
+static const char PRESET_ENCODER_POSITION[32] = "presetEncoderPosition";
+static const char SAVE_CONFIG_TO_DRIVE[24] = "saveConfig";
+static const char READ_CURRENT_CONFIGURATION[32] = "readCurrentConfiguration";
