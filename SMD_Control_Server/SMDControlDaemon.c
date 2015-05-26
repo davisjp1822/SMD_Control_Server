@@ -1275,10 +1275,10 @@ int reset_errors() {
 		int rc, i;
 		
 		//write the registers
-		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1031, 1032, 1033, 1024};
-		int values[9] = {32768, 0, 0, 0, 0, 0, 0, 0, 1024};
+		int registers[10] = {1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033};
+		int values[10] = {1024, 32768, 0, 0, 0, 0, 0, 0, 0, 0};
 		
-		for(i=0; i<9; i++) {
+		for(i=0; i<10; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
@@ -1411,18 +1411,13 @@ int set_command_mode() {
 		
 		int rc, i;
 		
-		//write the registers
-		int registers[1] = {1024};
-		int values[1] =	{0};
 		int registers[2] = {1025, 1024};
 		int values[2] =	{32768, 0};
 		
-		for(i=0; i<1; i++) {
 		for(i=0; i<2; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
-				fprintf(stderr, "%s", modbus_strerror(errno));
 				return -1;
 			}
 		}
