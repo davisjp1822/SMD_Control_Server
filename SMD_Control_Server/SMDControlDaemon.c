@@ -930,6 +930,7 @@ int read_input_registers(int cl) {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1000,6 +1001,7 @@ int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1045,6 +1047,7 @@ int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, i
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1101,6 +1104,7 @@ int drive_enable() {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1133,6 +1137,7 @@ int drive_disable() {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1165,6 +1170,7 @@ int hold_move() {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1197,6 +1203,7 @@ int immed_stop() {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1229,6 +1236,7 @@ int reset_errors() {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1262,6 +1270,7 @@ int preset_encoder_position(int32_t pos) {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1295,6 +1304,7 @@ int preset_motor_position(int32_t pos) {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
