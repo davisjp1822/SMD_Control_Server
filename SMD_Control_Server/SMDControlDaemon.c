@@ -220,26 +220,6 @@ int parse_socket_input(char *input, int cl) {
 		return SMD_RETURN_DISCONNECT_SUCCESS;
 	}
 	
-	else if(strncmp(input, ENABLE_COMMAND_MODE, strlen(ENABLE_COMMAND_MODE)-1) == 0) {
-		
-		if(set_command_mode() < 0)
-			return SMD_RETURN_COMMAND_FAILED;
-		else {
-			configMode = 0;
-			return SMD_RETURN_COMMAND_MODE_SUCCESS;
-		}
-	}
-	
-	else if(strncmp(input, ENABLE_CONFIGURATION_MODE, strlen(ENABLE_CONFIGURATION_MODE)-1) == 0) {
-		
-		if(set_configuration_mode() < 0)
-			return SMD_RETURN_COMMAND_FAILED;
-		else {
-			configMode = 1;
-			return SMD_RETURN_CONFIGURATION_MODE_SUCCESS;
-		}
-	}
-	
 	else if(strncmp(input, SAVE_CONFIG_TO_DRIVE, strlen(SAVE_CONFIG_TO_DRIVE)-1) == 0) {
 		
 		char *token, *string, *tofree;
