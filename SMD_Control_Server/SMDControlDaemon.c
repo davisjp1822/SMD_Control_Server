@@ -42,6 +42,7 @@ void close_smd_command_connection();
 
 //function declarations - motor commands
 int read_input_registers(int cl);
+int read_current_configuration(int cl);
 int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed);
 int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed);
 int drive_enable();
@@ -53,7 +54,7 @@ int preset_encoder_position(int32_t pos);
 int preset_motor_position(int32_t pos);
 int set_configuration_mode();
 int set_command_mode();
-int set_configuration(uint16_t control_word, uint16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
+int set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
 
 int main(int argc, char *argv[]) {
 	
@@ -245,8 +246,8 @@ int parse_socket_input(char *input, int cl) {
 		char *array_of_commands[8];
 		
 		int num_tokens = 0;
-		int16_t control_word = 0;
-		int16_t config_word = 0;
+		int32_t control_word = 0;
+		int32_t config_word = 0;
 		int32_t starting_speed = 0;
 		int16_t steps_per_turn = 0;
 		int16_t enc_pulses_per_turn = 0;
@@ -283,7 +284,7 @@ int parse_socket_input(char *input, int cl) {
 					starting_speed = convert_string_to_long_int(array_of_commands[i]);
 					
 					if(starting_speed < 1 || starting_speed > 1999999)
-						return SMD_RETURN_INVALID_PARAMETER;
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
 				}
 				
 				//motor steps/turn
@@ -292,7 +293,7 @@ int parse_socket_input(char *input, int cl) {
 					steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
 					
 					if(steps_per_turn < 200 || steps_per_turn > 32767)
-						return SMD_RETURN_INVALID_PARAMETER;
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
 				}
 				
 				//encoder pulses/turn
@@ -301,7 +302,7 @@ int parse_socket_input(char *input, int cl) {
 					enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
 					
 					if(enc_pulses_per_turn != 1024)
-						return SMD_RETURN_INVALID_PARAMETER;
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
 				}
 				
 				//idle current percentage
@@ -310,7 +311,7 @@ int parse_socket_input(char *input, int cl) {
 					idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
 					
 					if(idle_current_percentage < 0 || idle_current_percentage > 100)
-						return SMD_RETURN_INVALID_PARAMETER;
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
 				}
 				
 				//motor current
@@ -319,7 +320,7 @@ int parse_socket_input(char *input, int cl) {
 					motor_current = convert_string_to_long_int(array_of_commands[i]);
 					
 					if(motor_current < 10 || motor_current > 34)
-						return SMD_RETURN_INVALID_PARAMETER;
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
 				}
 			}
 			
@@ -329,22 +330,13 @@ int parse_socket_input(char *input, int cl) {
 			}
 			
 			if(set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
-				return SMD_RETURN_COMMAND_FAILED;
+				return SMD_RETURN_SAVE_CONFIG_FAIL;
 			else
-				return SMD_RETURN_COMMAND_SUCCESS;
+				return SMD_RETURN_SAVE_CONFIG_SUCCESS;
 		}
 		
-		else {
-			
-			//clean-up
-			int i;
-			
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
-			}
-			
-			return SMD_RETURN_INVALID_PARAMETER;
-		}
+		else
+			return SMD_RETURN_SAVE_CONFIG_FAIL;
 		
 	}
 	
@@ -450,7 +442,12 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_INVALID_PARAMETER;
 			else
 				return SMD_RETURN_COMMAND_SUCCESS;
+
 		}
+		
+		//now that we are sure that we have 5 commands, parse them out
+		else
+			return SMD_RETURN_INVALID_PARAMETER;
 	}
 	
 	else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)-1) == 0) {
@@ -589,6 +586,14 @@ int parse_socket_input(char *input, int cl) {
 		
 		if(read_input_registers(cl) < 0)
 			return SMD_RETURN_COMMAND_FAILED;
+		else
+			return SMD_RETURN_HANDLED_BY_CLIENT;
+	}
+	
+	else if(strncmp(input, READ_CURRENT_CONFIGURATION, strlen(READ_CURRENT_CONFIGURATION)-1) == 0) {
+		
+		if(read_current_configuration(cl) < 0)
+			return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
 		else
 			return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
@@ -807,22 +812,6 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 		}
 	}
 	
-	//set configuration mode success
-	if(smd_response == SMD_RETURN_CONFIGURATION_MODE_SUCCESS) {
-		if(write(cl, CONFIG_MODE_SUCCESS, sizeof(CONFIG_MODE_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
-	}
-	
-	//set command mode success
-	if(smd_response == SMD_RETURN_COMMAND_MODE_SUCCESS) {
-		
-		if(write(cl, COMMAND_MODE_SUCCESS , sizeof(COMMAND_MODE_SUCCESS)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
-	}
-	
 	//save config to drive success
 	if(smd_response == SMD_RETURN_SAVE_CONFIG_SUCCESS) {
 		
@@ -835,7 +824,16 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 	//save config to drive fail
 	if(smd_response == SMD_RETURN_SAVE_CONFIG_FAIL) {
 		
-		if(write(cl, CONFIG_SAVE_SUCCESS, sizeof(CONFIG_SAVE_FAIL)) == -1) {
+		if(write(cl, CONFIG_SAVE_FAIL, sizeof(CONFIG_SAVE_FAIL)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//read current config fail
+	if(smd_response == SMD_RETURN_READ_CURRENT_CONFIG_FAIL) {
+		
+		if(write(cl, GET_CURRENT_CONFIG_FAIL, sizeof(GET_CURRENT_CONFIG_FAIL)) == -1) {
 			fprintf(stderr, "wrote to client");
 			perror("Error writing to client");
 		}
@@ -1330,6 +1328,9 @@ int set_configuration_mode() {
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		
+		fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1337,11 +1338,10 @@ int set_configuration_mode() {
 		
 		int rc, i;
 		
-		//write the registers
-		int registers[2] = {1025, 1024};
-		int values[2] =	{34816, 32768};
+		int registers[9] = {1025, 1024, 1026, 1027, 1028, 1029, 1030, 1031, 1032};
+		int values[9] =	{34816, 32768, 0, 0, 0, 0, 0, 0, 0};
 		
-		for(i=0; i<2; i++) {
+		for(i=0; i<9; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
@@ -1351,18 +1351,19 @@ int set_configuration_mode() {
 		
 		modbus_close(ctx);
 		modbus_free(ctx);
+		
 		return 0;
 	}
 }
 
 int set_command_mode() {
 	
-	//going back into command mode is essentially enabling the drive
 	modbus_t *ctx = NULL;
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
 	
 	//try and connect to see what happens
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
 		modbus_free(ctx);
 		return -3;
 	}
@@ -1390,47 +1391,75 @@ int set_command_mode() {
 
 }
 
-int set_configuration(uint16_t control_word, uint16_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
+int set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens - we also have to be in config mode
-	if( (strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1) || configMode == 0) {
-		modbus_free(ctx);
-		return -3;
+	//put the drive into configuration mode - if it doesn't work, fail.
+	if( set_configuration_mode() < 0) {
+		
+		sleep(1);
+		set_command_mode();
+		return -1;
 	}
 	
 	else {
 		
-		int rc, i;
-		int16_t starting_speed_UW = 0;
-		int16_t starting_speed_LW = 0;
+		//lets the connection clean-up from set_configuration_mode
+		sleep(1);
 		
-		//calc starting speed
-		if(starting_speed / 1000 > 0) {
-			starting_speed_LW = starting_speed % 1000;
-			starting_speed_UW = (starting_speed - (starting_speed % 1000)) / 1000;
+		modbus_t *ctx = NULL;
+		ctx = modbus_new_tcp(DEVICE_IP, 502);
+		
+		//try and connect to see what happens - we also have to be in config mode
+		if( (strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1)) {
+			
+			fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
+			
+			modbus_close(ctx);
+			modbus_free(ctx);
+			
+			sleep(1);
+			set_command_mode();
+			return -3;
 		}
 		
 		else {
-			starting_speed_LW = starting_speed;
-		}
-	
-		//write the registers
-		int registers[8] = {1024, 1025, 1026, 1027, 1028, 1030, 1031, 1032};
-		int values[8] = {control_word, config_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
-		
-		for(i=0; i<8; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
-			if( rc == -1 ) {
-				return -1;
+			int rc, i;
+			int16_t starting_speed_UW = 0;
+			int16_t starting_speed_LW = 0;
+			
+			//calc starting speed
+			if(starting_speed / 1000 > 0) {
+				starting_speed_LW = starting_speed % 1000;
+				starting_speed_UW = (starting_speed - (starting_speed % 1000)) / 1000;
 			}
+			
+			else {
+				starting_speed_LW = starting_speed;
+			}
+			
+			//write the registers
+			int registers[8] = {1025, 1024, 1026, 1027, 1028, 1030, 1031, 1032};
+			int values[8] = {config_word, control_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
+			
+			for(i=0; i<8; i++) {
+				
+				//fprintf(stderr, "setting register %d to %d\n", registers[i], values[i]);
+				rc = modbus_write_register(ctx, registers[i], values[i]);
+				
+				if( rc == -1 ) {
+					return -1;
+				}
+			}
+			
+			//modbus_flush(ctx);
+			modbus_close(ctx);
+			modbus_free(ctx);
+			
+			sleep(1);
+			set_command_mode();
+			
+			return 0;
 		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
 	}
 }
