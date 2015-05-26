@@ -347,19 +347,7 @@ int parse_socket_input(char *input, int cl) {
 		free(tofree);
 		
 		//should have 5 commands only
-		if(num_tokens != 5) {
-			
-			int i;
-			
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
-			}
-			
-			return SMD_RETURN_INVALID_PARAMETER;
-		}
-		
-		//now that we are sure that we have 5 commands, parse them out
-		else {
+		if(num_tokens == 5) {
 			
 			int i;
 			num_tokens = 0;
@@ -509,17 +497,8 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_COMMAND_SUCCESS;
 		}
 		
-		else {
-			
-			//clean-up
-			int i;
-			
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
-			}
-			
+		else
 			return SMD_RETURN_INVALID_PARAMETER;
-		}
 	}
 	
 	else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)-1) == 0) {
@@ -619,17 +598,8 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_PRESET_POS_SUCCESS;
 		}
 		
-		else {
-			
-			//clean-up
-			int i;
-			
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
-			}
-			
+		else
 			return SMD_RETURN_INVALID_PARAMETER;
-		}
 	}
 	
 	else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)-1) == 0) {
@@ -673,16 +643,8 @@ int parse_socket_input(char *input, int cl) {
 				return SMD_RETURN_PRESET_ENC_SUCCESS;
 		}
 		
-		else {
-			
-			//clean-up
-			int i;
-			
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
-			}
+		else
 			return SMD_RETURN_INVALID_PARAMETER;
-		}
 	}
 	
 	//invalid input/command
@@ -939,19 +901,13 @@ int read_input_registers(int cl) {
 				memset(&temp, 0, sizeof(temp));
 				
 				//only add leading 0x for items that are legitimately in hex
-				//probably need to adjust this to account for config mode vs. command mode
 				if(i == 0 || i == 1)
 					snprintf(temp, 16, "0x%X", tab_reg[i]);
 				else
 					snprintf(temp, 16, "%d", tab_reg[i]);
 				
 				if(i==0) {
-					if(configMode == 1) {
-						snprintf(client_write_string, sizeof(client_write_string), ",,,%s", temp);
-					}
-					else {
-						snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
-					}
+					snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
 				}
 				
 				else {
@@ -971,6 +927,100 @@ int read_input_registers(int cl) {
 		modbus_close(ctx);
 		modbus_free(ctx);
 		return 0;
+	}
+}
+
+int read_current_configuration(int cl) {
+	
+	//put the drive into configuration mode - if it doesn't work, fail.
+	if( set_configuration_mode() < 0) {
+		
+		sleep(1);
+		set_command_mode();
+		return -1;
+	}
+	
+	else {
+		
+		//lets the connection clean-up from set_configuration_mode
+		sleep(3);
+		
+		modbus_t *ctx = NULL;
+		ctx = modbus_new_tcp(DEVICE_IP, 502);
+		
+		//try and connect to see what happens
+		if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1) {
+			
+			fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
+			
+			modbus_close(ctx);
+			modbus_free(ctx);
+			
+			sleep(1);
+			set_command_mode();
+			
+			return -3;
+		}
+		
+		else {
+			
+			int rc, i;
+			uint16_t tab_reg[64];
+			char client_write_string[64];
+			
+			memset(&tab_reg, 0, sizeof(tab_reg));
+			memset(&client_write_string, 0, sizeof(client_write_string));
+			
+			if( (rc=modbus_read_registers(ctx, 0, 10, tab_reg)) == -1 ) {
+				perror("Error reading input registers");
+				return -1;
+				
+			}
+			
+			else {
+				for( i=0; i < rc; i++ ) {
+					//fprintf(stderr, "reg[%d]=\t\t\t%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
+					
+					char temp[16];
+					
+					memset(&temp, 0, sizeof(temp));
+					
+					//only add leading 0x for items that are legitimately in hex
+					if(i == 0 || i == 1)
+						snprintf(temp, 16, "0x%X", tab_reg[i]);
+					else
+						snprintf(temp, 16, "%d", tab_reg[i]);
+					
+					if(i==0) {
+						snprintf(client_write_string, sizeof(client_write_string), ",,,%s", temp);
+					}
+					
+					else {
+						snprintf(client_write_string, sizeof(client_write_string), "%s,%s", client_write_string, temp);
+					}
+				}
+				
+				//close the string with a linebreak so that the data is sent
+				snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
+				
+				fprintf(stderr, "config registers: %s\n", client_write_string);
+				
+				//write the registers to the client
+				if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
+					perror("Error writing to client");
+				}
+			}
+			
+			//modbus_flush(ctx);
+			modbus_close(ctx);
+			modbus_free(ctx);
+			
+			//put the drive back into command mode
+			sleep(2);
+			set_command_mode();
+			return 0;
+		}
+
 	}
 }
 
@@ -1364,8 +1414,11 @@ int set_command_mode() {
 		//write the registers
 		int registers[1] = {1024};
 		int values[1] =	{0};
+		int registers[2] = {1025, 1024};
+		int values[2] =	{32768, 0};
 		
 		for(i=0; i<1; i++) {
+		for(i=0; i<2; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
