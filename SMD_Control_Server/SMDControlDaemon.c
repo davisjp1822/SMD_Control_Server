@@ -1060,6 +1060,7 @@ int read_current_configuration(int cl) {
 			modbus_free(ctx);
 			
 			//put the drive back into command mode
+			sleep(1);
 			set_command_mode();
 			return 0;
 		}
