@@ -1060,7 +1060,6 @@ int read_current_configuration(int cl) {
 			modbus_free(ctx);
 			
 			//put the drive back into command mode
-			sleep(2);
 			set_command_mode();
 			return 0;
 		}
@@ -1422,10 +1421,10 @@ int set_configuration_mode() {
 		
 		int rc, i;
 		
-		int registers[9] = {1025, 1024, 1026, 1027, 1028, 1029, 1030, 1031, 1032};
-		int values[9] =	{34816, 32768, 0, 0, 0, 0, 0, 0, 0};
+		int registers[2] = {1025, 1024};
+		int values[2] =	{34816, 32768};
 		
-		for(i=0; i<9; i++) {
+		for(i=0; i<2; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
