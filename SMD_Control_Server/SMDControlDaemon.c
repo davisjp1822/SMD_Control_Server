@@ -932,14 +932,22 @@ int read_input_registers(int cl) {
 	
 	else {
 		
-		int rc, i;
-		uint16_t tab_reg[64];
-		char client_write_string[64];
+		int rc, i, rk;
+		uint16_t tab_status_words_reg[10];
+		int16_t tab_motor_data_reg[10];
+		char client_write_string[128];
 		
-		memset(&tab_reg, 0, sizeof(tab_reg));
+		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+		memset(&tab_motor_data_reg, 0, sizeof(tab_motor_data_reg));
 		memset(&client_write_string, 0, sizeof(client_write_string));
 		
-		if( (rc=modbus_read_registers(ctx, 0, 10, tab_reg)) == -1 ) {
+		if( (rc=modbus_read_registers(ctx, 0, 10, tab_status_words_reg)) == -1 ) {
+			perror("Error reading input registers");
+			return -1;
+			
+		}
+		
+		if( (rk=modbus_read_registers(ctx, 0, 10, (uint16_t *)&tab_motor_data_reg)) == -1 ) {
 			perror("Error reading input registers");
 			return -1;
 			
@@ -954,10 +962,16 @@ int read_input_registers(int cl) {
 				memset(&temp, 0, sizeof(temp));
 				
 				//only add leading 0x for items that are legitimately in hex
-				if(i == 0 || i == 1)
-					snprintf(temp, 16, "0x%X", tab_reg[i]);
+				if(i == 0)
+					snprintf(temp, 16, "%X", tab_status_words_reg[i]);
+				
+				else if(i == 1) {
+					
+					snprintf(temp, 16, "%X", tab_status_words_reg[i]);
+				}
+
 				else
-					snprintf(temp, 16, "%d", tab_reg[i]);
+					snprintf(temp, 16, "%d", tab_motor_data_reg[i]);
 				
 				if(i==0) {
 					snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
@@ -970,6 +984,9 @@ int read_input_registers(int cl) {
 			
 			//close the string with a linebreak so that the data is sent
 			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
+			
+			//debug
+			//fprintf(stderr, "%s", client_write_string);
 			
 			//write the registers to the client
 			if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
