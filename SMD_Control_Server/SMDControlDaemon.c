@@ -1073,7 +1073,7 @@ int read_current_configuration(int cl) {
 				//close the string with a linebreak so that the data is sent
 				snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
 				
-				fprintf(stderr, "config registers: %s\n", client_write_string);
+				//fprintf(stderr, "config registers: %s\n", client_write_string);
 				
 				//write the registers to the client
 				if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
@@ -1086,7 +1086,7 @@ int read_current_configuration(int cl) {
 			modbus_free(ctx);
 			
 			//put the drive back into command mode
-			sleep(1);
+			sleep(2);
 			set_command_mode();
 			return 0;
 		}
