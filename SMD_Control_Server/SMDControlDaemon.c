@@ -564,7 +564,7 @@ int parse_socket_input(char *input, int cl) {
 		if(reset_errors() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
 		else
-			return SMD_RETURN_COMMAND_SUCCESS;
+			return SMD_RETURN_RESET_ERRORS_SUCCESS;
 	}
 
 	else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)-1) == 0) {
@@ -820,6 +820,15 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 	if(smd_response == SMD_RETURN_READ_CURRENT_CONFIG_FAIL) {
 		
 		if(write(cl, GET_CURRENT_CONFIG_FAIL, sizeof(GET_CURRENT_CONFIG_FAIL)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//reset errors success
+	if(smd_response == SMD_RETURN_RESET_ERRORS_SUCCESS) {
+		
+		if(write(cl, RESET_ERRORS_SUCCESS, sizeof(RESET_ERRORS_SUCCESS)) == -1) {
 			fprintf(stderr, "wrote to client");
 			perror("Error writing to client");
 		}
