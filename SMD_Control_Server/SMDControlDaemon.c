@@ -1154,34 +1154,12 @@ int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, i
 	else {
 		
 		int rc,i;
-		int16_t speed_UW = 0;
-		int16_t speed_LW = 0;
-		int16_t pos_UW = 0;
-		int16_t pos_LW = 0;
+		struct Words posWords = convert_int_to_words(rel_pos);
+		struct Words speedWords = convert_int_to_words(speed);
 		
-		//determine our speed upper words and lower words
-		if(speed / 1000 > 0) {
-			speed_LW = speed % 1000;
-			speed_UW = (speed - (speed % 1000)) / 1000;
-		}
-		
-		else {
-			speed_LW = speed;
-		}
-		
-		//determine our position upper words and lower words
-		if(rel_pos / 1000 > 0) {
-			pos_LW = rel_pos % 1000;
-			pos_UW = (rel_pos - (rel_pos % 1000)) / 1000;
-		}
-		
-		else {
-			pos_LW = rel_pos;
-		}
-	
 		//write the registers
 		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
-		int values[9] = {32768, pos_UW, pos_LW, speed_UW, speed_LW, accel, decel, jerk, 2};
+		int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 2};
 		
 		for(i=0; i<9; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
@@ -1190,6 +1168,8 @@ int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, i
 				return -1;
 			}
 		}
+		
+		//fprintf(stderr, "relative move with:\n posUpper: %d\n pos lower: %d, speed upper: %d\n speed lower: %d\n accel: %d\n decel: %d\n jerk: %d\n", posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk);
 		
 		modbus_close(ctx);
 		modbus_free(ctx);
