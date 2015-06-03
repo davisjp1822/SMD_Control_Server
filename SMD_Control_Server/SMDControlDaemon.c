@@ -55,10 +55,17 @@ int preset_motor_position(int32_t pos);
 int set_configuration_mode();
 int set_command_mode();
 int set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
+int find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
+
+int program_block_first_block();
+int prepare_for_next_segment();
+int program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
+int run_assembled_move(int16_t blend_move_direction, int32_t dwell_time);
+
 
 int main(int argc, char *argv[]) {
 	
-	daemonize();
+	//daemonize();
 	
 	while(1) {
 		//open the server socket
@@ -430,6 +437,104 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_INVALID_PARAMETER;
 	}
 	
+	else if(strstr(input, FIND_HOME_CW) !=NULL || strstr(input, FIND_HOME_CCW) !=NULL) {
+		
+		//search for the home substring - if it is found, then parse out:
+		// accel
+		// decel
+		// steps/s
+		
+		char *token, *string, *tofree;
+		char *array_of_commands[5];
+		
+		int num_tokens = 0;			//how many tokens do we have?
+		int direction = 0;			//0=CW, 1=CCW
+		int16_t accel = 0;
+		int16_t decel = 0;
+		int16_t jerk = 0;
+		int32_t speed = 0;
+		
+		tofree = string = strdup(input);
+		
+		//check bounds first - we should only have 5 tokens
+		while ((token = strsep(&string, ",")) != NULL) {
+			num_tokens++;
+		}
+		
+		free(tofree);
+		
+		//should have 5 commands only
+		if(num_tokens == 5) {
+			
+			int i;
+			num_tokens = 0;
+			string = strdup(input);
+			
+			//re-tokenize the input
+			while ((token = strsep(&string, ",")) != NULL) {
+				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+				strcpy(array_of_commands[num_tokens], token);
+				num_tokens++;
+			}
+			
+			//loop through the input and convert to int
+			for(i=0; i<5; i++) {
+				
+				//skip the actual command
+				//speed
+				if(i == 1) {
+					//fprintf(stderr, "converting %s\n", array_of_commands[i]);
+					speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
+					
+					if(speed < 0 || speed > 3000000)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//accel
+				if(i == 2) {
+					//fprintf(stderr, "converting %s\n", array_of_commands[i]);
+					accel = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(accel < 0 || accel > 5001)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//decel
+				if(i == 3) {
+					//fprintf(stderr, "converting %s\n", array_of_commands[i]);
+					decel = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(decel < 0 || decel > 5001)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				//jerk
+				if(i == 4) {
+					//fprintf(stderr, "converting %s\n", array_of_commands[i]);
+					jerk = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(jerk < 0 || jerk > 5001)
+						return SMD_RETURN_INVALID_PARAMETER;
+				}
+			}
+			
+			//figure out the direction
+			if(strstr(input, FIND_HOME_CCW) !=NULL)
+				direction = 1;
+			
+			//tell the motor to jog
+			if(find_home(direction, speed, accel, decel, jerk) < 0)
+				return SMD_RETURN_INVALID_PARAMETER;
+			else
+				return SMD_RETURN_COMMAND_SUCCESS;
+			
+		}
+		
+		//now that we are sure that we have 5 commands, parse them out
+		else
+			return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
 	else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)-1) == 0) {
 		
 		char *token, *string, *tofree;
@@ -691,6 +796,164 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
+	else if(strncmp(input, PROGRAM_FIRST_BLOCK, strlen(PROGRAM_FIRST_BLOCK)-1) == 0) {
+		
+		if(program_block_first_block() < 0)
+			return SMD_RETURN_COMMAND_FAILED;
+		else {
+			return SMD_RETURN_READY_FOR_SEGMENTS;
+		}
+	}
+	
+	else if(strncmp(input, PREPARE_FOR_NEXT_SEGMENT, strlen(PREPARE_FOR_NEXT_SEGMENT)-1) == 0) {
+		
+		if(prepare_for_next_segment() < 0)
+			return SMD_RETURN_COMMAND_FAILED;
+		else
+			return SMD_RETURN_SEND_NEXT_SEGMENT;
+	}
+	
+	else if(strncmp(input, PROGRAM_MOVE_SEGMENT, strlen(PROGRAM_MOVE_SEGMENT)-1) == 0) {
+		
+		char *token, *string, *tofree;
+		char *array_of_commands[6];
+		
+		int num_tokens = 0;
+		
+		num_tokens = 0;
+		tofree = string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		free(tofree);
+		
+		//loop through the input and convert to int
+		if(num_tokens == 6) {
+			
+			int i;
+			int32_t target_pos = 0, speed = 0;
+			int16_t accel = 0, decel = 0, jerk = 0;
+			
+			for(i=0; i<num_tokens; i++) {
+				
+				if(i==1)
+					target_pos = (int32_t)convert_string_to_long_int(array_of_commands[i]);
+				
+				if(i==2)
+					speed = (int32_t)convert_string_to_long_int(array_of_commands[i]);
+				
+				if(i==3)
+					accel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
+				
+				if(i==4)
+					decel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
+				
+				if(i==5)
+					jerk = (int16_t)convert_string_to_long_int(array_of_commands[i]);
+			}
+			
+			//clean-up
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
+			//test inputs
+			if(target_pos < -8388607 || target_pos > 8388607)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			if(speed < 0 || speed >  2999999)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			if(accel < 1 || accel > 5000)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			if(decel < 1 || decel > 5000)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			if(jerk < 0 || jerk > 5000)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			//preset the position
+			if(program_move_segment(target_pos, speed, accel, decel, jerk) < 0)
+				return SMD_RETURN_COMMAND_FAILED;
+			else
+				return SMD_RETURN_SEGMENT_ACCEPTED;
+		}
+		
+		else {
+			
+			//clean-up
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(array_of_commands[i]);
+			}
+			
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
+
+	}
+	
+	else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)-1) == 0) {
+		
+		char *token, *string, *tofree;
+		char *array_of_commands[2];
+		
+		int num_tokens = 0;			//how many tokens do we have?
+		int32_t dwell_time;
+		
+		num_tokens = 0;
+		tofree = string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		free(tofree);
+		
+		//loop through the input and convert to int
+		if(num_tokens == 2) {
+			
+			int j;
+			dwell_time = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+			
+			//clean-up
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
+			if(dwell_time < 0 || dwell_time > 65535)
+				return SMD_RETURN_INVALID_PARAMETER;
+			
+			//preset the position
+			if(run_assembled_move(-1, dwell_time) < 0)
+				return SMD_RETURN_COMMAND_FAILED;
+			else
+				return SMD_RETURN_COMMAND_SUCCESS;
+		}
+		
+		else {
+			
+			//clean-up
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
+
+	}
+	
 	//invalid input/command
 	else {
 		return SMD_RETURN_INVALID_INPUT;
@@ -829,6 +1092,33 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 	if(smd_response == SMD_RETURN_RESET_ERRORS_SUCCESS) {
 		
 		if(write(cl, RESET_ERRORS_SUCCESS, sizeof(RESET_ERRORS_SUCCESS)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//entered assembled move mode successfully - ready for programmed segments
+	if(smd_response == SMD_RETURN_READY_FOR_SEGMENTS) {
+		
+		if(write(cl, READY_FOR_SEGMENTS, sizeof(READY_FOR_SEGMENTS)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//tell the client to send the next segment
+	if(smd_response == SMD_RETURN_SEND_NEXT_SEGMENT) {
+		
+		if(write(cl, SEND_NEXT_SEGMENT, sizeof(SEND_NEXT_SEGMENT)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
+	//segment programming successful
+	if(smd_response == SMD_RETURN_SEGMENT_ACCEPTED) {
+		
+		if(write(cl, SEGMENT_ACCEPTED, sizeof(SEGMENT_ACCEPTED)) == -1) {
 			fprintf(stderr, "wrote to client");
 			perror("Error writing to client");
 		}
@@ -1544,10 +1834,197 @@ int set_configuration(int32_t control_word, int32_t config_word, int32_t startin
 			modbus_close(ctx);
 			modbus_free(ctx);
 			
-			sleep(1);
-			set_command_mode();
+			sleep(2);
+			//set_command_mode();
+			reset_errors();
 			
 			return 0;
 		}
+	}
+}
+
+int find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc,i;
+		int direc = direction == 0 ? 32 : 64;
+		struct Words speed_words = convert_int_to_words(speed);
+		
+		//write the registers
+		int registers[8] = {1025, 1028, 1029, 1030, 1031, 1033, 1032, 1024};
+		int values[8] = {32768, speed_words.upper_word, speed_words.lower_word, accel, decel, jerk, 0 ,direc};
+		
+		for(i=0; i<8; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int program_block_first_block() {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc, i;
+		
+		int registers[2] = {1025, 1024};
+		int values[2] =	{32768, 2048};
+		
+		for(i=0; i<2; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int prepare_for_next_segment() {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc, i;
+		
+		int registers[2] = {1025, 1024};
+		int values[2] =	{32768, 2048};
+		
+		for(i=0; i<2; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return -3;
+	}
+	else {
+		
+		int rc,i;
+		struct Words posWords = convert_int_to_words(target_pos);
+		struct Words speedWords = convert_int_to_words(speed);
+		
+		//write the registers
+		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
+		int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 6144};
+		
+		//fprintf(stderr, "trying to program segment with:\n posUpper: %d\n pos lower: %d\n speed upper: %d\n speed lower: %d\n accel: %d\n decel: %d\n jerk: %d\n", posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk);
+		
+		for(i=0; i<9; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		//fprintf(stderr, "programmed move with:\n posUpper: %d\n pos lower: %d\n speed upper: %d\n speed lower: %d\n accel: %d\n decel: %d\n jerk: %d\n", posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk);
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
+	}
+}
+
+int run_assembled_move(int16_t blend_move_direction, int32_t dwell_time) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return -3;
+	}
+	
+	//blend_move_direction and dwell_time cannot be simultaneously set
+	else if(blend_move_direction >= 0 && dwell_time >= 0) {
+		return -1;
+	}
+	
+	else {
+		
+		int rc, i;
+		int32_t LSW = 0;
+		
+		//what are we doing? blend move or dwell move?
+		if(blend_move_direction >= 0)
+			//0 == CW
+			LSW = blend_move_direction == 0 ? 32768 : 32784;
+		
+		if(dwell_time >= 0)
+			LSW = 33280;
+		
+		int registers[3] = {1025, 1033, 1024};
+		int values[3] =	{LSW, dwell_time, 8192};
+		
+		for(i=0; i<3; i++) {
+			
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return 0;
 	}
 }

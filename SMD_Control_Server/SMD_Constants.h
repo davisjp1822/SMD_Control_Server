@@ -32,7 +32,10 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_SAVE_CONFIG_SUCCESS,
 	SMD_RETURN_SAVE_CONFIG_FAIL,
 	SMD_RETURN_READ_CURRENT_CONFIG_FAIL,
-	SMD_RETURN_RESET_ERRORS_SUCCESS
+	SMD_RETURN_RESET_ERRORS_SUCCESS,
+	SMD_RETURN_READY_FOR_SEGMENTS,
+	SMD_RETURN_SEND_NEXT_SEGMENT,
+	SMD_RETURN_SEGMENT_ACCEPTED
 	
 	
 }SMD_RESPONSE_CODES;
@@ -56,6 +59,9 @@ static const char CONFIG_SAVE_FAIL[24] = "CONFIG_SAVE_FAIL\n";
 static const char GET_CURRENT_CONFIG_FAIL[32] = "GET_CURRENT_CONFIG_FAIL\n";
 static const char RELATIVE_MOVE_COMPLETE[32] = "REL_MOVE_COMPLETE\n";
 static const char RESET_ERRORS_SUCCESS[32] = "RESET_ERRORS_SUCCESS\n";
+static const char READY_FOR_SEGMENTS[32] = "READY_FOR_SEGMENTS\n";
+static const char SEND_NEXT_SEGMENT[24] = "SEND_NEXT_SEGMENT\n";
+static const char SEGMENT_ACCEPTED[24] = "SEGMENT_ACCEPTED\n";
 
 //command constants (used by client and server)
 static const char CONNECT[24] = "connect";
@@ -73,3 +79,9 @@ static const char PRESET_MOTOR_POSITION[32] = "presetMotorPosition";
 static const char PRESET_ENCODER_POSITION[32] = "presetEncoderPosition";
 static const char SAVE_CONFIG_TO_DRIVE[24] = "saveConfig";
 static const char READ_CURRENT_CONFIGURATION[32] = "readCurrentConfiguration";
+static const char FIND_HOME_CW[24] = "homeCW";
+static const char FIND_HOME_CCW[24] = "homeCCW";
+static const char PROGRAM_FIRST_BLOCK[32] = "programFirstBlock";
+static const char PREPARE_FOR_NEXT_SEGMENT[32] = "prepareForNextSegment";
+static const char PROGRAM_MOVE_SEGMENT[24] = "programMoveSegment";
+static const char RUN_ASSEMBLED_DWELL_MOVE[32] = "runAssembledDwellMove";
