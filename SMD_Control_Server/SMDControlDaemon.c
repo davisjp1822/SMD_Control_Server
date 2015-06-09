@@ -65,7 +65,7 @@ int run_assembled_move(int16_t blend_move_direction, int32_t dwell_time);
 
 int main(int argc, char *argv[]) {
 	
-	//daemonize();
+	daemonize();
 	
 	while(1) {
 		//open the server socket
