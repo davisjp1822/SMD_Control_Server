@@ -25,6 +25,9 @@
 #include "SMD_Constants.h"
 #include "SMD_Utilities.h"
 
+//uncomment to execute on the main thread
+//#define NON_DAEMON
+
 char DEVICE_IP[32];
 
 modbus_t *smd_command_connection = NULL;
@@ -42,6 +45,7 @@ void close_smd_command_connection();
 
 //function declarations - motor commands
 int read_input_registers(int cl);
+int load_current_configuration(int cl);
 int read_current_configuration(int cl);
 int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed);
 int relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed);
@@ -52,11 +56,10 @@ int immed_stop();
 int hold_move();
 int preset_encoder_position(int32_t pos);
 int preset_motor_position(int32_t pos);
-int set_configuration_mode();
-int set_command_mode();
 int set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current);
 int find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
 
+//assembled move commands
 int program_block_first_block();
 int prepare_for_next_segment();
 int program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
@@ -65,7 +68,9 @@ int run_assembled_move(int16_t blend_move_direction, int32_t dwell_time);
 
 int main(int argc, char *argv[]) {
 	
+#ifndef NON_DAEMON
 	daemonize();
+#endif
 	
 	while(1) {
 		//open the server socket
@@ -680,10 +685,18 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
 	
+	else if(strncmp(input, LOAD_CURRENT_CONFIGURATION, strlen(LOAD_CURRENT_CONFIGURATION)-1) == 0) {
+		
+		if(load_current_configuration(cl) < 0)
+			return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
+		else
+			return SMD_RETURN_READY_TO_READ_CONFIG;
+	}
+	
 	else if(strncmp(input, READ_CURRENT_CONFIGURATION, strlen(READ_CURRENT_CONFIGURATION)-1) == 0) {
 		
 		if(read_current_configuration(cl) < 0)
-			return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
+			return SMD_RETURN_COMMAND_FAILED;
 		else
 			return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
@@ -1079,6 +1092,15 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 		}
 	}
 	
+	//tell the client that we are ready to read the config from the input registers
+	if(smd_response == SMD_RETURN_READY_TO_READ_CONFIG) {
+		
+		if(write(cl, READY_TO_READ_CONFIG, sizeof(READY_TO_READ_CONFIG)) == -1) {
+			fprintf(stderr, "wrote to client");
+			perror("Error writing to client");
+		}
+	}
+	
 	//read current config fail
 	if(smd_response == SMD_RETURN_READ_CURRENT_CONFIG_FAIL) {
 		
@@ -1290,97 +1312,118 @@ int read_input_registers(int cl) {
 	}
 }
 
-int read_current_configuration(int cl) {
+int load_current_configuration(int cl) {
 	
-	//put the drive into configuration mode - if it doesn't work, fail.
-	if( set_configuration_mode() < 0) {
+	//Step 1 - Write the current configuration into the input registers (this puts the drive into configuration mode)
+	
+	//Step 2 - Tell the client that the registers are ready to be read
+	
+	//Step 3 - The client will then make a single call to read_input_registers to parse the configuration
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		
-		sleep(1);
-		set_command_mode();
-		return -1;
+		fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
+		modbus_close(ctx);
+		modbus_free(ctx);
+		return -3;
 	}
 	
 	else {
 		
-		//lets the connection clean-up from set_configuration_mode
-		sleep(3);
+		int rc, i;
 		
-		modbus_t *ctx = NULL;
-		ctx = modbus_new_tcp(DEVICE_IP, 502);
+		int registers[2] = {1025, 1024};
+		int values[2] =	{34816, 32768};
 		
-		//try and connect to see what happens
-		if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1) {
+		for(i=0; i<2; i++) {
+			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
-			fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		
+		return 0;
+	}
+}
+
+int read_current_configuration(int cl) {
+	
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens
+	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1) {
+		
+		fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		
+		return -3;
+	}
+	
+	else {
+		
+		int rc, i;
+		uint16_t tab_reg[64];
+		char client_write_string[64];
+		
+		memset(&tab_reg, 0, sizeof(tab_reg));
+		memset(&client_write_string, 0, sizeof(client_write_string));
+		
+		if( (rc=modbus_read_registers(ctx, 0, 10, tab_reg)) == -1 ) {
+			perror("Error reading input registers");
+			return -1;
 			
-			modbus_close(ctx);
-			modbus_free(ctx);
-			
-			sleep(1);
-			set_command_mode();
-			
-			return -3;
 		}
 		
 		else {
-			
-			int rc, i;
-			uint16_t tab_reg[64];
-			char client_write_string[64];
-			
-			memset(&tab_reg, 0, sizeof(tab_reg));
-			memset(&client_write_string, 0, sizeof(client_write_string));
-			
-			if( (rc=modbus_read_registers(ctx, 0, 10, tab_reg)) == -1 ) {
-				perror("Error reading input registers");
-				return -1;
+			for( i=0; i < rc; i++ ) {
+				//fprintf(stderr, "reg[%d]=\t\t\t%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
 				
-			}
-			
-			else {
-				for( i=0; i < rc; i++ ) {
-					//fprintf(stderr, "reg[%d]=\t\t\t%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
-					
-					char temp[16];
-					
-					memset(&temp, 0, sizeof(temp));
-					
-					//only add leading 0x for items that are legitimately in hex
-					if(i == 0 || i == 1)
-						snprintf(temp, 16, "0x%X", tab_reg[i]);
-					else
-						snprintf(temp, 16, "%d", tab_reg[i]);
-					
-					if(i==0) {
-						snprintf(client_write_string, sizeof(client_write_string), ",,,%s", temp);
-					}
-					
-					else {
-						snprintf(client_write_string, sizeof(client_write_string), "%s,%s", client_write_string, temp);
-					}
+				char temp[16];
+				
+				memset(&temp, 0, sizeof(temp));
+				
+				//only add leading 0x for items that are legitimately in hex
+				if(i == 0 || i == 1)
+					snprintf(temp, 16, "0x%X", tab_reg[i]);
+				else
+					snprintf(temp, 16, "%d", tab_reg[i]);
+				
+				if(i==0) {
+					snprintf(client_write_string, sizeof(client_write_string), "###%s", temp);
 				}
 				
-				//close the string with a linebreak so that the data is sent
-				snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
-				
-				//fprintf(stderr, "config registers: %s\n", client_write_string);
-				
-				//write the registers to the client
-				if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
-					perror("Error writing to client");
+				else {
+					snprintf(client_write_string, sizeof(client_write_string), "%s,%s", client_write_string, temp);
 				}
 			}
 			
-			//modbus_flush(ctx);
-			modbus_close(ctx);
-			modbus_free(ctx);
+			//close the string with a linebreak so that the data is sent
+			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
 			
-			//put the drive back into command mode
-			sleep(2);
-			set_command_mode();
-			return 0;
+			//fprintf(stderr, "config registers: %s\n", client_write_string);
+			
+			//write the registers to the client
+			if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
+				perror("Error writing to client");
+			}
 		}
-
+		
+		//modbus_flush(ctx);
+		modbus_close(ctx);
+		modbus_free(ctx);
+		
+		return 0;
 	}
 }
 
@@ -1701,145 +1744,57 @@ int preset_motor_position(int32_t pos) {
 	}
 }
 
-int set_configuration_mode() {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		
-		fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		int registers[2] = {1025, 1024};
-		int values[2] =	{34816, 32768};
-		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
-		return 0;
-	}
-}
-
-int set_command_mode() {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		int registers[2] = {1025, 1024};
-		int values[2] =	{32768, 0};
-		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
-
-}
-
 int set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
 	
-	//put the drive into configuration mode - if it doesn't work, fail.
-	if( set_configuration_mode() < 0) {
+	modbus_t *ctx = NULL;
+	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	
+	//try and connect to see what happens - we also have to be in config mode
+	if( (strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1)) {
 		
-		sleep(1);
-		set_command_mode();
-		return -1;
+		fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
+		
+		modbus_close(ctx);
+		modbus_free(ctx);
+		
+		return -3;
 	}
 	
 	else {
 		
-		//lets the connection clean-up from set_configuration_mode
-		sleep(1);
+		int rc, i;
+		int16_t starting_speed_UW = 0;
+		int16_t starting_speed_LW = 0;
 		
-		modbus_t *ctx = NULL;
-		ctx = modbus_new_tcp(DEVICE_IP, 502);
-		
-		//try and connect to see what happens - we also have to be in config mode
-		if( (strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1)) {
-			
-			fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
-			
-			modbus_close(ctx);
-			modbus_free(ctx);
-			
-			sleep(1);
-			set_command_mode();
-			return -3;
+		//calc starting speed
+		if(starting_speed / 1000 > 0) {
+			starting_speed_LW = starting_speed % 1000;
+			starting_speed_UW = (starting_speed - (starting_speed % 1000)) / 1000;
 		}
 		
 		else {
-			
-			int rc, i;
-			int16_t starting_speed_UW = 0;
-			int16_t starting_speed_LW = 0;
-			
-			//calc starting speed
-			if(starting_speed / 1000 > 0) {
-				starting_speed_LW = starting_speed % 1000;
-				starting_speed_UW = (starting_speed - (starting_speed % 1000)) / 1000;
-			}
-			
-			else {
-				starting_speed_LW = starting_speed;
-			}
-			
-			//write the registers
-			int registers[8] = {1025, 1024, 1026, 1027, 1028, 1030, 1031, 1032};
-			int values[8] = {config_word, control_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
-			
-			for(i=0; i<8; i++) {
-				
-				//fprintf(stderr, "setting register %d to %d\n", registers[i], values[i]);
-				rc = modbus_write_register(ctx, registers[i], values[i]);
-				
-				if( rc == -1 ) {
-					return -1;
-				}
-			}
-			
-			//modbus_flush(ctx);
-			modbus_close(ctx);
-			modbus_free(ctx);
-			
-			sleep(2);
-			//set_command_mode();
-			reset_errors();
-			
-			return 0;
+			starting_speed_LW = starting_speed;
 		}
+		
+		//write the registers
+		int registers[8] = {1025, 1024, 1026, 1027, 1028, 1030, 1031, 1032};
+		int values[8] = {config_word, control_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
+		
+		for(i=0; i<8; i++) {
+			
+			//fprintf(stderr, "setting register %d to %d\n", registers[i], values[i]);
+			rc = modbus_write_register(ctx, registers[i], values[i]);
+			
+			if( rc == -1 ) {
+				return -1;
+			}
+		}
+		
+		//modbus_flush(ctx);
+		modbus_close(ctx);
+		modbus_free(ctx);
+		
+		return 0;
 	}
 }
 
@@ -1877,6 +1832,9 @@ int find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_
 		return 0;
 	}
 }
+
+
+/***** ASSEMBLED MOVE FUNCTIONS *****/
 
 int program_block_first_block() {
 	

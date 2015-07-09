@@ -32,6 +32,7 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_SAVE_CONFIG_SUCCESS,
 	SMD_RETURN_SAVE_CONFIG_FAIL,
 	SMD_RETURN_READ_CURRENT_CONFIG_FAIL,
+	SMD_RETURN_READY_TO_READ_CONFIG,
 	SMD_RETURN_RESET_ERRORS_SUCCESS,
 	SMD_RETURN_READY_FOR_SEGMENTS,
 	SMD_RETURN_SEND_NEXT_SEGMENT,
@@ -56,6 +57,7 @@ static const char PRESET_ENCODER_FAIL[32] = "PRESET_ENCODER_FAIL\n";
 static const char PRESET_POSITION_FAIL[32] = "PRESET_POSITION_FAIL\n";
 static const char CONFIG_SAVE_SUCCESS[24] = "CONFIG_SAVE_SUCCESS\n";
 static const char CONFIG_SAVE_FAIL[24] = "CONFIG_SAVE_FAIL\n";
+static const char READY_TO_READ_CONFIG[24] = "READY_TO_READ_CONFIG\n";
 static const char GET_CURRENT_CONFIG_FAIL[32] = "GET_CURRENT_CONFIG_FAIL\n";
 static const char RELATIVE_MOVE_COMPLETE[32] = "REL_MOVE_COMPLETE\n";
 static const char RESET_ERRORS_SUCCESS[32] = "RESET_ERRORS_SUCCESS\n";
@@ -78,6 +80,7 @@ static const char READ_INPUT_REGISTERS[32] = "readInputRegisters";
 static const char PRESET_MOTOR_POSITION[32] = "presetMotorPosition";
 static const char PRESET_ENCODER_POSITION[32] = "presetEncoderPosition";
 static const char SAVE_CONFIG_TO_DRIVE[24] = "saveConfig";
+static const char LOAD_CURRENT_CONFIGURATION[32] = "loadCurrentConfiguration";
 static const char READ_CURRENT_CONFIGURATION[32] = "readCurrentConfiguration";
 static const char FIND_HOME_CW[24] = "homeCW";
 static const char FIND_HOME_CCW[24] = "homeCCW";
