@@ -1413,10 +1413,10 @@ int jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed
 		}
 		
 		//write the registers
-		int registers[9] = {1025, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1024};
-		int values[9] = {32768, 0, speed_UW, speed_LW, accel, decel, 0, jerk, direc};
+		int registers[10] = {1024, 1025, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1024};
+		int values[10] = {0, 32768, 0, speed_UW, speed_LW, accel, decel, 0, jerk, direc};
 		
-		for(i=0; i<9; i++) {
+		for(i=0; i<10; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
@@ -1549,10 +1549,10 @@ int hold_move() {
 		int rc, i;
 		
 		//write the registers
-		int registers[2] = {1025, 1024};
-		int values[2] =	{32768, 4};
+		int registers[3] = {1024, 1025, 1024};
+		int values[3] =	{0, 32768, 4};
 		
-		for(i=0; i<2; i++) {
+		for(i=0; i<3; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
