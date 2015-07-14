@@ -18,6 +18,7 @@
 #include <string.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <syslog.h>
 #include <sys/stat.h>
 #include "assert.h"
@@ -29,9 +30,9 @@
 //#define NON_DAEMON
 
 char DEVICE_IP[32];
+static const char VERSION[8] = "1.1";
 
 modbus_t *smd_command_connection = NULL;
-int configMode = 0;
 
 //function declarations - server setup
 void daemonize();
@@ -104,6 +105,11 @@ void open_server_socket() {
 		exit(-1);
 	}
 	
+	if (setsockopt(fd, SOL_SOCKET, TCP_NODELAY, &yes, sizeof(int)) == -1) {
+		perror("Error Setting Sock Options");
+		exit(-1);
+	}
+	
 	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		perror("Socket Bind Error");
 		exit(-1);
@@ -131,7 +137,6 @@ void open_server_socket() {
 		
 		//close the socket after each client disconnects
 		if(rc == 0) {
-			configMode = 0;
 			close(cl);
 			close_smd_command_connection();
 			
@@ -1336,10 +1341,10 @@ int load_current_configuration(int cl) {
 		
 		int rc, i;
 		
-		int registers[2] = {1025, 1024};
-		int values[2] =	{34816, 32768};
+		int registers[10] = {1025, 1024, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033};
+		int values[10] =	{34816, 32768, 0, 0, 0, 0, 0, 0, 0, 0};
 		
-		for(i=0; i<2; i++) {
+		for(i=0; i<10; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {
@@ -1658,10 +1663,10 @@ int reset_errors() {
 		int rc, i;
 		
 		//write the registers
-		int registers[10] = {1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033};
-		int values[10] = {1024, 32768, 0, 0, 0, 0, 0, 0, 0, 0};
+		int registers[3] = {1024, 1024, 1025};
+		int values[3] = {0, 1024, 32768};
 		
-		for(i=0; i<10; i++) {
+		for(i=0; i<3; i++) {
 			rc = modbus_write_register(ctx, registers[i], values[i]);
 			
 			if( rc == -1 ) {

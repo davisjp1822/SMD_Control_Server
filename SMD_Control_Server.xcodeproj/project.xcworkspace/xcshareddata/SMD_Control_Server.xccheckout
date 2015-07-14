@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>85F38CD2-984E-46BD-9346-AE1DD3E02644</string>
 	<key>IDESourceControlProjectName</key>
-	<string>SMD_Control_Server</string>
+	<string>project</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>84C6CE4EBE646863C5FE103C4DEE023E7C47C57E</key>
 		<string>https://bitbucket.org/davisjp1822/smd_control_server.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>SMD_Control_Server.xcodeproj</string>
+	<string>SMD_Control_Server.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>84C6CE4EBE646863C5FE103C4DEE023E7C47C57E</key>
