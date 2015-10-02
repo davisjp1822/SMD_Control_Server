@@ -1,0 +1,70 @@
+\hypertarget{_s_m_d___utilities_8h}{}\section{src/headers/\+S\+M\+D\+\_\+\+Utilities.h File Reference}
+\label{_s_m_d___utilities_8h}\index{src/headers/\+S\+M\+D\+\_\+\+Utilities.\+h@{src/headers/\+S\+M\+D\+\_\+\+Utilities.\+h}}
+
+
+Helper functions and utilities.  
+
+
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_words}{Words}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_words}{Words} \hyperlink{_s_m_d___utilities_8h_a120fe9a80c1f7542c026022fd74626ce}{convert\+\_\+int\+\_\+to\+\_\+words} (int32\+\_\+t number)
+\begin{DoxyCompactList}\small\item\em Splits a 32 bit integer into 16 bit words. Useful when taking a speed command from a client and converting it into something the A\+M\+C\+I drive understands. \end{DoxyCompactList}\item 
+int32\+\_\+t \hyperlink{_s_m_d___utilities_8h_a84c9c0cb9c96f4c9e0f573854f787807}{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int} (char $\ast$str)
+\begin{DoxyCompactList}\small\item\em Converts a string into a long int -\/ useful for turning client commands into integers for accel, decel, speed, etc. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Helper functions and utilities. 
+
+\begin{DoxyAuthor}{Author}
+John Davis \href{mailto:jd@pauldavisautomation.com}{\tt jd@pauldavisautomation.\+com} 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+September 30, 2015 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\hypertarget{_s_m_d___utilities_8h_a120fe9a80c1f7542c026022fd74626ce}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!convert\+\_\+int\+\_\+to\+\_\+words@{convert\+\_\+int\+\_\+to\+\_\+words}}
+\index{convert\+\_\+int\+\_\+to\+\_\+words@{convert\+\_\+int\+\_\+to\+\_\+words}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{convert\+\_\+int\+\_\+to\+\_\+words}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf Words} convert\+\_\+int\+\_\+to\+\_\+words (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{number}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a120fe9a80c1f7542c026022fd74626ce}
+
+
+Splits a 32 bit integer into 16 bit words. Useful when taking a speed command from a client and converting it into something the A\+M\+C\+I drive understands. 
+
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_words}{Words} 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___utilities_8h_a84c9c0cb9c96f4c9e0f573854f787807}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int@{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int}}
+\index{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int@{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int}]{\setlength{\rightskip}{0pt plus 5cm}int32\+\_\+t convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{str}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a84c9c0cb9c96f4c9e0f573854f787807}
+
+
+Converts a string into a long int -\/ useful for turning client commands into integers for accel, decel, speed, etc. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em str} & string to convert into 32 bit integer \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int32\+\_\+t 
+\end{DoxyReturn}

@@ -7,28 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A3F49FFB1AEF9CEA00164B05 /* SMDControlDaemon.c in Sources */ = {isa = PBXBuildFile; fileRef = A3F49FFA1AEF9CEA00164B05 /* SMDControlDaemon.c */; };
-		A3F49FFE1AEFA2FC00164B05 /* SMD_Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = A3F49FFC1AEFA2FC00164B05 /* SMD_Utilities.c */; };
+		A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */; };
+		A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */; };
+		A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */; };
+		A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A3F49FED1AEF9CD400164B05 /* CopyFiles */ = {
+		A3F49FED1AEF9CD400164B05 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A3EDEF971BBEFA8D003DB4FE /* SMD_Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Constants.h; sourceTree = "<group>"; };
+		A3EDEF981BBEFA8D003DB4FE /* SMD_Motor_Commands.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Motor_Commands.h; sourceTree = "<group>"; };
+		A3EDEF991BBEFA8D003DB4FE /* SMD_Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Utilities.h; sourceTree = "<group>"; };
+		A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Constants.c; sourceTree = "<group>"; };
+		A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Motor_Commands.c; sourceTree = "<group>"; };
+		A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
+		A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMDControlDaemon.c; sourceTree = "<group>"; };
 		A3F49FEF1AEF9CD400164B05 /* SMD_Control_Server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SMD_Control_Server; sourceTree = BUILT_PRODUCTS_DIR; };
-		A3F49FF91AEF9CEA00164B05 /* SMD_Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMD_Constants.h; sourceTree = "<group>"; };
-		A3F49FFA1AEF9CEA00164B05 /* SMDControlDaemon.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMDControlDaemon.c; sourceTree = "<group>"; };
-		A3F49FFC1AEFA2FC00164B05 /* SMD_Utilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
-		A3F49FFD1AEFA2FC00164B05 /* SMD_Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMD_Utilities.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,6 +48,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A3EDEF951BBEFA8D003DB4FE /* src */ = {
+			isa = PBXGroup;
+			children = (
+				A3EDEF961BBEFA8D003DB4FE /* headers */,
+				A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */,
+				A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */,
+				A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */,
+				A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		A3EDEF961BBEFA8D003DB4FE /* headers */ = {
+			isa = PBXGroup;
+			children = (
+				A3EDEF971BBEFA8D003DB4FE /* SMD_Constants.h */,
+				A3EDEF981BBEFA8D003DB4FE /* SMD_Motor_Commands.h */,
+				A3EDEF991BBEFA8D003DB4FE /* SMD_Utilities.h */,
+			);
+			path = headers;
+			sourceTree = "<group>";
+		};
 		A3F49FE61AEF9CD400164B05 = {
 			isa = PBXGroup;
 			children = (
@@ -61,10 +89,7 @@
 		A3F49FF11AEF9CD400164B05 /* SMD_Control_Server */ = {
 			isa = PBXGroup;
 			children = (
-				A3F49FF91AEF9CEA00164B05 /* SMD_Constants.h */,
-				A3F49FFA1AEF9CEA00164B05 /* SMDControlDaemon.c */,
-				A3F49FFD1AEFA2FC00164B05 /* SMD_Utilities.h */,
-				A3F49FFC1AEFA2FC00164B05 /* SMD_Utilities.c */,
+				A3EDEF951BBEFA8D003DB4FE /* src */,
 			);
 			path = SMD_Control_Server;
 			sourceTree = "<group>";
@@ -78,7 +103,7 @@
 			buildPhases = (
 				A3F49FEB1AEF9CD400164B05 /* Sources */,
 				A3F49FEC1AEF9CD400164B05 /* Frameworks */,
-				A3F49FED1AEF9CD400164B05 /* CopyFiles */,
+				A3F49FED1AEF9CD400164B05 /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -95,7 +120,7 @@
 		A3F49FE71AEF9CD400164B05 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "3ML LLC";
 				TargetAttributes = {
 					A3F49FEE1AEF9CD400164B05 = {
@@ -125,8 +150,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3F49FFB1AEF9CEA00164B05 /* SMDControlDaemon.c in Sources */,
-				A3F49FFE1AEFA2FC00164B05 /* SMD_Utilities.c in Sources */,
+				A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */,
+				A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */,
+				A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */,
+				A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +180,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -263,6 +291,7 @@
 				A3F49FF81AEF9CD400164B05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

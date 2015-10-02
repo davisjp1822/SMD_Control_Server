@@ -1,0 +1,449 @@
+\hypertarget{_s_m_d___motor___commands_8h}{}\section{src/headers/\+S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.h File Reference}
+\label{_s_m_d___motor___commands_8h}\index{src/headers/\+S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{src/headers/\+S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+
+
+Motor commands for controlling and configuring an A\+M\+C\+I S\+M\+D series drive.  
+
+
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{_s_m_d___motor___commands_8h_a8ee0593a39448cff86cef08f4c211ed2}{}int \hyperlink{_s_m_d___motor___commands_8h_a8ee0593a39448cff86cef08f4c211ed2}{S\+M\+D\+\_\+open\+\_\+command\+\_\+connection} ()\label{_s_m_d___motor___commands_8h_a8ee0593a39448cff86cef08f4c211ed2}
+
+\begin{DoxyCompactList}\small\item\em Attempts to open the control connection with the S\+M\+D. This connection stays open until \hyperlink{_s_m_d___motor___commands_8h_abfee7626a8806bfadcd627e502172e74}{S\+M\+D\+\_\+close\+\_\+command\+\_\+connection()} is called. If the connection is lost, all motion stops immediately. \end{DoxyCompactList}\item 
+\hypertarget{_s_m_d___motor___commands_8h_abfee7626a8806bfadcd627e502172e74}{}void \hyperlink{_s_m_d___motor___commands_8h_abfee7626a8806bfadcd627e502172e74}{S\+M\+D\+\_\+close\+\_\+command\+\_\+connection} ()\label{_s_m_d___motor___commands_8h_abfee7626a8806bfadcd627e502172e74}
+
+\begin{DoxyCompactList}\small\item\em Attempts to close the control connection with the S\+M\+D. When the connection is lost, all motion stops immediately. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a92657c358dcefcf62050656d01b7df02}{S\+M\+D\+\_\+read\+\_\+input\+\_\+registers} (int cl)
+\begin{DoxyCompactList}\small\item\em Reads the input registers, and outputs them in the format \char`\"{},,0x0,0x0,0,0,0,0,0,0,0,0\char`\"{}. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_ae7bcee012af784903fc9d53b9b689396}{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration} (int cl)
+\begin{DoxyCompactList}\small\item\em Called prior to calling \hyperlink{_s_m_d___motor___commands_8h_a139d3981c9ab0ef415c1a59b3825d53b}{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration(int cl)}. Tells the drive to read the current configuration and place it into the input registers. This will return R\+E\+A\+D\+Y\+\_\+\+T\+O\+\_\+\+R\+E\+A\+D\+\_\+\+C\+O\+N\+F\+I\+G to the client, which S\+H\+O\+U\+L\+D then read the input registers once to get the configuration. This is a bit of a testy function, and care should be taken to make sure that multiple operations are not being written to the drive at the time of issuing this command. This command W\+I\+L\+L stop motion and disable the drive. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a139d3981c9ab0ef415c1a59b3825d53b}{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration} (int cl)
+\begin{DoxyCompactList}\small\item\em Called after \hyperlink{_s_m_d___motor___commands_8h_ae7bcee012af784903fc9d53b9b689396}{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration(int cl)} Reads the input registers, and outputs them in the format \char`\"{}\#\#\#0x0,0x0,0,0,0,0,0,0,0,0\char`\"{}. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a9b9012bc4894621256e6ae61330b7aa6}{S\+M\+D\+\_\+set\+\_\+configuration} (int32\+\_\+t control\+\_\+word, int32\+\_\+t config\+\_\+word, int32\+\_\+t starting\+\_\+speed, int16\+\_\+t steps\+\_\+per\+\_\+turn, int16\+\_\+t enc\+\_\+pulses\+\_\+per\+\_\+turn, int16\+\_\+t idle\+\_\+current\+\_\+percentage, int16\+\_\+t motor\+\_\+current)
+\begin{DoxyCompactList}\small\item\em Loads configuration into drive memory. This does not write the configuration to permanent memory -\/ configuration will need to be reloaded if power is lost. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a37d9188e51fb12a0c1ea3c96b344680e}{S\+M\+D\+\_\+jog} (int direction, int16\+\_\+t accel, int16\+\_\+t decel, int16\+\_\+t jerk, int32\+\_\+t speed)
+\begin{DoxyCompactList}\small\item\em Tells the motor to jog. Stop the motor using either \hyperlink{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}{S\+M\+D\+\_\+immed\+\_\+stop()} or \hyperlink{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}{S\+M\+D\+\_\+hold\+\_\+move()} \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_ad1d6841b70ddef16c077213f317682d9}{S\+M\+D\+\_\+relative\+\_\+move} (int32\+\_\+t rel\+\_\+pos, int16\+\_\+t accel, int16\+\_\+t decel, int16\+\_\+t jerk, int32\+\_\+t speed)
+\begin{DoxyCompactList}\small\item\em Tells the motor to do a relative move. Stop the motor using either \hyperlink{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}{S\+M\+D\+\_\+immed\+\_\+stop()} or \hyperlink{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}{S\+M\+D\+\_\+hold\+\_\+move()} \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a1f74c2fa06627d4d0748413acb18cbfb}{S\+M\+D\+\_\+drive\+\_\+enable} ()
+\begin{DoxyCompactList}\small\item\em Enables the drive circuitry, applying current to the motor. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_abe8692cec28fb4b20f946c37e2b31fcf}{S\+M\+D\+\_\+drive\+\_\+disable} ()
+\begin{DoxyCompactList}\small\item\em Disables the drive circuitry, removing current from the motor. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_ae998007dabf0ceb0947621bdbe62e238}{S\+M\+D\+\_\+reset\+\_\+errors} ()
+\begin{DoxyCompactList}\small\item\em Resets drive errors. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}{S\+M\+D\+\_\+immed\+\_\+stop} ()
+\begin{DoxyCompactList}\small\item\em Immediately stops movement, with no deceleration. This W\+I\+L\+L set an error state in the drive, and the motor will need to be re-\/homed. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}{S\+M\+D\+\_\+hold\+\_\+move} ()
+\begin{DoxyCompactList}\small\item\em Stops movement with a controlled deceleration. No error state is set. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a34a52447f96850923649fa2a92adf9c7}{S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position} (int32\+\_\+t pos)
+\begin{DoxyCompactList}\small\item\em Presets the encoder to the value specified in pos. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_ae0ea877b4e6fc3b0632c8ba845f6b187}{S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position} (int32\+\_\+t pos)
+\begin{DoxyCompactList}\small\item\em Presets the motor to the value specified in pos. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a4cc87973bce39dcf87c4aecaea1dafed}{S\+M\+D\+\_\+find\+\_\+home} (int direction, int32\+\_\+t speed, int16\+\_\+t accel, int16\+\_\+t decel, int16\+\_\+t jerk)
+\begin{DoxyCompactList}\small\item\em Tells the drive to perform the built-\/in homing function. This function is outlined in the motor user manual. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a8ab732a84f8df111f452f53cf876d5bc}{program\+\_\+block\+\_\+first\+\_\+block} ()
+\begin{DoxyCompactList}\small\item\em Tells the drive that it should be expecting assembled move segments as the next commands. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a06a0ab6814205bd151e773cf2aa5480c}{prepare\+\_\+for\+\_\+next\+\_\+segment} ()
+\begin{DoxyCompactList}\small\item\em Tells the drive that the client is done transmitting the current segment, and should prepare for the next segment from the client. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a4399d0948f61f92b03abaced0d6e58c4}{program\+\_\+move\+\_\+segment} (int32\+\_\+t target\+\_\+pos, int32\+\_\+t speed, int16\+\_\+t accel, int16\+\_\+t decel, int16\+\_\+t jerk)
+\begin{DoxyCompactList}\small\item\em Programs the drive with the specified segment. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___motor___commands_8h_a93eefe9e5035de329fd1af501ac0f373}{run\+\_\+assembled\+\_\+move} (int16\+\_\+t blend\+\_\+move\+\_\+direction, int32\+\_\+t dwell\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Runs the current assembled move that is in memory. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Motor commands for controlling and configuring an A\+M\+C\+I S\+M\+D series drive. 
+
+\begin{DoxyAuthor}{Author}
+John Davis \href{mailto:jd@pauldavisautomation.com}{\tt jd@pauldavisautomation.\+com} 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+September 30, 2015 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\hypertarget{_s_m_d___motor___commands_8h_a06a0ab6814205bd151e773cf2aa5480c}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!prepare\+\_\+for\+\_\+next\+\_\+segment@{prepare\+\_\+for\+\_\+next\+\_\+segment}}
+\index{prepare\+\_\+for\+\_\+next\+\_\+segment@{prepare\+\_\+for\+\_\+next\+\_\+segment}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{prepare\+\_\+for\+\_\+next\+\_\+segment}]{\setlength{\rightskip}{0pt plus 5cm}int prepare\+\_\+for\+\_\+next\+\_\+segment (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a06a0ab6814205bd151e773cf2aa5480c}
+
+
+Tells the drive that the client is done transmitting the current segment, and should prepare for the next segment from the client. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a8ab732a84f8df111f452f53cf876d5bc}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!program\+\_\+block\+\_\+first\+\_\+block@{program\+\_\+block\+\_\+first\+\_\+block}}
+\index{program\+\_\+block\+\_\+first\+\_\+block@{program\+\_\+block\+\_\+first\+\_\+block}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{program\+\_\+block\+\_\+first\+\_\+block}]{\setlength{\rightskip}{0pt plus 5cm}int program\+\_\+block\+\_\+first\+\_\+block (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a8ab732a84f8df111f452f53cf876d5bc}
+
+
+Tells the drive that it should be expecting assembled move segments as the next commands. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a4399d0948f61f92b03abaced0d6e58c4}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!program\+\_\+move\+\_\+segment@{program\+\_\+move\+\_\+segment}}
+\index{program\+\_\+move\+\_\+segment@{program\+\_\+move\+\_\+segment}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{program\+\_\+move\+\_\+segment}]{\setlength{\rightskip}{0pt plus 5cm}int program\+\_\+move\+\_\+segment (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{target\+\_\+pos, }
+\item[{int32\+\_\+t}]{speed, }
+\item[{int16\+\_\+t}]{accel, }
+\item[{int16\+\_\+t}]{decel, }
+\item[{int16\+\_\+t}]{jerk}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a4399d0948f61f92b03abaced0d6e58c4}
+
+
+Programs the drive with the specified segment. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em target\+\_\+pos} & In motor counts, -\/8,388,607 to 8,388,607 \\
+\hline
+{\em speed} & Motor Starting Speed-\/2,999,999 \\
+\hline
+{\em accel} & Acceleration, 1-\/5000 \\
+\hline
+{\em decel} & Deceleration, 1-\/5000 \\
+\hline
+{\em jerk} & Jerk, 1-\/5000 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a93eefe9e5035de329fd1af501ac0f373}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!run\+\_\+assembled\+\_\+move@{run\+\_\+assembled\+\_\+move}}
+\index{run\+\_\+assembled\+\_\+move@{run\+\_\+assembled\+\_\+move}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{run\+\_\+assembled\+\_\+move}]{\setlength{\rightskip}{0pt plus 5cm}run\+\_\+assembled\+\_\+move (
+\begin{DoxyParamCaption}
+\item[{int16\+\_\+t}]{blend\+\_\+move\+\_\+direction, }
+\item[{int32\+\_\+t}]{dwell\+\_\+time}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a93eefe9e5035de329fd1af501ac0f373}
+
+
+Runs the current assembled move that is in memory. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em blend\+\_\+move\+\_\+direction} & 0 is C\+W, 1 is C\+C\+W \\
+\hline
+{\em dwell\+\_\+time} & Specified dwell time between segments, in milliseconds \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_abe8692cec28fb4b20f946c37e2b31fcf}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+drive\+\_\+disable@{S\+M\+D\+\_\+drive\+\_\+disable}}
+\index{S\+M\+D\+\_\+drive\+\_\+disable@{S\+M\+D\+\_\+drive\+\_\+disable}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+drive\+\_\+disable}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+drive\+\_\+disable (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_abe8692cec28fb4b20f946c37e2b31fcf}
+
+
+Disables the drive circuitry, removing current from the motor. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a1f74c2fa06627d4d0748413acb18cbfb}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+drive\+\_\+enable@{S\+M\+D\+\_\+drive\+\_\+enable}}
+\index{S\+M\+D\+\_\+drive\+\_\+enable@{S\+M\+D\+\_\+drive\+\_\+enable}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+drive\+\_\+enable}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+drive\+\_\+enable (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a1f74c2fa06627d4d0748413acb18cbfb}
+
+
+Enables the drive circuitry, applying current to the motor. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a4cc87973bce39dcf87c4aecaea1dafed}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+find\+\_\+home@{S\+M\+D\+\_\+find\+\_\+home}}
+\index{S\+M\+D\+\_\+find\+\_\+home@{S\+M\+D\+\_\+find\+\_\+home}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+find\+\_\+home}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+find\+\_\+home (
+\begin{DoxyParamCaption}
+\item[{int}]{direction, }
+\item[{int32\+\_\+t}]{speed, }
+\item[{int16\+\_\+t}]{accel, }
+\item[{int16\+\_\+t}]{decel, }
+\item[{int16\+\_\+t}]{jerk}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a4cc87973bce39dcf87c4aecaea1dafed}
+
+
+Tells the drive to perform the built-\/in homing function. This function is outlined in the motor user manual. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em direction} & 0 for C\+W, 1 for C\+C\+W \\
+\hline
+{\em accel} & Acceleration, 1-\/5000 \\
+\hline
+{\em decel} & Deceleration, 1-\/5000 \\
+\hline
+{\em jerk} & Acceleration jerk, 1-\/5000 \\
+\hline
+{\em speed} & Speed Motor Starting Speed-\/2,999,999 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+hold\+\_\+move@{S\+M\+D\+\_\+hold\+\_\+move}}
+\index{S\+M\+D\+\_\+hold\+\_\+move@{S\+M\+D\+\_\+hold\+\_\+move}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+hold\+\_\+move}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+hold\+\_\+move (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}
+
+
+Stops movement with a controlled deceleration. No error state is set. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+immed\+\_\+stop@{S\+M\+D\+\_\+immed\+\_\+stop}}
+\index{S\+M\+D\+\_\+immed\+\_\+stop@{S\+M\+D\+\_\+immed\+\_\+stop}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+immed\+\_\+stop}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+immed\+\_\+stop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}
+
+
+Immediately stops movement, with no deceleration. This W\+I\+L\+L set an error state in the drive, and the motor will need to be re-\/homed. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a37d9188e51fb12a0c1ea3c96b344680e}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+jog@{S\+M\+D\+\_\+jog}}
+\index{S\+M\+D\+\_\+jog@{S\+M\+D\+\_\+jog}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+jog}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+jog (
+\begin{DoxyParamCaption}
+\item[{int}]{direction, }
+\item[{int16\+\_\+t}]{accel, }
+\item[{int16\+\_\+t}]{decel, }
+\item[{int16\+\_\+t}]{jerk, }
+\item[{int32\+\_\+t}]{speed}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a37d9188e51fb12a0c1ea3c96b344680e}
+
+
+Tells the motor to jog. Stop the motor using either \hyperlink{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}{S\+M\+D\+\_\+immed\+\_\+stop()} or \hyperlink{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}{S\+M\+D\+\_\+hold\+\_\+move()} 
+
+
+\begin{DoxyParams}{Parameters}
+{\em direction} & 0 for C\+W, 1 for C\+C\+W \\
+\hline
+{\em accel} & Acceleration, 1-\/5000 \\
+\hline
+{\em decel} & Deceleration, 1-\/5000 \\
+\hline
+{\em jerk} & Acceleration jerk, 1-\/5000 \\
+\hline
+{\em speed} & Motor Starting Speed-\/2,999,999 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_ae7bcee012af784903fc9d53b9b689396}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration@{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration}}
+\index{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration@{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration (
+\begin{DoxyParamCaption}
+\item[{int}]{cl}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_ae7bcee012af784903fc9d53b9b689396}
+
+
+Called prior to calling \hyperlink{_s_m_d___motor___commands_8h_a139d3981c9ab0ef415c1a59b3825d53b}{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration(int cl)}. Tells the drive to read the current configuration and place it into the input registers. This will return R\+E\+A\+D\+Y\+\_\+\+T\+O\+\_\+\+R\+E\+A\+D\+\_\+\+C\+O\+N\+F\+I\+G to the client, which S\+H\+O\+U\+L\+D then read the input registers once to get the configuration. This is a bit of a testy function, and care should be taken to make sure that multiple operations are not being written to the drive at the time of issuing this command. This command W\+I\+L\+L stop motion and disable the drive. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cl} & The client to write the message to (a socket identifer) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+Call before calling \hyperlink{_s_m_d___motor___commands_8h_a139d3981c9ab0ef415c1a59b3825d53b}{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration(int cl)} 
+\end{DoxyNote}
+\hypertarget{_s_m_d___motor___commands_8h_a34a52447f96850923649fa2a92adf9c7}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position@{S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position}}
+\index{S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position@{S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+preset\+\_\+encoder\+\_\+position (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{pos}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a34a52447f96850923649fa2a92adf9c7}
+
+
+Presets the encoder to the value specified in pos. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & Position, in counts. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_ae0ea877b4e6fc3b0632c8ba845f6b187}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position@{S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position}}
+\index{S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position@{S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position}]{\setlength{\rightskip}{0pt plus 5cm}int int S\+M\+D\+\_\+preset\+\_\+motor\+\_\+position (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{pos}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_ae0ea877b4e6fc3b0632c8ba845f6b187}
+
+
+Presets the motor to the value specified in pos. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & Position, in counts. -\/8,388,607 to 8,388,607 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a139d3981c9ab0ef415c1a59b3825d53b}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration@{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration}}
+\index{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration@{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration}]{\setlength{\rightskip}{0pt plus 5cm}S\+M\+D\+\_\+read\+\_\+current\+\_\+configuration (
+\begin{DoxyParamCaption}
+\item[{int}]{cl}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a139d3981c9ab0ef415c1a59b3825d53b}
+
+
+Called after \hyperlink{_s_m_d___motor___commands_8h_ae7bcee012af784903fc9d53b9b689396}{S\+M\+D\+\_\+load\+\_\+current\+\_\+configuration(int cl)} Reads the input registers, and outputs them in the format \char`\"{}\#\#\#0x0,0x0,0,0,0,0,0,0,0,0\char`\"{}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cl} & The client to write the message to (a socket identifer) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\begin{DoxyWarning}{Warning}
+Must call \hyperlink{_s_m_d___motor___commands_8h_a92657c358dcefcf62050656d01b7df02}{S\+M\+D\+\_\+read\+\_\+input\+\_\+registers(int cl)} before calling this function. 
+\end{DoxyWarning}
+\hypertarget{_s_m_d___motor___commands_8h_a92657c358dcefcf62050656d01b7df02}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+read\+\_\+input\+\_\+registers@{S\+M\+D\+\_\+read\+\_\+input\+\_\+registers}}
+\index{S\+M\+D\+\_\+read\+\_\+input\+\_\+registers@{S\+M\+D\+\_\+read\+\_\+input\+\_\+registers}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+read\+\_\+input\+\_\+registers}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+read\+\_\+input\+\_\+registers (
+\begin{DoxyParamCaption}
+\item[{int}]{cl}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a92657c358dcefcf62050656d01b7df02}
+
+
+Reads the input registers, and outputs them in the format \char`\"{},,0x0,0x0,0,0,0,0,0,0,0,0\char`\"{}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cl} & The client to write the message to (a socket identifer) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_ad1d6841b70ddef16c077213f317682d9}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+relative\+\_\+move@{S\+M\+D\+\_\+relative\+\_\+move}}
+\index{S\+M\+D\+\_\+relative\+\_\+move@{S\+M\+D\+\_\+relative\+\_\+move}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+relative\+\_\+move}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+relative\+\_\+move (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{rel\+\_\+pos, }
+\item[{int16\+\_\+t}]{accel, }
+\item[{int16\+\_\+t}]{decel, }
+\item[{int16\+\_\+t}]{jerk, }
+\item[{int32\+\_\+t}]{speed}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_ad1d6841b70ddef16c077213f317682d9}
+
+
+Tells the motor to do a relative move. Stop the motor using either \hyperlink{_s_m_d___motor___commands_8h_a7106a0b31660e4e4f853fdd94d37022a}{S\+M\+D\+\_\+immed\+\_\+stop()} or \hyperlink{_s_m_d___motor___commands_8h_a078ca6bb4162f465ccaa0e1ffa0182eb}{S\+M\+D\+\_\+hold\+\_\+move()} 
+
+
+\begin{DoxyParams}{Parameters}
+{\em rel\+\_\+pos} & 0 How many counts to move, relative to the current position (drive does N\+O\+T need to be homed). -\/8,388,607 to 8,388,607 \\
+\hline
+{\em accel} & Acceleration 1-\/5000 \\
+\hline
+{\em decel} & Deceleration 1-\/5000 \\
+\hline
+{\em jerk} & Acceleration jerk 1-\/5000 \\
+\hline
+{\em speed} & Speed Motor Starting Speed-\/2,999,999 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_ae998007dabf0ceb0947621bdbe62e238}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+reset\+\_\+errors@{S\+M\+D\+\_\+reset\+\_\+errors}}
+\index{S\+M\+D\+\_\+reset\+\_\+errors@{S\+M\+D\+\_\+reset\+\_\+errors}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+reset\+\_\+errors}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+reset\+\_\+errors (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_ae998007dabf0ceb0947621bdbe62e238}
+
+
+Resets drive errors. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___motor___commands_8h_a9b9012bc4894621256e6ae61330b7aa6}{}\index{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}!S\+M\+D\+\_\+set\+\_\+configuration@{S\+M\+D\+\_\+set\+\_\+configuration}}
+\index{S\+M\+D\+\_\+set\+\_\+configuration@{S\+M\+D\+\_\+set\+\_\+configuration}!S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h@{S\+M\+D\+\_\+\+Motor\+\_\+\+Commands.\+h}}
+\subsubsection[{S\+M\+D\+\_\+set\+\_\+configuration}]{\setlength{\rightskip}{0pt plus 5cm}int S\+M\+D\+\_\+set\+\_\+configuration (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{control\+\_\+word, }
+\item[{int32\+\_\+t}]{config\+\_\+word, }
+\item[{int32\+\_\+t}]{starting\+\_\+speed, }
+\item[{int16\+\_\+t}]{steps\+\_\+per\+\_\+turn, }
+\item[{int16\+\_\+t}]{enc\+\_\+pulses\+\_\+per\+\_\+turn, }
+\item[{int16\+\_\+t}]{idle\+\_\+current\+\_\+percentage, }
+\item[{int16\+\_\+t}]{motor\+\_\+current}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___motor___commands_8h_a9b9012bc4894621256e6ae61330b7aa6}
+
+
+Loads configuration into drive memory. This does not write the configuration to permanent memory -\/ configuration will need to be reloaded if power is lost. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em control\+\_\+word} & Control word as specified by the A\+M\+C\+I documentation \\
+\hline
+{\em config\+\_\+word} & Config word as specified by the A\+M\+C\+I documentation \\
+\hline
+{\em starting\+\_\+speed} & Value between 1 and 1,999,999 \\
+\hline
+{\em steps\+\_\+per\+\_\+turn} & Value between 200 and 32,767 \\
+\hline
+{\em enc\+\_\+pulses\+\_\+per\+\_\+turn} & Number of encoder pulses per turn \\
+\hline
+{\em idle\+\_\+current\+\_\+percentage} & 0 to 100 \\
+\hline
+{\em motor\+\_\+current} & Value 10-\/34, represents 1.\+0 to 3.\+4 Arms \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if successful 
+\end{DoxyReturn}

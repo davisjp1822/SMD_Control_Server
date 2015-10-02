@@ -13,6 +13,7 @@ int32_t convert_string_to_long_int(char *str) {
 	//convert the token from string to long int
 	char *end;
 	int32_t value = (int32_t)strtol(str, &end, 10);
+	
 	if (end == str || errno == ERANGE) {
 		perror("strtol");
 		return -1;
