@@ -64,7 +64,7 @@ void open_server_socket() {
 	
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(7000);
+	addr.sin_port = htons(SERVER_PORT);
 	
 	int yes = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {

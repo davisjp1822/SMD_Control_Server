@@ -13,6 +13,7 @@
 char DEVICE_IP[32];
 const char VERSION[8] = "2.0";
 modbus_t *smd_command_connection = NULL;
+int16_t SERVER_PORT = 7000;
 
 #ifdef __linux
 	const char SOCKET_PATH[16] = "\0/tmp/smd.socket";
