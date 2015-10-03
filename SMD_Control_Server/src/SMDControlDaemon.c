@@ -117,7 +117,7 @@ void open_server_socket() {
 
 int parse_socket_input(char *input, int cl) {
 	
-	if(strncmp(input, CONNECT, strlen(CONNECT)-1) == 0) {
+	if(strncmp(input, CONNECT, strlen(CONNECT)) == 0) {
 		
 		//we should only have one argument - an IP of the SMD itself
 		char *token, *string, *tofree;
@@ -197,125 +197,9 @@ int parse_socket_input(char *input, int cl) {
 			}
 		}
 	}
-	
-	else if(strncmp(input, DISCONNECT, strlen(DISCONNECT)-1) == 0) {
-		
-		SMD_close_command_connection();
-		return SMD_RETURN_DISCONNECT_SUCCESS;
-	}
-	
-	else if(strncmp(input, SAVE_CONFIG_TO_DRIVE, strlen(SAVE_CONFIG_TO_DRIVE)-1) == 0) {
-		
-		char *token, *string, *tofree;
-		char *array_of_commands[8];
-		
-		int num_tokens = 0;
-		int32_t control_word = 0;
-		int32_t config_word = 0;
-		int32_t starting_speed = 0;
-		int16_t steps_per_turn = 0;
-		int16_t enc_pulses_per_turn = 0;
-		int16_t idle_current_percentage = 0;
-		int16_t motor_current = 0;
-		tofree = string = strdup(input);
-		
-		//re-tokenize the input
-		while ((token = strsep(&string, ",")) != NULL) {
-			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-			strcpy(array_of_commands[num_tokens], token);
-			num_tokens++;
-		}
-		
-		free(tofree);
-		
-		if(num_tokens == 8) {
-			
-			int i;
-			
-			for(i=0; i<num_tokens; i++) {
-				
-				//control word
-				if(i == 1) {
-					control_word = convert_string_to_long_int(array_of_commands[i]);
-				}
-				
-				//config word
-				if(i == 2) {
-					config_word = convert_string_to_long_int(array_of_commands[i]);
-				}
-				
-				//starting speed
-				if(i == 3) {
-					
-					starting_speed = convert_string_to_long_int(array_of_commands[i]);
-					
-					if(starting_speed < 1 || starting_speed > 1999999)
-						return SMD_RETURN_SAVE_CONFIG_FAIL;
-				}
-				
-				//motor steps/turn
-				if(i == 4) {
-					
-					steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
-					
-					if(steps_per_turn < 200 || steps_per_turn > 32767)
-						return SMD_RETURN_SAVE_CONFIG_FAIL;
-				}
-				
-				//encoder pulses/turn
-				if(i == 5) {
-					
-					enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
-					
-					if(enc_pulses_per_turn != 1024)
-						return SMD_RETURN_SAVE_CONFIG_FAIL;
-				}
-				
-				//idle current percentage
-				if(i == 6) {
-					
-					idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
-					
-					if(idle_current_percentage < 0 || idle_current_percentage > 100)
-						return SMD_RETURN_SAVE_CONFIG_FAIL;
-				}
-				
-				//motor current
-				if(i == 7) {
-					
-					motor_current = convert_string_to_long_int(array_of_commands[i]);
-					
-					if(motor_current < 10 || motor_current > 34)
-						return SMD_RETURN_SAVE_CONFIG_FAIL;
-				}
-			}
-			
-			//clean-up
-			int j;
-			
-			for(j=0; j<num_tokens; j++) {
-				free(array_of_commands[j]);
-			}
-			
-			if(SMD_set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
-				return SMD_RETURN_SAVE_CONFIG_FAIL;
-			else
-				return SMD_RETURN_SAVE_CONFIG_SUCCESS;
-		}
-		
-		else {
-			
-			//clean-up
-			int j;
-			
-			for(j=0; j<num_tokens; j++) {
-				free(array_of_commands[j]);
-			}
-			
-			return SMD_RETURN_SAVE_CONFIG_FAIL;
-		}
-	}
-	
+	/*
+		JOG_CW, JOG_CCW, FIND_HOME_CW and FIND_HOME_CCW all use strstr() because of string similarity when doing the comparison
+	 */
 	else if(strstr(input, JOG_CW) !=NULL || strstr(input, JOG_CCW) !=NULL) {
 		
 		//search for the jog substring - if it is found, then parse out:
@@ -512,7 +396,125 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_INVALID_PARAMETER;
 	}
 	
-	else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)-1) == 0) {
+	else if(strncmp(input, DISCONNECT, strlen(DISCONNECT)) == 0) {
+		
+		SMD_close_command_connection();
+		return SMD_RETURN_DISCONNECT_SUCCESS;
+	}
+	
+	else if(strncmp(input, SAVE_CONFIG_TO_DRIVE, strlen(SAVE_CONFIG_TO_DRIVE)) == 0) {
+		
+		char *token, *string, *tofree;
+		char *array_of_commands[8];
+		
+		int num_tokens = 0;
+		int32_t control_word = 0;
+		int32_t config_word = 0;
+		int32_t starting_speed = 0;
+		int16_t steps_per_turn = 0;
+		int16_t enc_pulses_per_turn = 0;
+		int16_t idle_current_percentage = 0;
+		int16_t motor_current = 0;
+		tofree = string = strdup(input);
+		
+		//re-tokenize the input
+		while ((token = strsep(&string, ",")) != NULL) {
+			array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+			strcpy(array_of_commands[num_tokens], token);
+			num_tokens++;
+		}
+		
+		free(tofree);
+		
+		if(num_tokens == 8) {
+			
+			int i;
+			
+			for(i=0; i<num_tokens; i++) {
+				
+				//control word
+				if(i == 1) {
+					control_word = convert_string_to_long_int(array_of_commands[i]);
+				}
+				
+				//config word
+				if(i == 2) {
+					config_word = convert_string_to_long_int(array_of_commands[i]);
+				}
+				
+				//starting speed
+				if(i == 3) {
+					
+					starting_speed = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(starting_speed < 1 || starting_speed > 1999999)
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
+				}
+				
+				//motor steps/turn
+				if(i == 4) {
+					
+					steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(steps_per_turn < 200 || steps_per_turn > 32767)
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
+				}
+				
+				//encoder pulses/turn
+				if(i == 5) {
+					
+					enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(enc_pulses_per_turn != 1024)
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
+				}
+				
+				//idle current percentage
+				if(i == 6) {
+					
+					idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(idle_current_percentage < 0 || idle_current_percentage > 100)
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
+				}
+				
+				//motor current
+				if(i == 7) {
+					
+					motor_current = convert_string_to_long_int(array_of_commands[i]);
+					
+					if(motor_current < 10 || motor_current > 34)
+						return SMD_RETURN_SAVE_CONFIG_FAIL;
+				}
+			}
+			
+			//clean-up
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
+			if(SMD_set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
+				return SMD_RETURN_SAVE_CONFIG_FAIL;
+			else
+				return SMD_RETURN_SAVE_CONFIG_SUCCESS;
+		}
+		
+		else {
+			
+			//clean-up
+			int j;
+			
+			for(j=0; j<num_tokens; j++) {
+				free(array_of_commands[j]);
+			}
+			
+			return SMD_RETURN_SAVE_CONFIG_FAIL;
+		}
+	}
+	
+	else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)) == 0) {
 		
 		char *token, *string, *tofree;
 		char *array_of_commands[6];
@@ -609,7 +611,7 @@ int parse_socket_input(char *input, int cl) {
 		
 	}
 	
-	else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)-1) == 0) {
+	else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)) == 0) {
 		
 		if(SMD_drive_enable() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -617,7 +619,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_ENABLE_SUCCESS;
 	}
 	
-	else if(strncmp(input, DRIVE_DISABLE, strlen(DRIVE_DISABLE)-1) == 0) {
+	else if(strncmp(input, DRIVE_DISABLE, strlen(DRIVE_DISABLE)) == 0) {
 		
 		if(SMD_drive_disable() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -625,7 +627,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_DISABLE_SUCCESS;
 	}
 	
-	else if(strncmp(input, HOLD_MOVE, strlen(HOLD_MOVE)-1) == 0) {
+	else if(strncmp(input, HOLD_MOVE, strlen(HOLD_MOVE)) == 0) {
 		
 		if(SMD_hold_move() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -633,7 +635,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_COMMAND_SUCCESS;
 	}
 	
-	else if(strncmp(input, IMMED_STOP, strlen(IMMED_STOP)-1) == 0) {
+	else if(strncmp(input, IMMED_STOP, strlen(IMMED_STOP)) == 0) {
 		
 		if(SMD_immed_stop() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -641,7 +643,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_COMMAND_SUCCESS;
 	}
 	
-	else if(strncmp(input, RESET_ERRORS, strlen(RESET_ERRORS)-1) == 0) {
+	else if(strncmp(input, RESET_ERRORS, strlen(RESET_ERRORS)) == 0) {
 		
 		if(SMD_reset_errors() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -649,7 +651,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_RESET_ERRORS_SUCCESS;
 	}
 
-	else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)-1) == 0) {
+	else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)) == 0) {
 		
 		if(SMD_read_input_registers(cl) < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -657,7 +659,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
 	
-	else if(strncmp(input, LOAD_CURRENT_CONFIGURATION, strlen(LOAD_CURRENT_CONFIGURATION)-1) == 0) {
+	else if(strncmp(input, LOAD_CURRENT_CONFIGURATION, strlen(LOAD_CURRENT_CONFIGURATION)) == 0) {
 		
 		if(SMD_load_current_configuration(cl) < 0)
 			return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
@@ -665,7 +667,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_READY_TO_READ_CONFIG;
 	}
 	
-	else if(strncmp(input, READ_CURRENT_CONFIGURATION, strlen(READ_CURRENT_CONFIGURATION)-1) == 0) {
+	else if(strncmp(input, READ_CURRENT_CONFIGURATION, strlen(READ_CURRENT_CONFIGURATION)) == 0) {
 		
 		if(SMD_read_current_configuration(cl) < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -673,7 +675,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
 	
-	else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)-1) == 0) {
+	else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)) == 0) {
 		
 		char *token, *string, *tofree;
 		char *array_of_commands[2];
@@ -727,7 +729,7 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
-	else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)-1) == 0) {
+	else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)) == 0) {
 		
 		char *token, *string, *tofree;
 		char *array_of_commands[2];
@@ -781,7 +783,7 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
-	else if(strncmp(input, PROGRAM_FIRST_BLOCK, strlen(PROGRAM_FIRST_BLOCK)-1) == 0) {
+	else if(strncmp(input, PROGRAM_FIRST_BLOCK, strlen(PROGRAM_FIRST_BLOCK)) == 0) {
 		
 		if(program_block_first_block() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -790,7 +792,7 @@ int parse_socket_input(char *input, int cl) {
 		}
 	}
 	
-	else if(strncmp(input, PREPARE_FOR_NEXT_SEGMENT, strlen(PREPARE_FOR_NEXT_SEGMENT)-1) == 0) {
+	else if(strncmp(input, PREPARE_FOR_NEXT_SEGMENT, strlen(PREPARE_FOR_NEXT_SEGMENT)) == 0) {
 		
 		if(prepare_for_next_segment() < 0)
 			return SMD_RETURN_COMMAND_FAILED;
@@ -798,7 +800,7 @@ int parse_socket_input(char *input, int cl) {
 			return SMD_RETURN_SEND_NEXT_SEGMENT;
 	}
 	
-	else if(strncmp(input, PROGRAM_MOVE_SEGMENT, strlen(PROGRAM_MOVE_SEGMENT)-1) == 0) {
+	else if(strncmp(input, PROGRAM_MOVE_SEGMENT, strlen(PROGRAM_MOVE_SEGMENT)) == 0) {
 		
 		char *token, *string, *tofree;
 		char *array_of_commands[6];
@@ -884,7 +886,7 @@ int parse_socket_input(char *input, int cl) {
 
 	}
 	
-	else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)-1) == 0) {
+	else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)) == 0) {
 		
 		char *token, *string, *tofree;
 		char *array_of_commands[2];
@@ -945,23 +947,16 @@ int parse_socket_input(char *input, int cl) {
 	}
 }
 
-void parse_smd_response(int smd_response, char *input, int fd, int cl) {
+void parse_smd_response_to_client_input(int smd_response, char *input, int fd, int cl) {
 	
 	//successful run - tell the client
 	if((smd_response=parse_socket_input(input,cl)) == SMD_RETURN_COMMAND_SUCCESS ) {
-		
-		//Send the message back to client
-		if(write(cl, COMMAND_SUCCESS , sizeof(COMMAND_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, COMMAND_SUCCESS);
 	}
 	
 	//succesful connect to SMD
 	if(smd_response == SMD_RETURN_CONNECT_SUCCESS) {
-		//Send the message back to client
-		if(write(cl, SMD_CONNECT_SUCCESS , sizeof(SMD_CONNECT_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, SMD_CONNECT_SUCCESS);
 	}
 	
 	//outputting string for parsing by client - don't do anything - the helper function handles the client write
@@ -971,151 +966,95 @@ void parse_smd_response(int smd_response, char *input, int fd, int cl) {
 	
 	//successful SMD enable
 	if(smd_response == SMD_RETURN_ENABLE_SUCCESS) {
-		if(write(cl, ENABLE_SUCCESS, sizeof(ENABLE_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, ENABLE_SUCCESS);
 	}
 	
 	//successful SMD disable
 	if(smd_response == SMD_RETURN_DISABLE_SUCCESS) {
-		if(write(cl, DISABLE_SUCCESS, sizeof(DISABLE_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, DISABLE_SUCCESS);
 	}
 	
 	//command borked
 	if(smd_response == SMD_RETURN_COMMAND_FAILED){
-		if(write(cl, COMMAND_ERROR , sizeof(COMMAND_ERROR)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, COMMAND_ERROR);
 	}
 	
 	//invalid input
 	if(smd_response == SMD_RETURN_INVALID_INPUT) {
-		if(write(cl, INVALID_INPUT , sizeof(INVALID_INPUT)) == -1) {
-			perror("Error writing to client");
-		}
 		
-		close(cl);
-		
-		//start a new socket connection accept
-		if ( (cl = accept(fd, NULL, NULL)) == -1) {
-			perror("Socket Accept Error");
+		if(write_to_client(cl, INVALID_INPUT) == 0) {
+			close(cl);
 		}
 	}
 	
 	//no route to SMD - can't connect
 	if(smd_response == SMD_RETURN_NO_ROUTE_TO_HOST){
-		if(write(cl, NO_ROUTE_TO_SMD , sizeof(NO_ROUTE_TO_SMD)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, NO_ROUTE_TO_SMD);
 	}
 	
 	//invalid parameter, such as in a jog function
 	if(smd_response == SMD_RETURN_INVALID_PARAMETER){
-		if(write(cl, INVALID_PARAMETER , sizeof(INVALID_PARAMETER)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, INVALID_PARAMETER);
 	}
 	
 	//preset encoder success
 	if(smd_response == SMD_RETURN_PRESET_ENC_SUCCESS) {
-		if(write(cl, PRESET_ENCODER_SUCCESS , sizeof(PRESET_ENCODER_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, PRESET_ENCODER_SUCCESS);
 	}
 	
 	//preset encoder fail
 	if(smd_response == SMD_RETURN_PRESET_ENC_FAIL) {
-		if(write(cl, PRESET_ENCODER_FAIL , sizeof(PRESET_ENCODER_FAIL)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, PRESET_ENCODER_FAIL);
 	}
 	
 	//preset motor success
 	if(smd_response == SMD_RETURN_PRESET_POS_SUCCESS) {
-		if(write(cl, PRESET_POSITION_SUCCESS , sizeof(PRESET_POSITION_SUCCESS)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, PRESET_POSITION_SUCCESS);
 	}
 	
 	//preset motor fail
 	if(smd_response == SMD_RETURN_PRESET_POS_FAIL) {
-		if(write(cl, PRESET_POSITION_FAIL , sizeof(PRESET_POSITION_FAIL)) == -1) {
-			perror("Error writing to client");
-		}
+		write_to_client(cl, PRESET_POSITION_FAIL);
 	}
 	
 	//save config to drive success
 	if(smd_response == SMD_RETURN_SAVE_CONFIG_SUCCESS) {
-		
-		if(write(cl, CONFIG_SAVE_SUCCESS, sizeof(CONFIG_SAVE_SUCCESS)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, CONFIG_SAVE_SUCCESS);
 	}
 	
 	//save config to drive fail
 	if(smd_response == SMD_RETURN_SAVE_CONFIG_FAIL) {
-		
-		if(write(cl, CONFIG_SAVE_FAIL, sizeof(CONFIG_SAVE_FAIL)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, CONFIG_SAVE_FAIL);
 	}
 	
 	//tell the client that we are ready to read the config from the input registers
 	if(smd_response == SMD_RETURN_READY_TO_READ_CONFIG) {
-		
-		if(write(cl, READY_TO_READ_CONFIG, sizeof(READY_TO_READ_CONFIG)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, READY_TO_READ_CONFIG);
 	}
 	
 	//read current config fail
 	if(smd_response == SMD_RETURN_READ_CURRENT_CONFIG_FAIL) {
-		
-		if(write(cl, GET_CURRENT_CONFIG_FAIL, sizeof(GET_CURRENT_CONFIG_FAIL)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, GET_CURRENT_CONFIG_FAIL);
 	}
 	
 	//reset errors success
 	if(smd_response == SMD_RETURN_RESET_ERRORS_SUCCESS) {
-		
-		if(write(cl, RESET_ERRORS_SUCCESS, sizeof(RESET_ERRORS_SUCCESS)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, RESET_ERRORS_SUCCESS);
 	}
 	
 	//entered assembled move mode successfully - ready for programmed segments
 	if(smd_response == SMD_RETURN_READY_FOR_SEGMENTS) {
-		
-		if(write(cl, READY_FOR_SEGMENTS, sizeof(READY_FOR_SEGMENTS)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, READY_FOR_SEGMENTS);
 	}
 	
 	//tell the client to send the next segment
 	if(smd_response == SMD_RETURN_SEND_NEXT_SEGMENT) {
-		
-		if(write(cl, SEND_NEXT_SEGMENT, sizeof(SEND_NEXT_SEGMENT)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, SEND_NEXT_SEGMENT);
 	}
 	
 	//segment programming successful
 	if(smd_response == SMD_RETURN_SEGMENT_ACCEPTED) {
-		
-		if(write(cl, SEGMENT_ACCEPTED, sizeof(SEGMENT_ACCEPTED)) == -1) {
-			fprintf(stderr, "wrote to client");
-			perror("Error writing to client");
-		}
+		write_to_client(cl, SEGMENT_ACCEPTED);
 	}
 }
 
