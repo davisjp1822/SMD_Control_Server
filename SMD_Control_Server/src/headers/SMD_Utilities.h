@@ -43,6 +43,17 @@ struct Words convert_int_to_words(int32_t number);
 	@param str string to convert into 32 bit integer
 	@return int32_t
  */
-int32_t convert_string_to_long_int(char *str);
+int32_t convert_string_to_long_int(const char *str);
+
+/**
+	@fn int write_to_client(int cl)
+	@brief Writes a message back to the client
+	@param cl Integer specifying a valid socket handle
+	@param message Message to send to client
+	@return int 0 if successful
+ */
+int write_to_client(int cl, const char *message);
+
+int number_of_tokens();
 
 #endif /* SMD_UTILITIES_H */

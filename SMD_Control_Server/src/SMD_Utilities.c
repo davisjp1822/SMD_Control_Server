@@ -6,9 +6,12 @@
 //  Copyright (c) 2015 3ML LLC. All rights reserved.
 //
 
+#include <unistd.h>
+
+#include "SMD_Constants.h"
 #include "SMD_Utilities.h"
 
-int32_t convert_string_to_long_int(char *str) {
+int32_t convert_string_to_long_int(const char *str) {
 	
 	//convert the token from string to long int
 	char *end;
@@ -48,4 +51,16 @@ struct Words convert_int_to_words(int32_t number) {
 	//fprintf(stderr, "uw: %d\nlw: %d\n", pos_UW, pos_LW);
 	struct Words returnWord = {pos_LW, pos_UW};
 	return returnWord;
+}
+
+int write_to_client(int cl, const char *message) {
+	
+	//Send the message back to client
+	if(write(cl, message , strlen(message)) == -1) {
+		perror("Error writing to client");
+		return -1;
+	}
+	else {
+		return 0;
+	}
 }
