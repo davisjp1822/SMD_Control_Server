@@ -24,9 +24,12 @@ int SMD_open_command_connection() {
 	//try and connect to see what happens
 	if(strlen(DEVICE_IP) == 0 || modbus_connect(smd_command_connection) == -1) {
 		modbus_free(smd_command_connection);
+		SMD_CONNECTED = 0;
 		return -1;
 	}
+	//connect successful - set SMD_CONNECTED
 	else {
+		SMD_CONNECTED = 1;
 		return 0;
 	}
 	
@@ -35,7 +38,7 @@ int SMD_open_command_connection() {
 
 void SMD_close_command_connection() {
 	
-	if( smd_command_connection != NULL) {
+	if( smd_command_connection != NULL && SMD_CONNECTED == 1) {
 		modbus_close(smd_command_connection);
 		modbus_free(smd_command_connection);
 		smd_command_connection = NULL;

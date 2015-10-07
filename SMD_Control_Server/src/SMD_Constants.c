@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 char DEVICE_IP[32];
+int16_t SMD_CONNECTED = 0;
 const char VERSION[8] = "2.0";
 modbus_t *smd_command_connection = NULL;
 int16_t SERVER_PORT = 7000;
