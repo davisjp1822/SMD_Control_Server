@@ -11,6 +11,7 @@
 		A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */; };
 		A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */; };
 		A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */; };
+		A3EDEFA71BBFFD70003DB4FE /* SMD_SocketOps.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +35,8 @@
 		A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Motor_Commands.c; sourceTree = "<group>"; };
 		A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
 		A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMDControlDaemon.c; sourceTree = "<group>"; };
+		A3EDEFA51BBFFD3B003DB4FE /* SMD_SocketOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_SocketOps.h; sourceTree = "<group>"; };
+		A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMD_SocketOps.c; sourceTree = "<group>"; };
 		A3F49FEF1AEF9CD400164B05 /* SMD_Control_Server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SMD_Control_Server; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -53,6 +56,7 @@
 			children = (
 				A3EDEF961BBEFA8D003DB4FE /* headers */,
 				A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */,
+				A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */,
 				A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */,
 				A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */,
 				A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */,
@@ -66,6 +70,7 @@
 				A3EDEF971BBEFA8D003DB4FE /* SMD_Constants.h */,
 				A3EDEF981BBEFA8D003DB4FE /* SMD_Motor_Commands.h */,
 				A3EDEF991BBEFA8D003DB4FE /* SMD_Utilities.h */,
+				A3EDEFA51BBFFD3B003DB4FE /* SMD_SocketOps.h */,
 			);
 			path = headers;
 			sourceTree = "<group>";
@@ -151,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */,
+				A3EDEFA71BBFFD70003DB4FE /* SMD_SocketOps.c in Sources */,
 				A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */,
 				A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */,
 				A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */,
