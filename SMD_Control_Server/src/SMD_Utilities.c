@@ -64,3 +64,38 @@ int write_to_client(int cl, const char *message) {
 		return 0;
 	}
 }
+
+int number_of_tokens(const char *command_string) {
+	
+	int num_tokens = 0;
+	char *token, *string, *tofree;
+	tofree = string = strdup(command_string);
+	
+	//check to see if there are spaces - abort if yes
+	if(strchr(command_string, ' ') != NULL) {
+		free(tofree);
+		return -1;
+	}
+	
+	while ((token = strsep(&string, ",")) != NULL) {
+		num_tokens++;
+	}
+	
+	free(tofree);
+	return num_tokens;
+}
+
+void tokenize_client_input(char *array_of_commands, const char *input, int num_tokens) {
+
+	char *token, *string, *tofree;
+	tofree = string = strdup(input);
+	num_tokens = 0;
+	
+	while ((token = strsep(&string, ",")) != NULL) {
+		array_of_commands[num_tokens] = (char)malloc(sizeof(char) * (strlen(token) + 1 ) );
+		strcpy(&array_of_commands[num_tokens], token);
+		num_tokens++;
+	}
+	
+	free(tofree);
+}

@@ -54,6 +54,22 @@ int32_t convert_string_to_long_int(const char *str);
  */
 int write_to_client(int cl, const char *message);
 
-int number_of_tokens();
+
+/**
+	@fn int number_of_tokens(const char *command_string)
+	@brief Counts the number of parameters (separate from the command itself) sent from the client to the server
+	@param command_string Raw command string sent from client
+	@return int Number of tokens
+ */
+int number_of_tokens(const char *command_string);
+
+/**
+	@fn void tokenize_client_input(char *array_of_commands, const char *input)
+	@brief Tokenizes the client input (separated by ,)
+	@param array_of_commands destination array for tokens
+	@param input Input string from the client
+	@param num_tokens Number of tokens in array_of_commands
+ */
+void tokenize_client_input(char *array_of_commands, const char *input, int num_tokens);
 
 #endif /* SMD_UTILITIES_H */
