@@ -87,89 +87,68 @@ void open_server_socket() {
 
 int parse_socket_input(char *input, int cl) {
 	
-	int no_route = 0;
-	
-	if(strncmp(input, CONNECT, strlen(CONNECT)) == 0) {
+	if(SMD_CONNECTED == 0) {
 		
-		//we should only have one argument - an IP of the SMD itself
-		char *token, *string, *tofree;
-		char *array_of_commands[2];
-		
-		int num_tokens = 0;			//how many tokens do we have?
-		char *smd_ip = NULL;
-		
-		//reset our values
-		tofree = string = strdup(input);
-		
-		//check bounds first - we should only have 5 tokens
-		while ((token = strsep(&string, ",")) != NULL) {
-			num_tokens++;
-		}
-		
-		free(tofree);
-		
-		//should have 2 commands only (connect and device ip)
-		if(num_tokens != 2) {
-			return SMD_RETURN_INVALID_PARAMETER;
-		}
-		
-		//now that we are sure that we have an ip, parse it out
-		else {
+		if(strncmp(input, CONNECT, strlen(CONNECT)) == 0) {
 			
-			int i;
-			num_tokens = 0;
-			tofree = string = strdup(input);
+			char array_of_commands[2] = {0};
+			int num_tokens = 0;
+			char *smd_ip = NULL;
 			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
+			//should have 2 commands only (connect and device ip)
+			if((num_tokens = number_of_tokens(input)) != 2) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			//loop through the input and convert to int
-			for(i=0; i<2; i++) {
+			//now that we are sure that we have an ip, parse it out
+			else {
 				
-				//skip the actual command, "connect"
-				//just get the ip address
-				if(i == 1) {
-					smd_ip = malloc(sizeof(char) * (strlen(array_of_commands[i]))+1);
+				int i = 0;
+				tokenize_client_input(array_of_commands, input, num_tokens);
+				
+				//loop through the input and convert to int
+				for(i=0; i<num_tokens; i++) {
 					
-					if(smd_ip)
-						strncpy(smd_ip, array_of_commands[i], strlen(array_of_commands[i]));
+					//skip the actual command, "connect"
+					//just get the ip address
+					if(i == 1) {
+						smd_ip = malloc(sizeof(char) * (strlen(&array_of_commands[i]))+1);
+						
+						if(smd_ip) {
+							strncpy(smd_ip, &array_of_commands[i], strlen(&array_of_commands[i]));
+						}
+					}
 				}
-			}
-			
-			for(i=0; i<num_tokens; i++) {
-				free(array_of_commands[i]);
-			}
-			
-			//now try and connect
-			if(smd_ip) {
 				
-				strncpy(DEVICE_IP, smd_ip, strlen(smd_ip));
+				//now try and connect
+				if(smd_ip) {
+					
+					strncpy(DEVICE_IP, smd_ip, strlen(smd_ip));
+					
+					if( SMD_open_command_connection() == -1) {
+						free(smd_ip);
+						return SMD_RETURN_NO_ROUTE_TO_HOST;
+					}
+					
+					else {
+						free(smd_ip);
+						return SMD_RETURN_CONNECT_SUCCESS;
+					}
+				}
 				
-				if( SMD_open_command_connection() == -1) {
+				//should never get here - smd_ip would have to NULL
+				else {
 					free(smd_ip);
 					return SMD_RETURN_NO_ROUTE_TO_HOST;
 				}
-				
-				else {
-					free(smd_ip);
-					return SMD_RETURN_CONNECT_SUCCESS;
-				}
-			}
-			
-			//should never get here - smd_ip would have to NULL
-			else {
-				free(smd_ip);
-				return SMD_RETURN_NO_ROUTE_TO_HOST;
 			}
 		}
+		
+		//if not connected, and the command is not 'connect', return 'invalid_input'
+		else {
+			return SMD_RETURN_INVALID_INPUT;
+		}
 	}
-	
 	
 	/*
 		JOG_CW, JOG_CCW, FIND_HOME_CW and FIND_HOME_CCW all use strstr() because of string similarity when doing the comparison
@@ -186,38 +165,25 @@ int parse_socket_input(char *input, int cl) {
 			// decel
 			// steps/s
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[5];
+			char array_of_commands[5] = {0};
 			
-			int num_tokens = 0;			//how many tokens do we have?
+			int num_tokens = 0;
 			int direction = 0;			//0=CW, 1=CCW
 			int16_t accel = 0;
 			int16_t decel = 0;
 			int16_t jerk = 0;
 			int32_t speed = 0;
 			
-			tofree = string = strdup(input);
-			
-			//check bounds first - we should only have 5 tokens
-			while ((token = strsep(&string, ",")) != NULL) {
-				num_tokens++;
+			//should have 5 commands only
+			if((num_tokens = number_of_tokens(input)) != 5) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			//should have 5 commands only
-			if(num_tokens == 5) {
+			else {
 				
-				int i;
-				num_tokens = 0;
-				string = strdup(input);
+				int i = 0;
 				
-				//re-tokenize the input
-				while ((token = strsep(&string, ",")) != NULL) {
-					array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-					strcpy(array_of_commands[num_tokens], token);
-					num_tokens++;
-				}
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
 				//loop through the input and convert to int
 				for(i=0; i<5; i++) {
@@ -226,7 +192,7 @@ int parse_socket_input(char *input, int cl) {
 					//accel
 					if(i == 1) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						accel = convert_string_to_long_int(array_of_commands[i]);
+						accel = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(accel < 0 || accel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -235,7 +201,7 @@ int parse_socket_input(char *input, int cl) {
 					//decel
 					if(i == 2) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						decel = convert_string_to_long_int(array_of_commands[i]);
+						decel = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(decel < 0 || decel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -244,7 +210,7 @@ int parse_socket_input(char *input, int cl) {
 					//jerk
 					if(i == 3) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						jerk = convert_string_to_long_int(array_of_commands[i]);
+						jerk = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(jerk < 0 || jerk > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -253,7 +219,7 @@ int parse_socket_input(char *input, int cl) {
 					//speed
 					if(i == 4) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
+						speed = (uint32_t)convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(speed < 0 || speed > 3000000)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -271,10 +237,6 @@ int parse_socket_input(char *input, int cl) {
 					return SMD_RETURN_COMMAND_SUCCESS;
 				
 			}
-			
-			//now that we are sure that we have 5 commands, parse them out
-			else
-				return SMD_RETURN_INVALID_PARAMETER;
 		}
 		
 		else if(strstr(input, FIND_HOME_CW) !=NULL || strstr(input, FIND_HOME_CCW) !=NULL) {
@@ -284,38 +246,26 @@ int parse_socket_input(char *input, int cl) {
 			// decel
 			// steps/s
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[5];
+			char array_of_commands[5] = {0};
 			
-			int num_tokens = 0;			//how many tokens do we have?
+			int num_tokens = 0;
 			int direction = 0;			//0=CW, 1=CCW
 			int16_t accel = 0;
 			int16_t decel = 0;
 			int16_t jerk = 0;
 			int32_t speed = 0;
 			
-			tofree = string = strdup(input);
-			
-			//check bounds first - we should only have 5 tokens
-			while ((token = strsep(&string, ",")) != NULL) {
-				num_tokens++;
+
+			//should have 5 commands only
+			if((num_tokens = number_of_tokens(input))  != 5) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			//should have 5 commands only
-			if(num_tokens == 5) {
+			else {
 				
-				int i;
-				num_tokens = 0;
-				string = strdup(input);
+				int i = 0;
 				
-				//re-tokenize the input
-				while ((token = strsep(&string, ",")) != NULL) {
-					array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-					strcpy(array_of_commands[num_tokens], token);
-					num_tokens++;
-				}
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
 				//loop through the input and convert to int
 				for(i=0; i<5; i++) {
@@ -324,7 +274,7 @@ int parse_socket_input(char *input, int cl) {
 					//speed
 					if(i == 1) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
+						speed = (uint32_t)convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(speed < 0 || speed > 3000000)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -333,7 +283,7 @@ int parse_socket_input(char *input, int cl) {
 					//accel
 					if(i == 2) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						accel = convert_string_to_long_int(array_of_commands[i]);
+						accel = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(accel < 0 || accel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -342,7 +292,7 @@ int parse_socket_input(char *input, int cl) {
 					//decel
 					if(i == 3) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						decel = convert_string_to_long_int(array_of_commands[i]);
+						decel = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(decel < 0 || decel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -351,7 +301,7 @@ int parse_socket_input(char *input, int cl) {
 					//jerk
 					if(i == 4) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						jerk = convert_string_to_long_int(array_of_commands[i]);
+						jerk = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(jerk < 0 || jerk > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -369,10 +319,6 @@ int parse_socket_input(char *input, int cl) {
 					return SMD_RETURN_COMMAND_SUCCESS;
 				
 			}
-			
-			//now that we are sure that we have 5 commands, parse them out
-			else
-				return SMD_RETURN_INVALID_PARAMETER;
 		}
 		
 		else if(strncmp(input, DISCONNECT, strlen(DISCONNECT)) == 0) {
@@ -383,10 +329,9 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, SAVE_CONFIG_TO_DRIVE, strlen(SAVE_CONFIG_TO_DRIVE)) == 0) {
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[8];
-			
+			char array_of_commands[8] = {0};
 			int num_tokens = 0;
+			
 			int32_t control_word = 0;
 			int32_t config_word = 0;
 			int32_t starting_speed = 0;
@@ -394,37 +339,33 @@ int parse_socket_input(char *input, int cl) {
 			int16_t enc_pulses_per_turn = 0;
 			int16_t idle_current_percentage = 0;
 			int16_t motor_current = 0;
-			tofree = string = strdup(input);
 			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
+			if((num_tokens = number_of_tokens(input)) != 8) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			if(num_tokens == 8) {
+			else {
 				
-				int i;
+				int i = 0;
+				
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
 				for(i=0; i<num_tokens; i++) {
 					
 					//control word
 					if(i == 1) {
-						control_word = convert_string_to_long_int(array_of_commands[i]);
+						control_word = convert_string_to_long_int(&array_of_commands[i]);
 					}
 					
 					//config word
 					if(i == 2) {
-						config_word = convert_string_to_long_int(array_of_commands[i]);
+						config_word = convert_string_to_long_int(&array_of_commands[i]);
 					}
 					
 					//starting speed
 					if(i == 3) {
 						
-						starting_speed = convert_string_to_long_int(array_of_commands[i]);
+						starting_speed = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(starting_speed < 1 || starting_speed > 1999999)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -433,7 +374,7 @@ int parse_socket_input(char *input, int cl) {
 					//motor steps/turn
 					if(i == 4) {
 						
-						steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
+						steps_per_turn = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(steps_per_turn < 200 || steps_per_turn > 32767)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -442,7 +383,7 @@ int parse_socket_input(char *input, int cl) {
 					//encoder pulses/turn
 					if(i == 5) {
 						
-						enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
+						enc_pulses_per_turn = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(enc_pulses_per_turn != 1024)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -451,7 +392,7 @@ int parse_socket_input(char *input, int cl) {
 					//idle current percentage
 					if(i == 6) {
 						
-						idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
+						idle_current_percentage = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(idle_current_percentage < 0 || idle_current_percentage > 100)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -460,18 +401,11 @@ int parse_socket_input(char *input, int cl) {
 					//motor current
 					if(i == 7) {
 						
-						motor_current = convert_string_to_long_int(array_of_commands[i]);
+						motor_current = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(motor_current < 10 || motor_current > 34)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
 					}
-				}
-				
-				//clean-up
-				int j;
-				
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
 				}
 				
 				if(SMD_set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
@@ -479,24 +413,11 @@ int parse_socket_input(char *input, int cl) {
 				else
 					return SMD_RETURN_SAVE_CONFIG_SUCCESS;
 			}
-			
-			else {
-				
-				//clean-up
-				int j;
-				
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
-				}
-				
-				return SMD_RETURN_SAVE_CONFIG_FAIL;
-			}
 		}
 		
 		else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)) == 0) {
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[6];
+			char array_of_commands[6] = {0};
 			
 			int num_tokens = 0;
 			int32_t rel_pos = 0;
@@ -504,27 +425,23 @@ int parse_socket_input(char *input, int cl) {
 			int16_t accel = 0;
 			int16_t decel = 0;
 			int16_t jerk = 0;
-			tofree = string = strdup(input);
-			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
+
+			//loop through the input and convert to int
+			if((num_tokens = number_of_tokens(input)) != 6) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			//loop through the input and convert to int
-			if(num_tokens == 6) {
+			else {
 				
-				int i;
+				int i = 0;
+				
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
 				for(i=0; i<num_tokens; i++) {
 					
 					//relative position
 					if(i==1) {
-						rel_pos = convert_string_to_long_int(array_of_commands[i]);
+						rel_pos = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(rel_pos < -8388607 || rel_pos > 8388607)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -532,7 +449,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//accel
 					if(i==2) {
-						accel = convert_string_to_long_int(array_of_commands[i]);
+						accel = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(accel < 0 || accel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -540,7 +457,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//decel
 					if(i==3) {
-						decel = convert_string_to_long_int(array_of_commands[i]);
+						decel = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(decel < 0 || decel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -548,7 +465,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//jerk
 					if(i==4) {
-						jerk = convert_string_to_long_int(array_of_commands[i]);
+						jerk = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(jerk < 0 || jerk > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -556,18 +473,11 @@ int parse_socket_input(char *input, int cl) {
 					
 					//speed
 					if(i==5) {
-						speed = convert_string_to_long_int(array_of_commands[i]);
+						speed = convert_string_to_long_int(&array_of_commands[i]);
 						
 						if(speed < 0 || speed > 2999999)
 							return SMD_RETURN_INVALID_PARAMETER;
 					}
-				}
-				
-				//clean-up
-				int j;
-				
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
 				}
 				
 				if(SMD_relative_move(rel_pos, accel, decel, jerk, speed) < 0)
@@ -575,19 +485,6 @@ int parse_socket_input(char *input, int cl) {
 				else
 					return SMD_RETURN_COMMAND_SUCCESS;
 			}
-			
-			else {
-				
-				//clean-up
-				int j;
-				
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
-				}
-				
-				return SMD_RETURN_INVALID_PARAMETER;
-			}
-			
 		}
 		
 		else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)) == 0) {
@@ -656,34 +553,21 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)) == 0) {
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[2];
+			char array_of_commands[2] = {0};
 			
-			int num_tokens = 0;			//how many tokens do we have?
-			int32_t pos;
-			
-			num_tokens = 0;
-			tofree = string = strdup(input);
-			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
+			int num_tokens = 0;
+			int32_t pos = 0;
+
+			//loop through the input and convert to int
+			if((num_tokens = number_of_tokens(input)) != 2) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			//loop through the input and convert to int
-			if(num_tokens == 2) {
+			else {
 				
-				int i;
-				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
-				//clean-up
-				for(i=0; i<num_tokens; i++) {
-					free(array_of_commands[i]);
-				}
+				pos = (int32_t)convert_string_to_long_int(&array_of_commands[1]);
 				
 				if(pos < -8388607 || pos > 8388607)
 					return SMD_RETURN_INVALID_PARAMETER;
@@ -694,50 +578,25 @@ int parse_socket_input(char *input, int cl) {
 				else
 					return SMD_RETURN_PRESET_POS_SUCCESS;
 			}
-			
-			else {
-				
-				//clean-up
-				int i;
-				
-				for(i=0; i<num_tokens; i++) {
-					free(array_of_commands[i]);
-				}
-				
-				return SMD_RETURN_INVALID_PARAMETER;
-			}
 		}
 		
 		else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)) == 0) {
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[2];
+			char array_of_commands[2] = {0};
 			
-			int num_tokens = 0;			//how many tokens do we have?
-			int32_t pos;
-			
-			num_tokens = 0;
-			tofree = string = strdup(input);
-			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
-			}
-			
-			free(tofree);
+			int num_tokens = 0;
+			int32_t pos = 0;
 			
 			//loop through the input and convert to int
-			if(num_tokens == 2) {
+			if((num_tokens = number_of_tokens(input)) != 2) {
+				return SMD_RETURN_INVALID_PARAMETER;
+			}
+			
+			else {
+
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
-				int j;
-				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
-				
-				//clean-up
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
-				}
+				pos = (int32_t)convert_string_to_long_int(&array_of_commands[1]);
 				
 				if(pos < -8388607 || pos > 8388607)
 					return SMD_RETURN_INVALID_PARAMETER;
@@ -747,18 +606,6 @@ int parse_socket_input(char *input, int cl) {
 					return SMD_RETURN_PRESET_ENC_FAIL;
 				else
 					return SMD_RETURN_PRESET_ENC_SUCCESS;
-			}
-			
-			else {
-				
-				//clean-up
-				int j;
-				
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
-				}
-				
-				return SMD_RETURN_INVALID_PARAMETER;
 			}
 		}
 		
@@ -781,51 +628,39 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, PROGRAM_MOVE_SEGMENT, strlen(PROGRAM_MOVE_SEGMENT)) == 0) {
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[6];
+			char array_of_commands[6] = {0};
 			
 			int num_tokens = 0;
 			
-			num_tokens = 0;
-			tofree = string = strdup(input);
-			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
+			//loop through the input and convert to int
+			if((num_tokens = number_of_tokens(input)) != 6) {
+				return SMD_RETURN_INVALID_PARAMETER;
 			}
 			
-			free(tofree);
-			
-			//loop through the input and convert to int
-			if(num_tokens == 6) {
+			else {
 				
-				int i;
+				int i = 0;
 				int32_t target_pos = 0, speed = 0;
 				int16_t accel = 0, decel = 0, jerk = 0;
+				
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
 				for(i=0; i<num_tokens; i++) {
 					
 					if(i==1)
-						target_pos = (int32_t)convert_string_to_long_int(array_of_commands[i]);
+						target_pos = (int32_t)convert_string_to_long_int(&array_of_commands[i]);
 					
 					if(i==2)
-						speed = (int32_t)convert_string_to_long_int(array_of_commands[i]);
+						speed = (int32_t)convert_string_to_long_int(&array_of_commands[i]);
 					
 					if(i==3)
-						accel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
+						accel = (int16_t)convert_string_to_long_int(&array_of_commands[i]);
 					
 					if(i==4)
-						decel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
+						decel = (int16_t)convert_string_to_long_int(&array_of_commands[i]);
 					
 					if(i==5)
-						jerk = (int16_t)convert_string_to_long_int(array_of_commands[i]);
-				}
-				
-				//clean-up
-				for(i=0; i<num_tokens; i++) {
-					free(array_of_commands[i]);
+						jerk = (int16_t)convert_string_to_long_int(&array_of_commands[i]);
 				}
 				
 				//test inputs
@@ -850,51 +685,25 @@ int parse_socket_input(char *input, int cl) {
 				else
 					return SMD_RETURN_SEGMENT_ACCEPTED;
 			}
-			
-			else {
-				
-				//clean-up
-				int i;
-				
-				for(i=0; i<num_tokens; i++) {
-					free(array_of_commands[i]);
-				}
-				
-				return SMD_RETURN_INVALID_PARAMETER;
-			}
-			
 		}
 		
 		else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)) == 0) {
 			
-			char *token, *string, *tofree;
-			char *array_of_commands[2];
+			char array_of_commands[2];
 			
-			int num_tokens = 0;			//how many tokens do we have?
-			int32_t dwell_time;
-			
-			num_tokens = 0;
-			tofree = string = strdup(input);
-			
-			//re-tokenize the input
-			while ((token = strsep(&string, ",")) != NULL) {
-				array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
-				strcpy(array_of_commands[num_tokens], token);
-				num_tokens++;
-			}
-			
-			free(tofree);
+			int num_tokens = 0;
+			int32_t dwell_time = 0;
 			
 			//loop through the input and convert to int
-			if(num_tokens == 2) {
+			if((num_tokens = number_of_tokens(input)) != 2) {
+				return SMD_RETURN_INVALID_PARAMETER;
+			}
+			
+			else {
 				
-				int j;
-				dwell_time = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+				tokenize_client_input(array_of_commands, input, num_tokens);
 				
-				//clean-up
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
-				}
+				dwell_time = (int32_t)convert_string_to_long_int(&array_of_commands[1]);
 				
 				if(dwell_time < 0 || dwell_time > 65535)
 					return SMD_RETURN_INVALID_PARAMETER;
@@ -906,18 +715,11 @@ int parse_socket_input(char *input, int cl) {
 					return SMD_RETURN_COMMAND_SUCCESS;
 			}
 			
-			else {
-				
-				//clean-up
-				int j;
-				
-				for(j=0; j<num_tokens; j++) {
-					free(array_of_commands[j]);
-				}
-				
-				return SMD_RETURN_INVALID_PARAMETER;
-			}
-			
+		}
+		
+		//the client submitted a command that was not recognized
+		else {
+			return SMD_RETURN_INVALID_INPUT;
 		}
 	}
 	
@@ -926,8 +728,6 @@ int parse_socket_input(char *input, int cl) {
 		return SMD_RETURN_NO_ROUTE_TO_HOST;
 	}
 	
-	//All of the conditionals above return something. If we make it to here, we must have invalid input.
-	return SMD_RETURN_INVALID_INPUT;
 }
 
 void parse_smd_response_to_client_input(int smd_response, char *input, int fd, int cl) {
