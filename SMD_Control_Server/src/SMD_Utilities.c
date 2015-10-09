@@ -85,15 +85,15 @@ int number_of_tokens(const char *command_string) {
 	return num_tokens;
 }
 
-void tokenize_client_input(char *array_of_commands, const char *input, int num_tokens) {
+void tokenize_client_input(char **array_of_commands, const char *input, int num_tokens) {
 
 	char *token, *string, *tofree;
 	tofree = string = strdup(input);
 	num_tokens = 0;
 	
 	while ((token = strsep(&string, ",")) != NULL) {
-		array_of_commands[num_tokens] = (char)malloc(sizeof(char) * (strlen(token) + 1 ) );
-		strcpy(&array_of_commands[num_tokens], token);
+		array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
+		strcpy(array_of_commands[num_tokens], token);
 		num_tokens++;
 	}
 	

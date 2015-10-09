@@ -91,7 +91,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		if(strncmp(input, CONNECT, strlen(CONNECT)) == 0) {
 			
-			char array_of_commands[2] = {0};
+			char *array_of_commands[2] = {0};
 			int num_tokens = 0;
 			char *smd_ip = NULL;
 			
@@ -112,10 +112,10 @@ int parse_socket_input(char *input, int cl) {
 					//skip the actual command, "connect"
 					//just get the ip address
 					if(i == 1) {
-						smd_ip = malloc(sizeof(char) * (strlen(&array_of_commands[i]))+1);
+						smd_ip = malloc(sizeof(char) * (strlen(array_of_commands[i]))+1);
 						
 						if(smd_ip) {
-							strncpy(smd_ip, &array_of_commands[i], strlen(&array_of_commands[i]));
+							strncpy(smd_ip, array_of_commands[i], strlen(array_of_commands[i]));
 						}
 					}
 				}
@@ -165,7 +165,7 @@ int parse_socket_input(char *input, int cl) {
 			// decel
 			// steps/s
 			
-			char array_of_commands[5] = {0};
+			char *array_of_commands[5] = {0};
 			
 			int num_tokens = 0;
 			int direction = 0;			//0=CW, 1=CCW
@@ -192,7 +192,7 @@ int parse_socket_input(char *input, int cl) {
 					//accel
 					if(i == 1) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						accel = convert_string_to_long_int(&array_of_commands[i]);
+						accel = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(accel < 0 || accel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -201,7 +201,7 @@ int parse_socket_input(char *input, int cl) {
 					//decel
 					if(i == 2) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						decel = convert_string_to_long_int(&array_of_commands[i]);
+						decel = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(decel < 0 || decel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -210,7 +210,7 @@ int parse_socket_input(char *input, int cl) {
 					//jerk
 					if(i == 3) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						jerk = convert_string_to_long_int(&array_of_commands[i]);
+						jerk = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(jerk < 0 || jerk > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -219,7 +219,7 @@ int parse_socket_input(char *input, int cl) {
 					//speed
 					if(i == 4) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						speed = (uint32_t)convert_string_to_long_int(&array_of_commands[i]);
+						speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
 						
 						if(speed < 0 || speed > 3000000)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -246,7 +246,7 @@ int parse_socket_input(char *input, int cl) {
 			// decel
 			// steps/s
 			
-			char array_of_commands[5] = {0};
+			char *array_of_commands[5] = {0};
 			
 			int num_tokens = 0;
 			int direction = 0;			//0=CW, 1=CCW
@@ -274,7 +274,7 @@ int parse_socket_input(char *input, int cl) {
 					//speed
 					if(i == 1) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						speed = (uint32_t)convert_string_to_long_int(&array_of_commands[i]);
+						speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
 						
 						if(speed < 0 || speed > 3000000)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -283,7 +283,7 @@ int parse_socket_input(char *input, int cl) {
 					//accel
 					if(i == 2) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						accel = convert_string_to_long_int(&array_of_commands[i]);
+						accel = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(accel < 0 || accel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -292,7 +292,7 @@ int parse_socket_input(char *input, int cl) {
 					//decel
 					if(i == 3) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						decel = convert_string_to_long_int(&array_of_commands[i]);
+						decel = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(decel < 0 || decel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -301,7 +301,7 @@ int parse_socket_input(char *input, int cl) {
 					//jerk
 					if(i == 4) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
-						jerk = convert_string_to_long_int(&array_of_commands[i]);
+						jerk = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(jerk < 0 || jerk > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -329,7 +329,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, SAVE_CONFIG_TO_DRIVE, strlen(SAVE_CONFIG_TO_DRIVE)) == 0) {
 			
-			char array_of_commands[8] = {0};
+			char *array_of_commands[8] = {0};
 			int num_tokens = 0;
 			
 			int32_t control_word = 0;
@@ -354,18 +354,18 @@ int parse_socket_input(char *input, int cl) {
 					
 					//control word
 					if(i == 1) {
-						control_word = convert_string_to_long_int(&array_of_commands[i]);
+						control_word = convert_string_to_long_int(array_of_commands[i]);
 					}
 					
 					//config word
 					if(i == 2) {
-						config_word = convert_string_to_long_int(&array_of_commands[i]);
+						config_word = convert_string_to_long_int(array_of_commands[i]);
 					}
 					
 					//starting speed
 					if(i == 3) {
 						
-						starting_speed = convert_string_to_long_int(&array_of_commands[i]);
+						starting_speed = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(starting_speed < 1 || starting_speed > 1999999)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -374,7 +374,7 @@ int parse_socket_input(char *input, int cl) {
 					//motor steps/turn
 					if(i == 4) {
 						
-						steps_per_turn = convert_string_to_long_int(&array_of_commands[i]);
+						steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(steps_per_turn < 200 || steps_per_turn > 32767)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -383,7 +383,7 @@ int parse_socket_input(char *input, int cl) {
 					//encoder pulses/turn
 					if(i == 5) {
 						
-						enc_pulses_per_turn = convert_string_to_long_int(&array_of_commands[i]);
+						enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(enc_pulses_per_turn != 1024)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -392,7 +392,7 @@ int parse_socket_input(char *input, int cl) {
 					//idle current percentage
 					if(i == 6) {
 						
-						idle_current_percentage = convert_string_to_long_int(&array_of_commands[i]);
+						idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(idle_current_percentage < 0 || idle_current_percentage > 100)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -401,7 +401,7 @@ int parse_socket_input(char *input, int cl) {
 					//motor current
 					if(i == 7) {
 						
-						motor_current = convert_string_to_long_int(&array_of_commands[i]);
+						motor_current = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(motor_current < 10 || motor_current > 34)
 							return SMD_RETURN_SAVE_CONFIG_FAIL;
@@ -417,7 +417,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, RELATIVE_MOVE, strlen(RELATIVE_MOVE)) == 0) {
 			
-			char array_of_commands[6] = {0};
+			char *array_of_commands[6] = {0};
 			
 			int num_tokens = 0;
 			int32_t rel_pos = 0;
@@ -441,7 +441,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//relative position
 					if(i==1) {
-						rel_pos = convert_string_to_long_int(&array_of_commands[i]);
+						rel_pos = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(rel_pos < -8388607 || rel_pos > 8388607)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -449,7 +449,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//accel
 					if(i==2) {
-						accel = convert_string_to_long_int(&array_of_commands[i]);
+						accel = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(accel < 0 || accel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -457,7 +457,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//decel
 					if(i==3) {
-						decel = convert_string_to_long_int(&array_of_commands[i]);
+						decel = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(decel < 0 || decel > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -465,7 +465,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//jerk
 					if(i==4) {
-						jerk = convert_string_to_long_int(&array_of_commands[i]);
+						jerk = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(jerk < 0 || jerk > 5001)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -473,7 +473,7 @@ int parse_socket_input(char *input, int cl) {
 					
 					//speed
 					if(i==5) {
-						speed = convert_string_to_long_int(&array_of_commands[i]);
+						speed = convert_string_to_long_int(array_of_commands[i]);
 						
 						if(speed < 0 || speed > 2999999)
 							return SMD_RETURN_INVALID_PARAMETER;
@@ -553,7 +553,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)) == 0) {
 			
-			char array_of_commands[2] = {0};
+			char *array_of_commands[2] = {0};
 			
 			int num_tokens = 0;
 			int32_t pos = 0;
@@ -567,7 +567,7 @@ int parse_socket_input(char *input, int cl) {
 				
 				tokenize_client_input(array_of_commands, input, num_tokens);
 				
-				pos = (int32_t)convert_string_to_long_int(&array_of_commands[1]);
+				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
 				if(pos < -8388607 || pos > 8388607)
 					return SMD_RETURN_INVALID_PARAMETER;
@@ -582,7 +582,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, PRESET_ENCODER_POSITION, strlen(PRESET_ENCODER_POSITION)) == 0) {
 			
-			char array_of_commands[2] = {0};
+			char *array_of_commands[2] = {0};
 			
 			int num_tokens = 0;
 			int32_t pos = 0;
@@ -596,7 +596,7 @@ int parse_socket_input(char *input, int cl) {
 
 				tokenize_client_input(array_of_commands, input, num_tokens);
 				
-				pos = (int32_t)convert_string_to_long_int(&array_of_commands[1]);
+				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
 				if(pos < -8388607 || pos > 8388607)
 					return SMD_RETURN_INVALID_PARAMETER;
@@ -628,7 +628,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, PROGRAM_MOVE_SEGMENT, strlen(PROGRAM_MOVE_SEGMENT)) == 0) {
 			
-			char array_of_commands[6] = {0};
+			char *array_of_commands[6] = {0};
 			
 			int num_tokens = 0;
 			
@@ -648,19 +648,19 @@ int parse_socket_input(char *input, int cl) {
 				for(i=0; i<num_tokens; i++) {
 					
 					if(i==1)
-						target_pos = (int32_t)convert_string_to_long_int(&array_of_commands[i]);
+						target_pos = (int32_t)convert_string_to_long_int(array_of_commands[i]);
 					
 					if(i==2)
-						speed = (int32_t)convert_string_to_long_int(&array_of_commands[i]);
+						speed = (int32_t)convert_string_to_long_int(array_of_commands[i]);
 					
 					if(i==3)
-						accel = (int16_t)convert_string_to_long_int(&array_of_commands[i]);
+						accel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
 					
 					if(i==4)
-						decel = (int16_t)convert_string_to_long_int(&array_of_commands[i]);
+						decel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
 					
 					if(i==5)
-						jerk = (int16_t)convert_string_to_long_int(&array_of_commands[i]);
+						jerk = (int16_t)convert_string_to_long_int(array_of_commands[i]);
 				}
 				
 				//test inputs
@@ -689,7 +689,7 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)) == 0) {
 			
-			char array_of_commands[2];
+			char *array_of_commands[2];
 			
 			int num_tokens = 0;
 			int32_t dwell_time = 0;
@@ -703,7 +703,7 @@ int parse_socket_input(char *input, int cl) {
 				
 				tokenize_client_input(array_of_commands, input, num_tokens);
 				
-				dwell_time = (int32_t)convert_string_to_long_int(&array_of_commands[1]);
+				dwell_time = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
 				if(dwell_time < 0 || dwell_time > 65535)
 					return SMD_RETURN_INVALID_PARAMETER;

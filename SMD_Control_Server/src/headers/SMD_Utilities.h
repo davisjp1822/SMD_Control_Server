@@ -70,6 +70,6 @@ int number_of_tokens(const char *command_string);
 	@param input Input string from the client
 	@param num_tokens Number of tokens in array_of_commands
  */
-void tokenize_client_input(char *array_of_commands, const char *input, int num_tokens);
+void tokenize_client_input(char **array_of_commands, const char *input, int num_tokens);
 
 #endif /* SMD_UTILITIES_H */
