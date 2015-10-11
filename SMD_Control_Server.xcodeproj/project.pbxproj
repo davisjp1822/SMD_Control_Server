@@ -28,14 +28,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A3EDEF971BBEFA8D003DB4FE /* SMD_Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Constants.h; sourceTree = "<group>"; };
-		A3EDEF981BBEFA8D003DB4FE /* SMD_Motor_Commands.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Motor_Commands.h; sourceTree = "<group>"; };
-		A3EDEF991BBEFA8D003DB4FE /* SMD_Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Utilities.h; sourceTree = "<group>"; };
+		A31C096C1BCAED460074D25E /* SMD_Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Constants.h; sourceTree = "<group>"; };
+		A31C096D1BCAED460074D25E /* SMD_Motor_Commands.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Motor_Commands.h; sourceTree = "<group>"; };
+		A31C096E1BCAED460074D25E /* SMD_SocketOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_SocketOps.h; sourceTree = "<group>"; };
+		A31C096F1BCAED460074D25E /* SMD_Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Utilities.h; sourceTree = "<group>"; };
 		A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Constants.c; sourceTree = "<group>"; };
 		A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Motor_Commands.c; sourceTree = "<group>"; };
 		A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
 		A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMDControlDaemon.c; sourceTree = "<group>"; };
-		A3EDEFA51BBFFD3B003DB4FE /* SMD_SocketOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_SocketOps.h; sourceTree = "<group>"; };
 		A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMD_SocketOps.c; sourceTree = "<group>"; };
 		A3F49FEF1AEF9CD400164B05 /* SMD_Control_Server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SMD_Control_Server; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -54,7 +54,10 @@
 		A3EDEF951BBEFA8D003DB4FE /* src */ = {
 			isa = PBXGroup;
 			children = (
-				A3EDEF961BBEFA8D003DB4FE /* headers */,
+				A31C096C1BCAED460074D25E /* SMD_Constants.h */,
+				A31C096D1BCAED460074D25E /* SMD_Motor_Commands.h */,
+				A31C096E1BCAED460074D25E /* SMD_SocketOps.h */,
+				A31C096F1BCAED460074D25E /* SMD_Utilities.h */,
 				A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */,
 				A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */,
 				A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */,
@@ -62,17 +65,6 @@
 				A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */,
 			);
 			path = src;
-			sourceTree = "<group>";
-		};
-		A3EDEF961BBEFA8D003DB4FE /* headers */ = {
-			isa = PBXGroup;
-			children = (
-				A3EDEF971BBEFA8D003DB4FE /* SMD_Constants.h */,
-				A3EDEF981BBEFA8D003DB4FE /* SMD_Motor_Commands.h */,
-				A3EDEF991BBEFA8D003DB4FE /* SMD_Utilities.h */,
-				A3EDEFA51BBFFD3B003DB4FE /* SMD_SocketOps.h */,
-			);
-			path = headers;
 			sourceTree = "<group>";
 		};
 		A3F49FE61AEF9CD400164B05 = {
