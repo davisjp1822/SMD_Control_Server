@@ -25,6 +25,7 @@ extern const char SOCKET_PATH[16];					/**< The socket path - on Linux, this wil
 
 extern int16_t SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
 extern int16_t SERVER_PORT;							/**< The port on which this server should listen */
+extern int8_t VERBOSE;
 extern modbus_t *smd_command_connection;			/**< Command connection to SMD Motor */
 
 /**

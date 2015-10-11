@@ -15,6 +15,7 @@ int16_t SMD_CONNECTED = 0;
 const char VERSION[8] = "2.0";
 modbus_t *smd_command_connection = NULL;
 int16_t SERVER_PORT = 7000;
+int8_t VERBOSE = 0;
 
 #ifdef __linux
 	const char SOCKET_PATH[16] = "\0/tmp/smd.socket";
