@@ -62,4 +62,11 @@ int number_of_tokens(const char *command_string);
  */
 void tokenize_client_input(char **array_of_commands, const char *input, int num_tokens);
 
+/**
+	@fn void log_message(char *message)
+	@brief If in verbose mode, logs message
+	@param message Message to log
+ */
+void log_message(const char *message);
+
 #endif /* SMD_UTILITIES_H */

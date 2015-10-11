@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */ = {isa = PBXBuildFile; fileRef = A31C09701BCAED760074D25E /* SMD_Modbus.c */; settings = {ASSET_TAGS = (); }; };
 		A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */; };
 		A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */; };
 		A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */; };
@@ -32,6 +33,8 @@
 		A31C096D1BCAED460074D25E /* SMD_Motor_Commands.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Motor_Commands.h; sourceTree = "<group>"; };
 		A31C096E1BCAED460074D25E /* SMD_SocketOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_SocketOps.h; sourceTree = "<group>"; };
 		A31C096F1BCAED460074D25E /* SMD_Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Utilities.h; sourceTree = "<group>"; };
+		A31C09701BCAED760074D25E /* SMD_Modbus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMD_Modbus.c; sourceTree = "<group>"; };
+		A31C09711BCAED760074D25E /* SMD_Modbus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMD_Modbus.h; sourceTree = "<group>"; };
 		A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Constants.c; sourceTree = "<group>"; };
 		A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Motor_Commands.c; sourceTree = "<group>"; };
 		A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
@@ -58,11 +61,13 @@
 				A31C096D1BCAED460074D25E /* SMD_Motor_Commands.h */,
 				A31C096E1BCAED460074D25E /* SMD_SocketOps.h */,
 				A31C096F1BCAED460074D25E /* SMD_Utilities.h */,
+				A31C09711BCAED760074D25E /* SMD_Modbus.h */,
 				A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */,
 				A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */,
 				A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */,
 				A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */,
 				A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */,
+				A31C09701BCAED760074D25E /* SMD_Modbus.c */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -151,6 +156,7 @@
 				A3EDEFA71BBFFD70003DB4FE /* SMD_SocketOps.c in Sources */,
 				A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */,
 				A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */,
+				A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */,
 				A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

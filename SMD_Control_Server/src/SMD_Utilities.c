@@ -87,3 +87,10 @@ void tokenize_client_input(char **array_of_commands, const char *input, int num_
 	
 	free(tofree);
 }
+
+void log_message(const char *message) {
+	
+	if(VERBOSE > 0) {
+		fprintf(stderr, "%s", message);
+	}
+}

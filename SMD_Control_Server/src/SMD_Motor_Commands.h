@@ -17,18 +17,22 @@
 #define SMD_Motor_Commands_h
 
 #include <stdio.h>
+#include "SMD_Constants.h"
 
 /**
 	@fn int SMD_open_command_connection()
 	@brief Attempts to open the control connection with the SMD. This connection stays open until SMD_close_command_connection() is called. If the connection is lost, all motion stops immediately.
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_UNKNOWN_ERROR if something goes horribly wrong
  */
-int SMD_open_command_connection();
+SMD_RESPONSE_CODES  SMD_open_command_connection();
 
 /**
 	@fn void SMD_close_command_connection()
 	@brief Attempts to close the control connection with the SMD. When the connection is lost, all motion stops immediately.
  */
-void SMD_close_command_connection();
+void  SMD_close_command_connection();
 
 /**
 	@fn int SMD_read_input_registers(int cl)
@@ -42,19 +46,27 @@ int SMD_read_input_registers(int cl);
 	@fn int SMD_load_current_configuration(int cl)
 	@brief Called prior to calling SMD_read_current_configuration(int cl). Tells the drive to read the current configuration and place it into the input registers. This will return READY_TO_READ_CONFIG to the client, which SHOULD then read the input registers once to get the configuration. This is a bit of a testy function, and care should be taken to make sure that multiple operations are not being written to the drive at the time of issuing this command. This command WILL stop motion and disable the drive.
 	@param cl The client to write the message to (a socket identifer)
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILED if the registers cannot be read
 	@note Call before calling SMD_read_current_configuration(int cl)
  */
-int SMD_load_current_configuration(int cl);
+SMD_RESPONSE_CODES  SMD_load_current_configuration(int cl);
 
 /**
 	@fn SMD_read_current_configuration(int cl)
 	@brief Called after SMD_load_current_configuration(int cl) Reads the input registers, and outputs them in the format "###0x0,0x0,0,0,0,0,0,0,0,0"
+		This is a three step process:
+		Step 1 - Write the current configuration into the input registers (this puts the drive into configuration mode)
+		Step 2 - Tell the client that the registers are ready to be read
+		Step 3 - The client will then make a single call to read_input_registers to parse the configuration
+ 
 	@param cl The client to write the message to (a socket identifer)
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
 	@warning Must call SMD_read_input_registers(int cl) before calling this function.
  */
-int SMD_read_current_configuration(int cl);
+SMD_RESPONSE_CODES SMD_read_current_configuration(int cl);
 
 /**
 	@fn int SMD_set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current)
@@ -66,10 +78,13 @@ int SMD_read_current_configuration(int cl);
 	@param enc_pulses_per_turn Number of encoder pulses per turn
 	@param idle_current_percentage 0 to 100
 	@param motor_current Value 10-34, represents 1.0 to 3.4 Arms
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_SAVE_CONFIG_SUCCESS
+	@return SMD_RESPONSE_CODES SMD_RETURN_SAVE_CONFIG_FAILURE
+	@return SMD_RESPONSE_CODES SMD_RETURN_INVALID_PARAMETER
  
  */
-int SMD_set_configuration(int32_t control_word,
+SMD_RESPONSE_CODES SMD_set_configuration(int32_t control_word,
 						  int32_t config_word,
 						  int32_t starting_speed,
 						  int16_t steps_per_turn,
@@ -85,9 +100,12 @@ int SMD_set_configuration(int32_t control_word,
 	@param decel Deceleration, 1-5000
 	@param jerk Acceleration jerk, 1-5000
 	@param speed Motor Starting Speed-2,999,999
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_INVALID_PARAMETER if failure
  */
-int SMD_jog(int direction,
+SMD_RESPONSE_CODES SMD_jog(int direction,
 			int16_t accel,
 			int16_t decel,
 			int16_t jerk,
@@ -102,9 +120,11 @@ int SMD_jog(int direction,
 	@param decel Deceleration 1-5000
 	@param jerk Acceleration jerk 1-5000
 	@param speed Speed Motor Starting Speed-2,999,999
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_relative_move(int32_t rel_pos,
+SMD_RESPONSE_CODES SMD_relative_move(int32_t rel_pos,
 					  int16_t accel,
 					  int16_t decel,
 					  int16_t jerk,
@@ -113,53 +133,67 @@ int SMD_relative_move(int32_t rel_pos,
 /**
 	@fn int SMD_drive_enable()
 	@brief Enables the drive circuitry, applying current to the motor.
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_drive_enable();
+SMD_RESPONSE_CODES SMD_drive_enable();
 
 /**
 	@fn int SMD_drive_disable()
 	@brief Disables the drive circuitry, removing current from the motor.
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_drive_disable();
+SMD_RESPONSE_CODES SMD_drive_disable();
 
 /**
 	@fn int SMD_reset_errors()
 	@brief Resets drive errors.
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_reset_errors();
+SMD_RESPONSE_CODES SMD_reset_errors();
 
 /**
 	@fn int SMD_immed_stop()
 	@brief Immediately stops movement, with no deceleration. This WILL set an error state in the drive, and the motor will need to be re-homed.
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_immed_stop();
+SMD_RESPONSE_CODES SMD_immed_stop();
 
 /**
 	@fn int SMD_hold_move()
 	@brief Stops movement with a controlled deceleration. No error state is set.
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_hold_move();
+SMD_RESPONSE_CODES SMD_hold_move();
 
 /**
 	@fn int SMD_preset_encoder_position(int32_t pos)
 	@brief Presets the encoder to the value specified in pos
 	@param pos Position, in counts.
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_preset_encoder_position(int32_t pos);
+SMD_RESPONSE_CODES SMD_preset_encoder_position(int32_t pos);
 
 /**
 	@fn int int SMD_preset_motor_position(int32_t pos)
 	@brief Presets the motor to the value specified in pos
 	@param pos Position, in counts. -8,388,607 to 8,388,607
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int SMD_preset_motor_position(int32_t pos);
+SMD_RESPONSE_CODES SMD_preset_motor_position(int32_t pos);
 
 /**
 	@fn int SMD_find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk)
@@ -169,9 +203,11 @@ int SMD_preset_motor_position(int32_t pos);
 	@param decel Deceleration, 1-5000
 	@param jerk Acceleration jerk, 1-5000
 	@param speed Speed Motor Starting Speed-2,999,999
-	@return int 0 if successful
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
 */
-int SMD_find_home(int direction,
+SMD_RESPONSE_CODES SMD_find_home(int direction,
 				  int32_t speed,
 				  int16_t accel,
 				  int16_t decel,

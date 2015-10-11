@@ -12,6 +12,7 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 
 #include "SMD_SocketOps.h"
 #include "SMD_Constants.h"
@@ -21,6 +22,8 @@
 void open_server_socket() {
 	
 	struct sockaddr_in addr;
+	struct sockaddr_storage client_addr;
+	socklen_t len;
 	int8_t cl,rc,fd;
 	char buf[1024];
 	
@@ -29,6 +32,7 @@ void open_server_socket() {
 		exit(-1);
 	}
 	
+	len = sizeof(client_addr);
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(SERVER_PORT);
@@ -54,9 +58,25 @@ void open_server_socket() {
 		exit(-1);
 	}
 	
-	if ( (cl = accept(fd, NULL, NULL)) == -1) {
+	if ( (cl = accept(fd, (struct sockaddr*)&client_addr, &len)) == -1) {
 		perror("Socket Accept Error");
 		exit(-1);
+	}
+	
+	else {
+			
+		char str[INET_ADDRSTRLEN];
+		struct sockaddr_in *s = (struct sockaddr_in *)&client_addr;
+			
+		inet_ntop(AF_INET, &s->sin_addr, str, INET_ADDRSTRLEN);
+		
+		char message[1024];
+		snprintf(message,
+				 sizeof(message),
+				 "New client connection from %s\n",
+				 str);
+		
+		log_message(message);
 	}
 	
 	//parse socket input
@@ -68,6 +88,7 @@ void open_server_socket() {
 		//should fork maybe?
 		
 		if((rc=read(cl,buf,sizeof(buf))) > 0) {
+			
 			parse_smd_response_to_client_input(rc, buf, fd, cl);
 		}
 		
@@ -77,9 +98,28 @@ void open_server_socket() {
 			//if the client disconnects, we should close the command connection with the motor for safety
 			SMD_close_command_connection();
 			
+			log_message("Client disconnected\n");
+			
 			//start a new socket connection accept
-			if ( (cl = accept(fd, NULL, NULL)) == -1) {
+			if ( (cl = accept(fd, (struct sockaddr*)&client_addr, &len)) == -1) {
 				perror("Socket Accept Error");
+				exit(-1);
+			}
+			
+			else {
+				
+				char str[INET_ADDRSTRLEN];
+				struct sockaddr_in *s = (struct sockaddr_in *)&client_addr;
+				
+				inet_ntop(AF_INET, &s->sin_addr, str, INET_ADDRSTRLEN);
+				
+				char message[1024];
+				snprintf(message,
+						 sizeof(message),
+						 "New client connection from %s\n",
+						 str);
+				
+				log_message(message);
 			}
 		}
 	}
@@ -125,15 +165,8 @@ int parse_socket_input(char *input, int cl) {
 					
 					strncpy(DEVICE_IP, smd_ip, strlen(smd_ip));
 					
-					if( SMD_open_command_connection() == -1) {
-						free(smd_ip);
-						return SMD_RETURN_NO_ROUTE_TO_HOST;
-					}
-					
-					else {
-						free(smd_ip);
-						return SMD_RETURN_CONNECT_SUCCESS;
-					}
+					free(smd_ip);
+					return SMD_open_command_connection();
 				}
 				
 				//should never get here - smd_ip would have to NULL
@@ -193,36 +226,24 @@ int parse_socket_input(char *input, int cl) {
 					if(i == 1) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						accel = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(accel < 0 || accel > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//decel
 					if(i == 2) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						decel = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(decel < 0 || decel > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//jerk
 					if(i == 3) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						jerk = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(jerk < 0 || jerk > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//speed
 					if(i == 4) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
-						
-						if(speed < 0 || speed > 3000000)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 				}
 				
@@ -231,11 +252,7 @@ int parse_socket_input(char *input, int cl) {
 					direction = 1;
 				
 				//tell the motor to jog
-				if(SMD_jog(direction, accel, decel, jerk, speed) < 0)
-					return SMD_RETURN_INVALID_PARAMETER;
-				else
-					return SMD_RETURN_COMMAND_SUCCESS;
-				
+				return SMD_jog(direction, accel, decel, jerk, speed);
 			}
 		}
 		
@@ -275,36 +292,24 @@ int parse_socket_input(char *input, int cl) {
 					if(i == 1) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						speed = (uint32_t)convert_string_to_long_int(array_of_commands[i]);
-						
-						if(speed < 0 || speed > 3000000)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//accel
 					if(i == 2) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						accel = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(accel < 0 || accel > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//decel
 					if(i == 3) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						decel = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(decel < 0 || decel > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//jerk
 					if(i == 4) {
 						//fprintf(stderr, "converting %s\n", array_of_commands[i]);
 						jerk = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(jerk < 0 || jerk > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 				}
 				
@@ -312,12 +317,8 @@ int parse_socket_input(char *input, int cl) {
 				if(strstr(input, FIND_HOME_CCW) !=NULL)
 					direction = 1;
 				
-				//tell the motor to jog
-				if(SMD_find_home(direction, speed, accel, decel, jerk) < 0)
-					return SMD_RETURN_INVALID_PARAMETER;
-				else
-					return SMD_RETURN_COMMAND_SUCCESS;
-				
+				return SMD_find_home(direction, speed, accel, decel, jerk);
+		
 			}
 		}
 		
@@ -364,54 +365,31 @@ int parse_socket_input(char *input, int cl) {
 					
 					//starting speed
 					if(i == 3) {
-						
 						starting_speed = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(starting_speed < 1 || starting_speed > 1999999)
-							return SMD_RETURN_SAVE_CONFIG_FAIL;
 					}
 					
 					//motor steps/turn
 					if(i == 4) {
-						
 						steps_per_turn = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(steps_per_turn < 200 || steps_per_turn > 32767)
-							return SMD_RETURN_SAVE_CONFIG_FAIL;
 					}
 					
 					//encoder pulses/turn
 					if(i == 5) {
-						
 						enc_pulses_per_turn = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(enc_pulses_per_turn != 1024)
-							return SMD_RETURN_SAVE_CONFIG_FAIL;
 					}
 					
 					//idle current percentage
 					if(i == 6) {
-						
 						idle_current_percentage = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(idle_current_percentage < 0 || idle_current_percentage > 100)
-							return SMD_RETURN_SAVE_CONFIG_FAIL;
 					}
 					
 					//motor current
 					if(i == 7) {
-						
 						motor_current = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(motor_current < 10 || motor_current > 34)
-							return SMD_RETURN_SAVE_CONFIG_FAIL;
 					}
 				}
 				
-				if(SMD_set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current) < 0)
-					return SMD_RETURN_SAVE_CONFIG_FAIL;
-				else
-					return SMD_RETURN_SAVE_CONFIG_SUCCESS;
+				return SMD_set_configuration(control_word, config_word, starting_speed, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current);
 			}
 		}
 		
@@ -442,89 +420,58 @@ int parse_socket_input(char *input, int cl) {
 					//relative position
 					if(i==1) {
 						rel_pos = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(rel_pos < -8388607 || rel_pos > 8388607)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//accel
 					if(i==2) {
 						accel = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(accel < 0 || accel > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//decel
 					if(i==3) {
 						decel = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(decel < 0 || decel > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//jerk
 					if(i==4) {
 						jerk = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(jerk < 0 || jerk > 5001)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 					
 					//speed
 					if(i==5) {
 						speed = convert_string_to_long_int(array_of_commands[i]);
-						
-						if(speed < 0 || speed > 2999999)
-							return SMD_RETURN_INVALID_PARAMETER;
 					}
 				}
 				
-				if(SMD_relative_move(rel_pos, accel, decel, jerk, speed) < 0)
-					return SMD_RETURN_COMMAND_FAILED;
-				else
-					return SMD_RETURN_COMMAND_SUCCESS;
+				return SMD_relative_move(rel_pos, accel, decel, jerk, speed);
 			}
 		}
 		
 		else if(strncmp(input, DRIVE_ENABLE, strlen(DRIVE_ENABLE)) == 0) {
 			
-			if(SMD_drive_enable() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_ENABLE_SUCCESS;
+			return SMD_drive_enable();
+			
 		}
 		
 		else if(strncmp(input, DRIVE_DISABLE, strlen(DRIVE_DISABLE)) == 0) {
 			
-			if(SMD_drive_disable() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_DISABLE_SUCCESS;
+			return SMD_drive_disable();
 		}
 		
 		else if(strncmp(input, HOLD_MOVE, strlen(HOLD_MOVE)) == 0) {
 			
-			if(SMD_hold_move() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_COMMAND_SUCCESS;
+			return SMD_hold_move();
+			
 		}
 		
 		else if(strncmp(input, IMMED_STOP, strlen(IMMED_STOP)) == 0) {
 			
-			if(SMD_immed_stop() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_COMMAND_SUCCESS;
+			return SMD_immed_stop();
 		}
 		
 		else if(strncmp(input, RESET_ERRORS, strlen(RESET_ERRORS)) == 0) {
 			
-			if(SMD_reset_errors() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_RESET_ERRORS_SUCCESS;
+			return SMD_reset_errors();
 		}
 		
 		else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)) == 0) {
@@ -537,18 +484,14 @@ int parse_socket_input(char *input, int cl) {
 		
 		else if(strncmp(input, LOAD_CURRENT_CONFIGURATION, strlen(LOAD_CURRENT_CONFIGURATION)) == 0) {
 			
-			if(SMD_load_current_configuration(cl) < 0)
-				return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
-			else
-				return SMD_RETURN_READY_TO_READ_CONFIG;
+			return SMD_load_current_configuration(cl);
+	
 		}
 		
 		else if(strncmp(input, READ_CURRENT_CONFIGURATION, strlen(READ_CURRENT_CONFIGURATION)) == 0) {
 			
-			if(SMD_read_current_configuration(cl) < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_HANDLED_BY_CLIENT;
+			return SMD_read_current_configuration(cl);
+
 		}
 		
 		else if(strncmp(input, PRESET_MOTOR_POSITION, strlen(PRESET_MOTOR_POSITION)) == 0) {
@@ -566,17 +509,9 @@ int parse_socket_input(char *input, int cl) {
 			else {
 				
 				tokenize_client_input(array_of_commands, input, num_tokens);
-				
 				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
-				if(pos < -8388607 || pos > 8388607)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				//preset the position
-				if(SMD_preset_motor_position(pos) < 0)
-					return SMD_RETURN_PRESET_POS_FAIL;
-				else
-					return SMD_RETURN_PRESET_POS_SUCCESS;
+				return SMD_preset_motor_position(pos);
 			}
 		}
 		
@@ -595,17 +530,10 @@ int parse_socket_input(char *input, int cl) {
 			else {
 
 				tokenize_client_input(array_of_commands, input, num_tokens);
-				
 				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
-				if(pos < -8388607 || pos > 8388607)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				//preset the position
-				if(SMD_preset_encoder_position(pos) < 0)
-					return SMD_RETURN_PRESET_ENC_FAIL;
-				else
-					return SMD_RETURN_PRESET_ENC_SUCCESS;
+				return SMD_preset_encoder_position(pos);
+
 			}
 		}
 		
@@ -844,7 +772,7 @@ void parse_smd_response_to_client_input(int smd_response, char *input, int fd, i
 int write_to_client(int cl, const char *message) {
 	
 	if(VERBOSE == 1) {
-		fprintf(stderr, "Writing %s to client\n", message);
+		fprintf(stderr, "Client write: %s", message);
 	}
 	
 	//Send the message back to client

@@ -52,6 +52,7 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_READ_CURRENT_CONFIG_FAIL,			/**< Current configuration could not be loaded into the input registers */
 	SMD_RETURN_READY_TO_READ_CONFIG,				/**< Drive ready to put current configuration into input registers*/
 	SMD_RETURN_RESET_ERRORS_SUCCESS,				/**< Error reset command successful */
+	SMD_RETURN_UNKNOWN_ERROR,						/**< Unknown error - shouldn't really be seen under normal circumstances */
 	
 	SMD_RETURN_READY_FOR_SEGMENTS,					/**< Assembled Move - Drive ready and waiting for segments */
 	SMD_RETURN_SEND_NEXT_SEGMENT,					/**< Assembled Move - Drive ready to accept next segment */

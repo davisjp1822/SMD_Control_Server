@@ -12,12 +12,12 @@
 #include <unistd.h>
 
 #include "SMD_Motor_Commands.h"
-#include "SMD_Constants.h"
 #include "SMD_Utilities.h"
+#include "SMD_Modbus.h"
 
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
-int SMD_open_command_connection() {
+SMD_RESPONSE_CODES  SMD_open_command_connection() {
 	
 	smd_command_connection = modbus_new_tcp(DEVICE_IP, 502);
 	
@@ -25,15 +25,15 @@ int SMD_open_command_connection() {
 	if(strlen(DEVICE_IP) == 0 || modbus_connect(smd_command_connection) == -1) {
 		modbus_free(smd_command_connection);
 		SMD_CONNECTED = 0;
-		return -1;
+		return SMD_RETURN_NO_ROUTE_TO_HOST;
 	}
 	//connect successful - set SMD_CONNECTED
 	else {
 		SMD_CONNECTED = 1;
-		return 0;
+		return SMD_RETURN_COMMAND_SUCCESS;
 	}
 	
-	return 0;
+	return SMD_RETURN_UNKNOWN_ERROR;
 }
 
 void SMD_close_command_connection() {
@@ -57,7 +57,7 @@ int SMD_read_input_registers(int cl) {
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_close(ctx);
 		modbus_free(ctx);
-		return -3;
+		return SMD_RETURN_NO_ROUTE_TO_HOST;
 	}
 	
 	else {
@@ -73,13 +73,13 @@ int SMD_read_input_registers(int cl) {
 		
 		if( (rc=modbus_read_registers(ctx, 0, 10, tab_status_words_reg)) == -1 ) {
 			perror("Error reading input registers");
-			return -1;
+			return SMD_RETURN_COMMAND_FAILED;
 			
 		}
 		
 		if( (rk=modbus_read_registers(ctx, 0, 10, (uint16_t *)&tab_motor_data_reg)) == -1 ) {
 			perror("Error reading input registers");
-			return -1;
+			return SMD_RETURN_COMMAND_FAILED;
 			
 		}
 		
@@ -126,53 +126,24 @@ int SMD_read_input_registers(int cl) {
 		
 		modbus_close(ctx);
 		modbus_free(ctx);
-		return 0;
+		return SMD_RETURN_COMMAND_SUCCESS;
 	}
 }
 
-int SMD_load_current_configuration(int cl) {
+SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) {
 	
-	//Step 1 - Write the current configuration into the input registers (this puts the drive into configuration mode)
+	int registers[10] = {1025, 1024, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033};
+	int values[10] =	{34816, 32768, 0, 0, 0, 0, 0, 0, 0, 0};
 	
-	//Step 2 - Tell the client that the registers are ready to be read
+	SMD_RESPONSE_CODES response = send_modbus_command(registers, values, 10, "load_configuration");
 	
-	//Step 3 - The client will then make a single call to read_input_registers to parse the configuration
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		
-		fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	
-	else {
-		
-		int rc, i;
-		
-		int registers[10] = {1025, 1024, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033};
-		int values[10] =	{34816, 32768, 0, 0, 0, 0, 0, 0, 0, 0};
-		
-		for(i=0; i<10; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
-		return 0;
-	}
+	if(response == SMD_RETURN_COMMAND_SUCCESS)
+		return SMD_RETURN_READY_TO_READ_CONFIG;
+	else
+		return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
 }
 
-int SMD_read_current_configuration(int cl) {
+SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
 	
 	modbus_t *ctx = NULL;
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
@@ -185,7 +156,7 @@ int SMD_read_current_configuration(int cl) {
 		modbus_close(ctx);
 		modbus_free(ctx);
 		
-		return -3;
+		return SMD_RETURN_NO_ROUTE_TO_HOST;
 	}
 	
 	else {
@@ -199,7 +170,7 @@ int SMD_read_current_configuration(int cl) {
 		
 		if( (rc=modbus_read_registers(ctx, 0, 10, tab_reg)) == -1 ) {
 			perror("Error reading input registers");
-			return -1;
+			return SMD_RETURN_COMMAND_FAILED;
 			
 		}
 		
@@ -241,24 +212,40 @@ int SMD_read_current_configuration(int cl) {
 		modbus_close(ctx);
 		modbus_free(ctx);
 		
-		return 0;
+		return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
 }
 
-int SMD_jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
+SMD_RESPONSE_CODES SMD_jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
+	//do input checking
+	if(direction < 0 || direction > 1) {
+		log_message("Jog: Direction invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
+	
+	else if(accel < 1 || accel > 5000) {
+		log_message("Jog: Accel invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(decel < 1 || decel > 5000) {
+		log_message("Jog: Decel invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(jerk < 0 || jerk > 5000) {
+		log_message("Jog: Jerk invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(speed < 0 || speed > 2999999) {
+		log_message("Jog: Speed invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
 	else {
 		
-		int rc,i;
 		int direc = direction == 0 ? 128 : 256;
 		int16_t speed_UW = 0;
 		int16_t speed_LW = 0;
@@ -273,38 +260,43 @@ int SMD_jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t s
 			speed_LW = speed;
 		}
 		
-		//write the registers
 		int registers[10] = {1024, 1025, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1024};
 		int values[10] = {0, 32768, 0, speed_UW, speed_LW, accel, decel, 0, jerk, direc};
 		
-		for(i=0; i<10; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
+		return send_modbus_command(registers, values, 10, "jog");
 		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
 	}
 }
 
-int SMD_relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
+SMD_RESPONSE_CODES SMD_relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
+	if(rel_pos < -8388607 || rel_pos > 8388607) {
+		log_message("Relative Move: Position Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
+	
+	else if(accel < 1 || accel > 5000) {
+		log_message("Relative Move: Accel Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(decel < 1 || decel > 5000) {
+		log_message("Relative Move: Decel Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(jerk < 0 || jerk > 5000) {
+		log_message("Relative Move: Jerk Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(speed < 0 || speed > 2999999) {
+		log_message("Relative Move: Speed Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
 	else {
 		
-		int rc,i;
 		struct Words posWords = convert_int_to_words(rel_pos);
 		struct Words speedWords = convert_int_to_words(speed);
 		
@@ -312,275 +304,132 @@ int SMD_relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jer
 		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
 		int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 2};
 		
-		for(i=0; i<9; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		//fprintf(stderr, "relative move with:\n posUpper: %d\n pos lower: %d, speed upper: %d\n speed lower: %d\n accel: %d\n decel: %d\n jerk: %d\n", posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk);
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
+		return send_modbus_command(registers, values, 9, "relative_move");
 	}
 }
 
-int SMD_drive_enable() {
+SMD_RESPONSE_CODES SMD_drive_enable() {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	int registers[2] = {1025, 1024};
+	int values[2] =	{32768, 0};
 	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		//write the registers
-		int registers[2] = {1025, 1024};
-		int values[2] =	{32768, 0};
-		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
-}
-
-int SMD_drive_disable() {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		//write the registers
-		int registers[2] = {1025, 1024};
-		int values[2] =	{0, 0};
-		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
-}
-
-int SMD_hold_move() {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		//write the registers
-		int registers[3] = {1024, 1025, 1024};
-		int values[3] =	{0, 32768, 4};
-		
-		for(i=0; i<3; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
-}
-
-int SMD_immed_stop() {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		//write the registers
-		int registers[2] = {1025, 1024};
-		int values[2] =	{32768, 16};
-		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
-}
-
-int SMD_reset_errors() {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
-		
-		int rc, i;
-		
-		//write the registers
-		int registers[3] = {1024, 1024, 1025};
-		int values[3] = {0, 1024, 32768};
-		
-		for(i=0; i<3; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
+	return send_modbus_command(registers, values, 2, "drive_enable");
 	
 }
 
-int SMD_preset_encoder_position(int32_t pos) {
+SMD_RESPONSE_CODES SMD_drive_disable() {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	int registers[2] = {1025, 1024};
+	int values[2] =	{0, 0};
 	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
+	return send_modbus_command(registers, values, 2, "drive_disable");
+}
+
+SMD_RESPONSE_CODES SMD_hold_move() {
+	
+	int registers[3] = {1024, 1025, 1024};
+	int values[3] =	{0, 32768, 4};
+	
+	return send_modbus_command(registers, values, 3, "hold_move");
+}
+
+SMD_RESPONSE_CODES SMD_immed_stop() {
+	
+	int registers[2] = {1025, 1024};
+	int values[2] =	{32768, 16};
+	
+	return send_modbus_command(registers, values, 2, "immediate_stop");
+}
+
+SMD_RESPONSE_CODES SMD_reset_errors() {
+	
+	int registers[3] = {1024, 1024, 1025};
+	int values[3] = {0, 1024, 32768};
+	
+	return send_modbus_command(registers, values, 3, "reset_errors");
+}
+
+SMD_RESPONSE_CODES SMD_preset_encoder_position(int32_t pos) {
+	
+	if(pos < -8388607 || pos > 8388607) {
+		log_message("Preset Encoder: Position Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
+	
 	else {
 		
-		int rc,i;
 		struct Words returnWords = convert_int_to_words(pos);
-		
-		//write the registers
 		int registers[4] = {1025, 1026, 1027, 1024};
 		int values[4] = {32768, returnWords.upper_word, returnWords.lower_word, 16384};
 		
-		for(i=0; i<4; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
+		SMD_RESPONSE_CODES response = send_modbus_command(registers, values, 4, "preset_encoder");
+		
+		if(response == SMD_RETURN_COMMAND_SUCCESS) {
+			return SMD_RETURN_PRESET_ENC_SUCCESS;
 		}
 		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
+		else {
+			return SMD_RETURN_PRESET_ENC_FAIL;
+		}
+		
 	}
+	
 }
 
-int SMD_preset_motor_position(int32_t pos) {
+SMD_RESPONSE_CODES SMD_preset_motor_position(int32_t pos) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
+	if(pos < -8388607 || pos > 8388607) {
+		log_message("Preset Motor Position: Position Invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
+	
 	else {
 		
-		int rc,i;
 		struct Words returnWords = convert_int_to_words(pos);
-		
-		//write the registers
 		int registers[4] = {1025, 1026, 1027, 1024};
 		int values[4] = {32768, returnWords.upper_word, returnWords.lower_word, 512};
 		
-		for(i=0; i<4; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
+		SMD_RESPONSE_CODES response = send_modbus_command(registers, values, 4, "preset_motor");
+		
+		if(response == SMD_RETURN_COMMAND_SUCCESS) {
+			return SMD_RETURN_PRESET_POS_SUCCESS;
 		}
 		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
+		else {
+			return SMD_RETURN_PRESET_POS_FAIL;
+		}
 	}
 }
 
-int SMD_set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
+SMD_RESPONSE_CODES SMD_set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	if(starting_speed < 1 || starting_speed > 1999999) {
+		log_message("Set Config: Speed invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
 	
-	//try and connect to see what happens - we also have to be in config mode
-	if( (strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1)) {
-		
-		fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
-		return -3;
+	else if(steps_per_turn < 200 || steps_per_turn > 32767) {
+		log_message("Set Config: Steps per turn invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(enc_pulses_per_turn != 1024) {
+		log_message("Set Config: Encoder pulses invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(idle_current_percentage < 0 || idle_current_percentage > 100) {
+		log_message("Set Config: Idle current percentage invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(motor_current < 10 || motor_current > 34) {
+		log_message("Set Config: Motor current invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
 	
 	else {
 		
-		int rc, i;
 		int16_t starting_speed_UW = 0;
 		int16_t starting_speed_LW = 0;
 		
@@ -598,38 +447,45 @@ int SMD_set_configuration(int32_t control_word, int32_t config_word, int32_t sta
 		int registers[8] = {1025, 1024, 1026, 1027, 1028, 1030, 1031, 1032};
 		int values[8] = {config_word, control_word, starting_speed_UW, starting_speed_LW, steps_per_turn, enc_pulses_per_turn, idle_current_percentage, motor_current};
 		
-		for(i=0; i<8; i++) {
-			
-			//fprintf(stderr, "setting register %d to %d\n", registers[i], values[i]);
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
+		SMD_RESPONSE_CODES response = send_modbus_command(registers, values, 8, "set_configuration");
 		
-		//modbus_flush(ctx);
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
-		return 0;
+		if(response == SMD_RETURN_COMMAND_SUCCESS)
+			return SMD_RETURN_SAVE_CONFIG_SUCCESS;
+		else
+			return SMD_RETURN_SAVE_CONFIG_FAIL;
 	}
 }
 
-int SMD_find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
+SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
+	//do input checking
+	if(direction < 0 || direction > 1) {
+		log_message("Find Home: Direction invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
+	
+	else if(accel < 1 || accel > 5000) {
+		log_message("Find Home: Accel invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(decel < 1 || decel > 5000) {
+		log_message("Find Home: Decel invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(jerk < 0 || jerk > 5000) {
+		log_message("Find Home: Jerk invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
+	else if(speed < 0 || speed > 2999999) {
+		log_message("Find Home: Speed invalid\n");
+		return SMD_RETURN_INVALID_PARAMETER;
+	}
+	
 	else {
 		
-		int rc,i;
 		int direc = direction == 0 ? 32 : 64;
 		struct Words speed_words = convert_int_to_words(speed);
 		
@@ -637,17 +493,7 @@ int SMD_find_home(int direction, int32_t speed, int16_t accel, int16_t decel, in
 		int registers[8] = {1025, 1028, 1029, 1030, 1031, 1033, 1032, 1024};
 		int values[8] = {32768, speed_words.upper_word, speed_words.lower_word, accel, decel, jerk, 0 ,direc};
 		
-		for(i=0; i<8; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
+		return send_modbus_command(registers, values, 8, "find_home");
 	}
 }
 

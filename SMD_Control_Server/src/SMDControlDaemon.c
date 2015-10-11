@@ -26,7 +26,7 @@ static void parse_args(int argc, char **argv);
 int main(int argc, char *argv[]) {
 	
 	if(geteuid() != 0) {
-		fprintf(stderr, "Could not launch SMD server - are you root?\n");
+		fprintf(stderr, "Could not launch SMD Control Server - are you root?\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -53,6 +53,7 @@ void parse_args(int argc, char **argv) {
 				
 			case 'v' :
 				VERBOSE = 1;
+				fprintf(stderr, "Starting SMD Control Server in verbose mode, listening on port %d...\n", SERVER_PORT);
 				start_listening();
 				break;
 				
