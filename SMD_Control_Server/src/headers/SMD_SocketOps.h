@@ -33,4 +33,13 @@ int parse_socket_input(char *input, int cl);
  */
 void parse_smd_response_to_client_input(int smd_response, char *input, int fd, int cl);
 
+/**
+	@fn int write_to_client(int cl)
+	@brief Writes a message back to the client
+	@param cl Integer specifying a valid socket handle
+	@param message Message to send to client
+	@return int 0 if successful
+ */
+int write_to_client(int cl, const char *message);
+
 #endif /* SMD_SocketOps_h */

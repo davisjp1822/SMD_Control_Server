@@ -46,16 +46,6 @@ struct Words convert_int_to_words(int32_t number);
 int32_t convert_string_to_long_int(const char *str);
 
 /**
-	@fn int write_to_client(int cl)
-	@brief Writes a message back to the client
-	@param cl Integer specifying a valid socket handle
-	@param message Message to send to client
-	@return int 0 if successful
- */
-int write_to_client(int cl, const char *message);
-
-
-/**
 	@fn int number_of_tokens(const char *command_string)
 	@brief Counts the number of parameters (separate from the command itself) sent from the client to the server
 	@param command_string Raw command string sent from client

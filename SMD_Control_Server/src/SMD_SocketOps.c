@@ -840,3 +840,19 @@ void parse_smd_response_to_client_input(int smd_response, char *input, int fd, i
 		write_to_client(cl, SEGMENT_ACCEPTED);
 	}
 }
+
+int write_to_client(int cl, const char *message) {
+	
+	if(VERBOSE == 1) {
+		fprintf(stderr, "Writing %s to client\n", message);
+	}
+	
+	//Send the message back to client
+	if(write(cl, message , strlen(message)) == -1) {
+		perror("Error writing to client");
+		return -1;
+	}
+	else {
+		return 0;
+	}
+}

@@ -53,18 +53,6 @@ struct Words convert_int_to_words(int32_t number) {
 	return returnWord;
 }
 
-int write_to_client(int cl, const char *message) {
-	
-	//Send the message back to client
-	if(write(cl, message , strlen(message)) == -1) {
-		perror("Error writing to client");
-		return -1;
-	}
-	else {
-		return 0;
-	}
-}
-
 int number_of_tokens(const char *command_string) {
 	
 	int num_tokens = 0;
