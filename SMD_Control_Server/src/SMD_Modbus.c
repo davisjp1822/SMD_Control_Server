@@ -24,9 +24,14 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, 
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		
 		char message[1024];
+		char formattedIP[strlen(DEVICE_IP)-1];
+		
+		strncpy(formattedIP, DEVICE_IP, sizeof(formattedIP));
+		
 		snprintf(message,
 				 sizeof(message),
-				 "Connection failed when trying to connect to motor to send command %s with error: %s\n",
+				 "Connection failed when trying to connect to motor (%s) to send command %s with error: %s\n",
+				 formattedIP,
 				 command_name,
 				 modbus_strerror(errno));
 		
@@ -34,7 +39,9 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, 
 		
 		modbus_close(ctx);
 		modbus_free(ctx);
-		return SMD_RETURN_NO_ROUTE_TO_HOST;
+		
+		//TODO - this should fail more gracefully - just tell it connection numbers exceeded?
+		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else {
