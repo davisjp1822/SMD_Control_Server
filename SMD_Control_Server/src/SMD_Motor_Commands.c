@@ -30,7 +30,7 @@ SMD_RESPONSE_CODES  SMD_open_command_connection() {
 	//connect successful - set SMD_CONNECTED
 	else {
 		SMD_CONNECTED = 1;
-		return SMD_RETURN_COMMAND_SUCCESS;
+		return SMD_RETURN_CONNECT_SUCCESS;
 	}
 	
 	return SMD_RETURN_UNKNOWN_ERROR;
@@ -42,6 +42,7 @@ void SMD_close_command_connection() {
 		modbus_close(smd_command_connection);
 		modbus_free(smd_command_connection);
 		smd_command_connection = NULL;
+		SMD_CONNECTED = 0;
 	}
 }
 
