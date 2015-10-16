@@ -24,8 +24,8 @@ void open_server_socket() {
 	struct sockaddr_in addr;
 	struct sockaddr_storage client_addr;
 	socklen_t len;
-	int8_t cl,rc,fd;
-	char buf[1024];
+	int16_t cl,rc,fd;
+	char buf[2048];
 	
 	if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("Socket Error");
@@ -83,16 +83,17 @@ void open_server_socket() {
 	while (1) {
 		
 		//this clears the buffer, gets it ready for more input
-		bzero(buf, 1024);
+		bzero(buf, 2048);
 		
 		//should fork maybe?
 		
 		if((rc=read(cl,buf,sizeof(buf))) > 0) {
 			
-			parse_smd_response_to_client_input(rc, buf, fd, cl);
+			parse_smd_response_to_client_input(buf, cl);
 		}
 		
 		else {
+
 			close(cl);
 			
 			//if the client disconnects, we should close the command connection with the motor for safety
@@ -125,7 +126,7 @@ void open_server_socket() {
 	}
 }
 
-int parse_socket_input(char *input, int cl) {
+int parse_socket_input(const char *input, const int cl) {
 	
 	if(SMD_CONNECTED == 0) {
 		
@@ -658,10 +659,12 @@ int parse_socket_input(char *input, int cl) {
 	
 }
 
-void parse_smd_response_to_client_input(int smd_response, char *input, int fd, int cl) {
+void parse_smd_response_to_client_input(const char *input, const int cl) {
+	
+	int smd_response = smd_response=parse_socket_input(input,cl);
 	
 	//successful run - tell the client
-	if((smd_response=parse_socket_input(input,cl)) == SMD_RETURN_COMMAND_SUCCESS ) {
+	if(smd_response == SMD_RETURN_COMMAND_SUCCESS ) {
 		write_to_client(cl, COMMAND_SUCCESS);
 	}
 	
@@ -769,7 +772,7 @@ void parse_smd_response_to_client_input(int smd_response, char *input, int fd, i
 	}
 }
 
-int write_to_client(int cl, const char *message) {
+int write_to_client(const int cl, const char *message) {
 	
 	if(VERBOSE == 1) {
 		fprintf(stderr, "Client write: %s", message);
@@ -777,7 +780,7 @@ int write_to_client(int cl, const char *message) {
 	
 	//Send the message back to client
 	if(write(cl, message , strlen(message)) == -1) {
-		perror("Error writing to client");
+		log_message("Error writing to client\n");
 		return -1;
 	}
 	else {

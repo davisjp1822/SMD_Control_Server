@@ -22,16 +22,15 @@ void open_server_socket();
 	@param cl Socket handle for the client socket
 	@ return int 0 if successful
  */
-int parse_socket_input(char *input, int cl);
+int parse_socket_input(const char *input, const int cl);
 
 /**
 	@fn void parse_smd_response_to_client_input(int smd_response, char *input, int fd, int cl)
 	@brief Reads the status back from the raw Modbus commands and translates them into return codes that can be related back to the client.
-	@param smd_response Response back from the Modbus command
 	@param cl Socket handle for the client socket
 	@ return int 0 if successful
  */
-void parse_smd_response_to_client_input(int smd_response, char *input, int fd, int cl);
+void parse_smd_response_to_client_input(const char *input, const int cl);
 
 /**
 	@fn int write_to_client(int cl)
@@ -40,6 +39,6 @@ void parse_smd_response_to_client_input(int smd_response, char *input, int fd, i
 	@param message Message to send to client
 	@return int 0 if successful
  */
-int write_to_client(int cl, const char *message);
+int write_to_client(const int cl, const char *message);
 
 #endif /* SMD_SocketOps_h */
