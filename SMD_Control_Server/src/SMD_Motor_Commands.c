@@ -14,6 +14,7 @@
 #include "SMD_Motor_Commands.h"
 #include "SMD_Utilities.h"
 #include "SMD_Modbus.h"
+#include "SMD_SocketOps.h"
 
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
@@ -23,13 +24,18 @@ SMD_RESPONSE_CODES  SMD_open_command_connection() {
 	
 	//try and connect to see what happens
 	if(strlen(DEVICE_IP) == 0 || modbus_connect(smd_command_connection) == -1) {
+		
 		modbus_free(smd_command_connection);
 		SMD_CONNECTED = 0;
+		
 		return SMD_RETURN_NO_ROUTE_TO_HOST;
+		
 	}
 	//connect successful - set SMD_CONNECTED
 	else {
+		
 		SMD_CONNECTED = 1;
+		
 		return SMD_RETURN_CONNECT_SUCCESS;
 	}
 	
@@ -43,13 +49,14 @@ void SMD_close_command_connection() {
 		modbus_free(smd_command_connection);
 		smd_command_connection = NULL;
 		SMD_CONNECTED = 0;
+
 	}
 }
 
 
 /***** MOTOR MOVE FUNCTIONS *****/
 
-int SMD_read_input_registers(int cl) {
+SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 	
 	modbus_t *ctx = NULL;
 	ctx = modbus_new_tcp(DEVICE_IP, 502);
@@ -58,7 +65,8 @@ int SMD_read_input_registers(int cl) {
 	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
 		modbus_close(ctx);
 		modbus_free(ctx);
-		return SMD_RETURN_NO_ROUTE_TO_HOST;
+		fprintf(stderr, "Connection failed when trying to read input registers: %s\n", modbus_strerror(errno));
+		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else {
@@ -86,24 +94,19 @@ int SMD_read_input_registers(int cl) {
 		
 		else {
 			for( i=0; i < rc; i++ ) {
-				//fprintf(stderr, "reg[%d]=\t\t\t%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
 				
 				char temp[16];
-				
+		
 				memset(&temp, 0, sizeof(temp));
 				
 				//only add leading 0x for items that are legitimately in hex
-				if(i == 0)
+				if(i == 0 || i == 1)
 					snprintf(temp, 16, "%X", tab_status_words_reg[i]);
-				
-				else if(i == 1) {
-					
-					snprintf(temp, 16, "%X", tab_status_words_reg[i]);
-				}
 				
 				else
 					snprintf(temp, 16, "%d", tab_motor_data_reg[i]);
 				
+				//add the leading character
 				if(i==0) {
 					snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
 				}
@@ -116,18 +119,14 @@ int SMD_read_input_registers(int cl) {
 			//close the string with a linebreak so that the data is sent
 			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
 			
-			//debug
-			//fprintf(stderr, "%s", client_write_string);
-			
 			//write the registers to the client
-			if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
-				perror("Error writing to client");
-			}
+			write_to_client(cl, client_write_string);
 		}
 		
 		modbus_close(ctx);
 		modbus_free(ctx);
-		return SMD_RETURN_COMMAND_SUCCESS;
+		
+		return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
 }
 

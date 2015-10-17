@@ -40,7 +40,7 @@ void  SMD_close_command_connection();
 	@param cl The client to write the message to (a socket identifer)
 	@return int 0 if successful
 */
-int SMD_read_input_registers(int cl);
+SMD_RESPONSE_CODES SMD_read_input_registers(int cl);
 
 /**
 	@fn int SMD_load_current_configuration(int cl)
