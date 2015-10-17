@@ -172,6 +172,7 @@ int parse_socket_input(const char *input, const int cl) {
 				
 				//should never get here - smd_ip would have to NULL
 				else {
+					log_message("Fatal error - we should NOT be here\n");
 					free(smd_ip);
 					return SMD_RETURN_NO_ROUTE_TO_HOST;
 				}
@@ -477,10 +478,7 @@ int parse_socket_input(const char *input, const int cl) {
 		
 		else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)) == 0) {
 			
-			if(SMD_read_input_registers(cl) < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_HANDLED_BY_CLIENT;
+			return SMD_read_input_registers(cl);
 		}
 		
 		else if(strncmp(input, LOAD_CURRENT_CONFIGURATION, strlen(LOAD_CURRENT_CONFIGURATION)) == 0) {
@@ -774,7 +772,7 @@ void parse_smd_response_to_client_input(const char *input, const int cl) {
 
 int write_to_client(const int cl, const char *message) {
 	
-	if(VERBOSE == 1) {
+	if(VERBOSE == 1 && strncmp(message, ",,", 2) != 0) {
 		fprintf(stderr, "Client write: %s", message);
 	}
 	
