@@ -50,7 +50,7 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_SAVE_CONFIG_SUCCESS,					/**< Write config to RAM successful */
 	SMD_RETURN_SAVE_CONFIG_FAIL,					/**< Could not write config to RAM */
 	SMD_RETURN_READ_CURRENT_CONFIG_FAIL,			/**< Current configuration could not be loaded into the input registers */
-	SMD_RETURN_READY_TO_READ_CONFIG,				/**< Drive ready to put current configuration into input registers*/
+	SMD_RETURN_READY_TO_READ_CONFIG,				/**< Drive ready to put current configuration into input registers */
 	SMD_RETURN_RESET_ERRORS_SUCCESS,				/**< Error reset command successful */
 	SMD_RETURN_UNKNOWN_ERROR,						/**< Unknown error - shouldn't really be seen under normal circumstances */
 	
@@ -60,6 +60,17 @@ typedef enum SMD_RESPONSE_CODES {
 	
 	
 } SMD_RESPONSE_CODES;
+
+
+/**
+ Enum defining what type of registers should be read from the SMD, and how they should be formatted to be sent to the client
+ */
+typedef enum SMD_REGISTER_READ_TYPE {
+	
+	SMD_READ_INPUT_REGISTERS,					/** Read input registers (sends client back string starting with ,, */
+	SMD_READ_CONFIG_REGISTERS					/** Read input registers (sends client back string with configuration starting with ### */
+	
+} SMD_REGISTER_READ_TYPE;
 
 /*
  Definitions of string constants that are sent to the client (responses to commands).

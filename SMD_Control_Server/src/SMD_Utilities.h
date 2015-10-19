@@ -34,7 +34,6 @@ struct Words {
 	@brief Splits a 32 bit integer into 16 bit words. Useful when taking a speed command from a client and converting it into something the AMCI drive understands.
 	@return Words
  */
-
 struct Words convert_int_to_words(int32_t number);
 
 /**

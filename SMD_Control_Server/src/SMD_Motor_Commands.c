@@ -58,76 +58,21 @@ void SMD_close_command_connection() {
 
 SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	uint16_t tab_status_words_reg[10];
+	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		fprintf(stderr, "Connection failed when trying to read input registers: %s\n", modbus_strerror(errno));
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl);
+	
+	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else {
 		
-		int rc, i, rk;
-		uint16_t tab_status_words_reg[10];
-		int16_t tab_motor_data_reg[10];
-		char client_write_string[128];
-		
-		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
-		memset(&tab_motor_data_reg, 0, sizeof(tab_motor_data_reg));
-		memset(&client_write_string, 0, sizeof(client_write_string));
-		
-		if( (rc=modbus_read_registers(ctx, 0, 10, tab_status_words_reg)) == -1 ) {
-			perror("Error reading input registers");
-			return SMD_RETURN_COMMAND_FAILED;
-			
-		}
-		
-		if( (rk=modbus_read_registers(ctx, 0, 10, (uint16_t *)&tab_motor_data_reg)) == -1 ) {
-			perror("Error reading input registers");
-			return SMD_RETURN_COMMAND_FAILED;
-			
-		}
-		
-		else {
-			for( i=0; i < rc; i++ ) {
-				
-				char temp[16];
-		
-				memset(&temp, 0, sizeof(temp));
-				
-				//only add leading 0x for items that are legitimately in hex
-				if(i == 0 || i == 1)
-					snprintf(temp, 16, "%X", tab_status_words_reg[i]);
-				
-				else
-					snprintf(temp, 16, "%d", tab_motor_data_reg[i]);
-				
-				//add the leading character
-				if(i==0) {
-					snprintf(client_write_string, sizeof(client_write_string), ",,%s", temp);
-				}
-				
-				else {
-					snprintf(client_write_string, sizeof(client_write_string), "%s,%s", client_write_string, temp);
-				}
-			}
-			
-			//close the string with a linebreak so that the data is sent
-			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
-			
-			//write the registers to the client
-			write_to_client(cl, client_write_string);
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
+		//read_modbus_registers writes the string to the client
 		return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
+	
 }
 
 SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) {
@@ -144,76 +89,22 @@ SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) {
 }
 
 SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
+
+	uint16_t tab_status_words_reg[10];
+	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl);
 	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1) {
-		
-		fprintf(stderr, "Connection failed when trying to read config: %s\n", modbus_strerror(errno));
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
-		return SMD_RETURN_NO_ROUTE_TO_HOST;
+	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
+		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else {
 		
-		int rc, i;
-		uint16_t tab_reg[64];
-		char client_write_string[64];
-		
-		memset(&tab_reg, 0, sizeof(tab_reg));
-		memset(&client_write_string, 0, sizeof(client_write_string));
-		
-		if( (rc=modbus_read_registers(ctx, 0, 10, tab_reg)) == -1 ) {
-			perror("Error reading input registers");
-			return SMD_RETURN_COMMAND_FAILED;
-			
-		}
-		
-		else {
-			for( i=0; i < rc; i++ ) {
-				//fprintf(stderr, "reg[%d]=\t\t\t%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
-				
-				char temp[16];
-				
-				memset(&temp, 0, sizeof(temp));
-				
-				//only add leading 0x for items that are legitimately in hex
-				if(i == 0 || i == 1)
-					snprintf(temp, 16, "0x%X", tab_reg[i]);
-				else
-					snprintf(temp, 16, "%d", tab_reg[i]);
-				
-				if(i==0) {
-					snprintf(client_write_string, sizeof(client_write_string), "###%s", temp);
-				}
-				
-				else {
-					snprintf(client_write_string, sizeof(client_write_string), "%s,%s", client_write_string, temp);
-				}
-			}
-			
-			//close the string with a linebreak so that the data is sent
-			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
-			
-			//fprintf(stderr, "config registers: %s\n", client_write_string);
-			
-			//write the registers to the client
-			if(write(cl, client_write_string , sizeof(client_write_string)) == -1) {
-				perror("Error writing to client");
-			}
-		}
-		
-		//modbus_flush(ctx);
-		modbus_close(ctx);
-		modbus_free(ctx);
-		
+		//read_modbus_registers writes the string to the client
 		return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
+	
 }
 
 SMD_RESPONSE_CODES SMD_jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {

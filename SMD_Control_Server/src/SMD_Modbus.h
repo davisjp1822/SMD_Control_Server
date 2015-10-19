@@ -1,10 +1,17 @@
-//
-//  SMD_Modbus.h
-//  SMD_Control_Server
-//
-//  Created by John Davis on 10/11/15.
-//  Copyright © 2015 3ML LLC. All rights reserved.
-//
+/*
+  SMD_Modbus.h
+  SMD_Control_Server
+
+  Created by John Davis on 10/11/15.
+  Copyright © 2015 3ML LLC. All rights reserved.
+*/
+
+/**
+ * @file SMD_Modbus.h
+ * @author John Davis <jd@pauldavisautomation.com>
+ * @date September 30, 2015
+ * @brief SMD wrapper functions for SMD Modbus/TCP communications
+ */
 
 #ifndef SMD_Modbus_h
 #define SMD_Modbus_h
@@ -13,6 +20,27 @@
 
 #include <stdio.h>
 
+/**
+	@fn SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, const int num_registers, const char *command_name)
+	@brief Sends a Modbus/TCP command to the SMD drive. Handles all of the overhead, such as threading, etc.
+	@param registers Array (int) that contains the registers to be written to
+	@param values Array (int) of the values that are meant to go in int *registers
+	@param command_name String specifying the English name of the command. This is used for logging purposes (you can put anything here)
+	@return SMD_RESPONSE_CODES
+ */
 SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, const int num_registers, const char *command_name);
+
+
+/**
+	@fn SMD_RESPONSE_CODES read_modbus_registers(const int *registers, const int start, const int end, const SMD_REGISTER_READ_TYPE reg_read_type)
+	@brief Reads input registers from the drive so that the drive status and configuration can be formatted to send to the client (reads the first 10 registers (0-10)
+	@param registers Array (uint16_t) that specifies the array that will hold the return values
+	@param int Starting register
+	@param int Ending register
+	@param reg_read_type Specify how the client return string will be formatted (input registers (,,) or configuration (###)
+	@param cl Socket handle for client that is to be written the return string
+	@return SMD_RESPONSE_CODES
+ */
+SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl);
 
 #endif /* SMD_Modbus_h */
