@@ -94,7 +94,7 @@ SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
 	uint16_t tab_status_words_reg[10];
 	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl);
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_CONFIG_REGISTERS, cl);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 		return SMD_RETURN_COMMAND_FAILED;
