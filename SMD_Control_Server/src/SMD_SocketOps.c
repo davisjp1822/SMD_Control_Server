@@ -164,7 +164,13 @@ int parse_socket_input(const char *input, const int cl) {
 				//now try and connect
 				if(smd_ip) {
 					
-					strncpy(DEVICE_IP, smd_ip, strlen(smd_ip));
+					DEVICE_IP = malloc(sizeof(char) * strlen(smd_ip));
+					strncpy(DEVICE_IP, smd_ip, strlen(smd_ip)-1);
+					
+					if(strstr(DEVICE_IP, "\n") != NULL) {
+						//log_message("New line in DEVICE_IP! Fixing...\n");
+						DEVICE_IP[strcspn(DEVICE_IP, "\n")] = '\0';
+					}
 					
 					free(smd_ip);
 					return SMD_open_command_connection();

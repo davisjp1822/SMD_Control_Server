@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <modbus.h>
 
-extern char DEVICE_IP[32];							/**< SMD device IP - this is defined by client upon connection */
+extern char *DEVICE_IP;								/**< SMD device IP - this is defined by client upon connection */
 extern const char VERSION[8];						/**< Version string */
 extern const char SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
 
