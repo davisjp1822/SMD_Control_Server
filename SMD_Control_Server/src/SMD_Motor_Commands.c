@@ -45,11 +45,12 @@ SMD_RESPONSE_CODES  SMD_open_command_connection() {
 void SMD_close_command_connection() {
 	
 	if( smd_command_connection != NULL && SMD_CONNECTED == 1) {
+		
 		modbus_close(smd_command_connection);
 		modbus_free(smd_command_connection);
 		smd_command_connection = NULL;
 		SMD_CONNECTED = 0;
-
+		free(DEVICE_IP);
 	}
 }
 
