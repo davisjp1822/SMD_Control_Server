@@ -72,6 +72,13 @@ typedef enum SMD_REGISTER_READ_TYPE {
 	
 } SMD_REGISTER_READ_TYPE;
 
+typedef enum SMD_ASSEMBLED_MOVE_TYPE {
+	
+	SMD_ASSEMBLED_MOVE_TYPE_BLEND,				/** Assembled move type is blend - have to specify direction of movement (CW or CCW) upfront */
+	SMD_ASSEMBLED_MOVE_TYPE_DWELL				/** Assembled move type is dwell - direction can change and is specified in the individual moves */
+	
+} SMD_ASSEMBLED_MOVE_TYPE;
+
 /*
  Definitions of string constants that are sent to the client (responses to commands).
  */
