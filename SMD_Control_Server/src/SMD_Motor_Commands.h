@@ -249,8 +249,11 @@ int program_move_segment(int32_t target_pos,
 	@brief Runs the current assembled move that is in memory. 
 	@param blend_move_direction 0 is CW, 1 is CCW
 	@param dwell_time Specified dwell time between segments, in milliseconds
-	@return int 0 if successful
+	@param move_type Specifies what type of assembled move we are doing
+	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
  */
-int run_assembled_move(int16_t blend_move_direction, int32_t dwell_time);
+SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type);
 
 #endif /* SMD_Motor_Commands_h */

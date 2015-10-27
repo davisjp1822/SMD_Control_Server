@@ -641,11 +641,7 @@ int parse_socket_input(const char *input, const int cl) {
 				if(dwell_time < 0 || dwell_time > 65535)
 					return SMD_RETURN_INVALID_PARAMETER;
 				
-				//preset the position
-				if(run_assembled_move(-1, dwell_time) < 0)
-					return SMD_RETURN_COMMAND_FAILED;
-				else
-					return SMD_RETURN_COMMAND_SUCCESS;
+				return run_assembled_move(0, dwell_time, SMD_ASSEMBLED_MOVE_TYPE_DWELL);
 			}
 			
 		}

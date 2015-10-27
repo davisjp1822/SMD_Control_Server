@@ -389,6 +389,38 @@ SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, in
 	}
 }
 
+SMD_RESPONSE_CODES SMD_program_assembled_dwell_move() {
+	
+	return SMD_RETURN_COMMAND_SUCCESS;
+}
+
+SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type) {
+	
+	int32_t LSW = 0;
+	
+	if(move_type == SMD_ASSEMBLED_MOVE_TYPE_BLEND) {
+		
+		//0 == CW
+		LSW = blend_move_direction == 0 ? 32768 : 32784;
+	}
+	
+	if(move_type == SMD_ASSEMBLED_MOVE_TYPE_DWELL) {
+		
+		if(dwell_time >= 0)
+			LSW = 33280;
+		
+		else {
+			return SMD_RETURN_INVALID_PARAMETER;
+		}
+	}
+	
+	int registers[3] = {1025, 1033, 1024};
+	int values[3] =	{LSW, dwell_time, 8192};
+	
+	return send_modbus_command(registers, values, 3, "run_assembled_move");
+	
+}
+
 
 /***** ASSEMBLED MOVE FUNCTIONS *****/
 
@@ -495,50 +527,3 @@ int program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16
 	}
 }
 
-int run_assembled_move(int16_t blend_move_direction, int32_t dwell_time) {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	
-	//blend_move_direction and dwell_time cannot be simultaneously set
-	else if(blend_move_direction >= 0 && dwell_time >= 0) {
-		return -1;
-	}
-	
-	else {
-		
-		int rc, i;
-		int32_t LSW = 0;
-		
-		//what are we doing? blend move or dwell move?
-		if(blend_move_direction >= 0)
-			//0 == CW
-			LSW = blend_move_direction == 0 ? 32768 : 32784;
-		
-		if(dwell_time >= 0)
-			LSW = 33280;
-		
-		int registers[3] = {1025, 1033, 1024};
-		int values[3] =	{LSW, dwell_time, 8192};
-		
-		for(i=0; i<3; i++) {
-			
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
-}
