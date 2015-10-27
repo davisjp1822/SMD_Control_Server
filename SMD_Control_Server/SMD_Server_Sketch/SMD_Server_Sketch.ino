@@ -7,21 +7,18 @@
 
 void setup() {
 
-  Serial.begin(115200);
+  //Serial.begin(115200);
   //while(!Serial);
-
-  Serial.print(F("Hello\n"));
   
   //setup the environment
   Bridge.begin();
-  Serial.print(F("Bridge Started\n"));
 
-  while(!FileSystem.exists("/mnt/sda1/smd_server/SMD_Server"))
+  while(!FileSystem.exists("/mnt/sda1/smd_server/SMDServer"))
     delay(1000);
   
   //start the SMD Server.
   Process server;
-  server.runShellCommand("export LD_LIBRARY_PATH=/mnt/sda1/smd_server/lib && ifconfig eth1 10.20.6.1 && /mnt/sda1/smd_server/SMD_Server");
+  server.runShellCommand("export LD_LIBRARY_PATH=/mnt/sda1/smd_server/lib && ifconfig eth1 10.20.6.1 && /mnt/sda1/smd_server/SMDServer -d");
   
   //turn on the LED to let us know that we are good
   pinMode(13,OUTPUT);
