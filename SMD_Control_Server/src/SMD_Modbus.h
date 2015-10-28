@@ -39,8 +39,9 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, 
 	@param int Ending register
 	@param reg_read_type Specify how the client return string will be formatted (input registers (,,) or configuration (###)
 	@param cl Socket handle for client that is to be written the return string
+	@param registers_string String showing retrieved input registers values
 	@return SMD_RESPONSE_CODES
  */
-SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl);
+SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl, char *registers_string);
 
 #endif /* SMD_Modbus_h */

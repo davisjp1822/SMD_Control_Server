@@ -16,6 +16,8 @@
 #include "SMD_Modbus.h"
 #include "SMD_SocketOps.h"
 
+static SMD_RESPONSE_CODES _program_block_first_block(int cl);
+
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
 SMD_RESPONSE_CODES  SMD_open_command_connection() {
@@ -62,7 +64,7 @@ SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 	uint16_t tab_status_words_reg[10];
 	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl);
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl, NULL);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 		return SMD_RETURN_COMMAND_FAILED;
@@ -94,7 +96,7 @@ SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
 	uint16_t tab_status_words_reg[10];
 	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_CONFIG_REGISTERS, cl);
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_CONFIG_REGISTERS, cl, NULL);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 		return SMD_RETURN_COMMAND_FAILED;
@@ -389,9 +391,19 @@ SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, in
 	}
 }
 
-SMD_RESPONSE_CODES SMD_program_assembled_dwell_move() {
+SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl) {
 	
-	return SMD_RETURN_COMMAND_SUCCESS;
+	if(_program_block_first_block(cl) == SMD_RETURN_COMMAND_SUCCESS) {
+		
+		//client write is taken care of by _program_block_first_block()
+		return SMD_RETURN_HANDLED_BY_CLIENT;
+	}
+	
+	else {
+		
+		SMD_reset_errors();
+		return SMD_RETURN_COMMAND_FAILED;
+	}
 }
 
 SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type) {
@@ -424,36 +436,45 @@ SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwel
 
 /***** ASSEMBLED MOVE FUNCTIONS *****/
 
-int program_block_first_block() {
+static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	int rc;
 	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
+	int registers[2] = {1025, 1024};
+	int values[2] =	{32768, 2048};
+	
+	//1. send the modbus command
+	rc = send_modbus_command(registers, values, 2, "program_first_block");
+	
+	//2. Check the input registers to see if we were successful. If we were, return COMMAND_SUCCESS
+	if(rc == SMD_RETURN_COMMAND_SUCCESS) {
 		
-		int rc, i;
+		sleep(2);
 		
-		int registers[2] = {1025, 1024};
-		int values[2] =	{32768, 2048};
+		char input_registers[128] = {0};
 		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
+		uint16_t tab_status_words_reg[10];
+		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+		
+		int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers);
+		
+		if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
+			return SMD_RETURN_COMMAND_FAILED;
 		}
 		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
+		else {
+			
+			//check bits to make sure that the drive actually is ready to accept a move segment
+			fprintf(stderr, "input registers: %s\n", input_registers);
+			
+			//if we are ready, write to client
+			write_to_client(cl, SEND_ASSEMBLED_DWELL_MOVE_JSON);
+			
+			return SMD_RETURN_COMMAND_SUCCESS;
+		}
 	}
+	
+	return SMD_RETURN_COMMAND_FAILED;
 }
 
 int prepare_for_next_segment() {

@@ -43,9 +43,7 @@ const char READY_TO_READ_CONFIG[32] = "READY_TO_READ_CONFIG\n";
 const char GET_CURRENT_CONFIG_FAIL[32] = "GET_CURRENT_CONFIG_FAIL\n";
 const char RELATIVE_MOVE_COMPLETE[32] = "REL_MOVE_COMPLETE\n";
 const char RESET_ERRORS_SUCCESS[32] = "RESET_ERRORS_SUCCESS\n";
-const char READY_FOR_SEGMENTS[32] = "READY_FOR_SEGMENTS\n";
-const char SEND_NEXT_SEGMENT[32] = "SEND_NEXT_SEGMENT\n";
-const char SEGMENT_ACCEPTED[32] = "SEGMENT_ACCEPTED\n";
+const char SEND_ASSEMBLED_DWELL_MOVE_JSON[32] = "SEND_ASSEMBLED_DWELL_MOVE_JSON\n";
 
 //command constants (used by client and server)
 const char CONNECT[32] = "connect";
@@ -66,7 +64,5 @@ const char LOAD_CURRENT_CONFIGURATION[32] = "loadCurrentConfiguration";
 const char READ_CURRENT_CONFIGURATION[32] = "readCurrentConfiguration";
 const char FIND_HOME_CW[32] = "homeCW";
 const char FIND_HOME_CCW[32] = "homeCCW";
-const char PROGRAM_FIRST_BLOCK[32] = "programFirstBlock";
-const char PREPARE_FOR_NEXT_SEGMENT[32] = "prepareForNextSegment";
-const char PROGRAM_MOVE_SEGMENT[32] = "programMoveSegment";
+const char PROGRAM_ASSEMBLED_MOVE[32] = "programAssembledMove";
 const char RUN_ASSEMBLED_DWELL_MOVE[32] = "runAssembledDwellMove";

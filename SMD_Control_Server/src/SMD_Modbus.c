@@ -34,6 +34,7 @@ typedef struct read_modbus_command_args {
 	SMD_REGISTER_READ_TYPE reg_read_type;
 	int cl;
 	SMD_RESPONSE_CODES result;
+	char *registers_string;
 	
 } read_modbus_command_args;
 
@@ -92,7 +93,7 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, 
 	return 0;
 }
 
-SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl) {
+SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl, char *registers_string) {
 	
 	if (pthread_mutex_init(&lock, NULL) != 0) {
 		printf("Cannot get mutex\n");
@@ -116,6 +117,7 @@ SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_RE
 		cmd_args.registers = registers;
 		cmd_args.reg_read_type = reg_read_type;
 		cmd_args.cl = cl;
+		cmd_args.registers_string = malloc(sizeof(char) * 128);
 		
 		if(pthread_create(&tid, NULL, _read_modbus_registers, &cmd_args) != 0) {
 			
@@ -129,6 +131,13 @@ SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_RE
 			pthread_mutex_unlock(&lock);
 			
 			pthread_join(tid, NULL);
+			
+			//registers_string = &cmd_args.registers_string;
+			strncpy(registers_string, cmd_args.registers_string, strlen(cmd_args.registers_string));
+			
+			fprintf(stderr, "should print registers: %s\n", registers_string);
+			
+			free(cmd_args.registers_string);
 			return cmd_args.result;
 		}
 		
@@ -311,8 +320,15 @@ static void *_read_modbus_registers(void *args) {
 			//close the string with a linebreak so that the data is sent
 			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
 			
-			//write the registers to the client
-			write_to_client(cmd_args->cl, client_write_string);
+			//write the registers to the client and save the string to the return struct
+			if(cmd_args->cl > 0) {
+				write_to_client(cmd_args->cl, client_write_string);
+			}
+			
+			if(cmd_args->registers_string != NULL) {
+				cmd_args->registers_string = strdup(client_write_string);
+				fprintf(stderr, "first registers_string: %s\n", cmd_args->registers_string);
+			}
 		}
 		
 		modbus_close(ctx);

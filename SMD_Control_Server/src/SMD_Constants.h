@@ -82,29 +82,26 @@ typedef enum SMD_ASSEMBLED_MOVE_TYPE {
 /*
  Definitions of string constants that are sent to the client (responses to commands).
  */
-extern const char COMMAND_SUCCESS[32];				/**< Sends COMMAND_SUCCESS to client */
-extern const char ENABLE_SUCCESS[32];				/**< Sends ENABLE_SUCCESS to client */
-extern const char DISABLE_SUCCESS[32];				/**< Sends DISABLE_SUCCESS to client */
-extern const char SMD_CONNECT_SUCCESS[32];			/**< Sends SMD_CONNECT_SUCCESS to client */
-extern const char COMMAND_ERROR[32];				/**< Sends COMMAND_ERROR to client */
-extern const char INVALID_INPUT[32];				/**< Sends INVALID_INPUT to client */
-extern const char WRITE_ERROR[32];					/**< Sends WRITE_ERROR to client */
-extern const char NO_ROUTE_TO_SMD[32];				/**< Sends NO_ROUTE_TO_SMD to client */
-extern const char INVALID_PARAMETER[32];			/**< Sends INVALID_PARAMETER to client */
-extern const char PRESET_ENCODER_SUCCESS[32];		/**< Sends PRESET_ENCODER_SUCCESS to client */
-extern const char PRESET_POSITION_SUCCESS[32];		/**< Sends PRESET_POSITION_SUCCESS to client */
-extern const char PRESET_ENCODER_FAIL[32];			/**< Sends PRESET_ENCODER_FAIL to client */
-extern const char PRESET_POSITION_FAIL[32];			/**< Sends PRESET_POSITION_FAIL to client */
-extern const char CONFIG_SAVE_SUCCESS[32];			/**< Sends CONFIG_SAVE_SUCCESS to client */
-extern const char CONFIG_SAVE_FAIL[32];				/**< Sends CONFIG_SAVE_FAIL to client */
-extern const char READY_TO_READ_CONFIG[32];			/**< Sends READY_TO_READ_CONFIG to client */
-extern const char GET_CURRENT_CONFIG_FAIL[32];		/**< Sends GET_CURRENT_CONFIG_FAIL to client */
-extern const char RELATIVE_MOVE_COMPLETE[32];		/**< Sends RELATIVE_MOVE_COMPLETE to client */
-extern const char RESET_ERRORS_SUCCESS[32];			/**< Sends RESET_ERRORS_SUCCESS to client */
-
-extern const char READY_FOR_SEGMENTS[32];			/**< Sends READY_FOR_SEGMENTS to client */
-extern const char SEND_NEXT_SEGMENT[32];			/**< Sends SEND_NEXT_SEGMENT to client */
-extern const char SEGMENT_ACCEPTED[32];				/**< Sends SEGMENT_ACCEPTED to client */
+extern const char COMMAND_SUCCESS[32];					/**< Sends COMMAND_SUCCESS to client */
+extern const char ENABLE_SUCCESS[32];					/**< Sends ENABLE_SUCCESS to client */
+extern const char DISABLE_SUCCESS[32];					/**< Sends DISABLE_SUCCESS to client */
+extern const char SMD_CONNECT_SUCCESS[32];				/**< Sends SMD_CONNECT_SUCCESS to client */
+extern const char COMMAND_ERROR[32];					/**< Sends COMMAND_ERROR to client */
+extern const char INVALID_INPUT[32];					/**< Sends INVALID_INPUT to client */
+extern const char WRITE_ERROR[32];						/**< Sends WRITE_ERROR to client */
+extern const char NO_ROUTE_TO_SMD[32];					/**< Sends NO_ROUTE_TO_SMD to client */
+extern const char INVALID_PARAMETER[32];				/**< Sends INVALID_PARAMETER to client */
+extern const char PRESET_ENCODER_SUCCESS[32];			/**< Sends PRESET_ENCODER_SUCCESS to client */
+extern const char PRESET_POSITION_SUCCESS[32];			/**< Sends PRESET_POSITION_SUCCESS to client */
+extern const char PRESET_ENCODER_FAIL[32];				/**< Sends PRESET_ENCODER_FAIL to client */
+extern const char PRESET_POSITION_FAIL[32];				/**< Sends PRESET_POSITION_FAIL to client */
+extern const char CONFIG_SAVE_SUCCESS[32];				/**< Sends CONFIG_SAVE_SUCCESS to client */
+extern const char CONFIG_SAVE_FAIL[32];					/**< Sends CONFIG_SAVE_FAIL to client */
+extern const char READY_TO_READ_CONFIG[32];				/**< Sends READY_TO_READ_CONFIG to client */
+extern const char GET_CURRENT_CONFIG_FAIL[32];			/**< Sends GET_CURRENT_CONFIG_FAIL to client */
+extern const char RELATIVE_MOVE_COMPLETE[32];			/**< Sends RELATIVE_MOVE_COMPLETE to client */
+extern const char RESET_ERRORS_SUCCESS[32];				/**< Sends RESET_ERRORS_SUCCESS to client */
+extern const char SEND_ASSEMBLED_DWELL_MOVE_JSON[32];	/**< Sends SEND_ASSEMBLED_DWELL_MOVE_JSON to client */
 
 /*
  Definitions of string constants that define motor commands to the server from the client
@@ -128,10 +125,7 @@ extern const char LOAD_CURRENT_CONFIGURATION[32];	/**< Command to load current c
 extern const char READ_CURRENT_CONFIGURATION[32];	/**< Command to read current configuration (readCurrentConfiguration), returns string to client */
 extern const char FIND_HOME_CW[32];					/**< Command to home clockwise (homeCW,accel,decel,jerk,speed) */
 extern const char FIND_HOME_CCW[32];				/**< Command to home counter-clockwise (homeCCW,accel,decel,jerk,speed) */
-
-extern const char PROGRAM_FIRST_BLOCK[32];			/**< Assembled Move - Command telling drive to wait for assembled move sequence (programFirstBlock) */
-extern const char PREPARE_FOR_NEXT_SEGMENT[32];		/**< Assembled Move - Command telling drive to prepare for next segment (prepareForNextSegment) */
-extern const char PROGRAM_MOVE_SEGMENT[32];			/**< Assembled Move - Command telling drive to program segment (programMoveSegment,targetPos,speed,accel,decel,jerk */
+extern const char PROGRAM_ASSEMBLED_MOVE[32];		/**< Command to tell the drive to prepare to accept JSON describing an assembled move. Writes SEND_ASSEMBLED_DWELL_MOVE_JSON */
 extern const char RUN_ASSEMBLED_DWELL_MOVE[32];		/**< Assembled Move - Command telling drive to run the loaded assembled move (runAssembledDwellMove,direc,dwell_time) */
 
 #endif /* SMD_CONSTANTS_H */

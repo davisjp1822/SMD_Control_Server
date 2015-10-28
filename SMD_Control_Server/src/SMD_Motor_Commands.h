@@ -213,36 +213,11 @@ SMD_RESPONSE_CODES SMD_find_home(int direction,
 				  int16_t decel,
 				  int16_t jerk);
 
-
 /**
-	@fn int program_block_first_block()
-	@brief Tells the drive that it should be expecting assembled move segments as the next commands
-	@return int 0 if successful
+	@fn SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl)
+	@brief Tells the drive to get ready to accept the JSON describing an assembled move. Upon success, this will write SEND_ASSEMBLED_DWELL_MOVE_JSON to the client
  */
-int program_block_first_block();
-
-/**
-	@fn int prepare_for_next_segment()
-	@brief Tells the drive that the client is done transmitting the current segment, and should prepare for the next segment from the client
-	@return int 0 if successful
- */
-int prepare_for_next_segment();
-
-/**
-	@fn int program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
-	@brief Programs the drive with the specified segment
-	@param target_pos In motor counts, -8,388,607 to 8,388,607
-	@param speed Motor Starting Speed-2,999,999
-	@param accel Acceleration, 1-5000
-	@param decel Deceleration, 1-5000
-	@param jerk Jerk, 1-5000
-	@return int 0 if successful
- */
-int program_move_segment(int32_t target_pos,
-						 int32_t speed,
-						 int16_t accel,
-						 int16_t decel,
-						 int16_t jerk);
+SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl);
 
 /**
 	@fn run_assembled_move(int16_t blend_move_direction, int32_t dwell_time)
@@ -250,6 +225,7 @@ int program_move_segment(int32_t target_pos,
 	@param blend_move_direction 0 is CW, 1 is CCW
 	@param dwell_time Specified dwell time between segments, in milliseconds
 	@param move_type Specifies what type of assembled move we are doing
+	@param cl Valid client socket to tell that we are ready for the move profile JSON
 	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
 	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
 	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure

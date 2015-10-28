@@ -542,82 +542,9 @@ int parse_socket_input(const char *input, const int cl) {
 			}
 		}
 		
-		else if(strncmp(input, PROGRAM_FIRST_BLOCK, strlen(PROGRAM_FIRST_BLOCK)) == 0) {
+		else if(strncmp(input, PROGRAM_ASSEMBLED_MOVE, strlen(PROGRAM_ASSEMBLED_MOVE)) == 0) {
 			
-			if(program_block_first_block() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else {
-				return SMD_RETURN_READY_FOR_SEGMENTS;
-			}
-		}
-		
-		else if(strncmp(input, PREPARE_FOR_NEXT_SEGMENT, strlen(PREPARE_FOR_NEXT_SEGMENT)) == 0) {
-			
-			if(prepare_for_next_segment() < 0)
-				return SMD_RETURN_COMMAND_FAILED;
-			else
-				return SMD_RETURN_SEND_NEXT_SEGMENT;
-		}
-		
-		else if(strncmp(input, PROGRAM_MOVE_SEGMENT, strlen(PROGRAM_MOVE_SEGMENT)) == 0) {
-			
-			char *array_of_commands[6] = {0};
-			
-			int num_tokens = 0;
-			
-			//loop through the input and convert to int
-			if((num_tokens = number_of_tokens(input)) != 6) {
-				return SMD_RETURN_INVALID_PARAMETER;
-			}
-			
-			else {
-				
-				int i = 0;
-				int32_t target_pos = 0, speed = 0;
-				int16_t accel = 0, decel = 0, jerk = 0;
-				
-				tokenize_client_input(array_of_commands, input, num_tokens);
-				
-				for(i=0; i<num_tokens; i++) {
-					
-					if(i==1)
-						target_pos = (int32_t)convert_string_to_long_int(array_of_commands[i]);
-					
-					if(i==2)
-						speed = (int32_t)convert_string_to_long_int(array_of_commands[i]);
-					
-					if(i==3)
-						accel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
-					
-					if(i==4)
-						decel = (int16_t)convert_string_to_long_int(array_of_commands[i]);
-					
-					if(i==5)
-						jerk = (int16_t)convert_string_to_long_int(array_of_commands[i]);
-				}
-				
-				//test inputs
-				if(target_pos < -8388607 || target_pos > 8388607)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				if(speed < 0 || speed >  2999999)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				if(accel < 1 || accel > 5000)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				if(decel < 1 || decel > 5000)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				if(jerk < 0 || jerk > 5000)
-					return SMD_RETURN_INVALID_PARAMETER;
-				
-				//preset the position
-				if(program_move_segment(target_pos, speed, accel, decel, jerk) < 0)
-					return SMD_RETURN_COMMAND_FAILED;
-				else
-					return SMD_RETURN_SEGMENT_ACCEPTED;
-			}
+			return SMD_program_assembled_dwell_move(cl);
 		}
 		
 		else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)) == 0) {
@@ -637,6 +564,10 @@ int parse_socket_input(const char *input, const int cl) {
 				tokenize_client_input(array_of_commands, input, num_tokens);
 				
 				dwell_time = (int32_t)convert_string_to_long_int(array_of_commands[1]);
+				
+				//get json string size
+				/*json_string = malloc(sizeof(char) * strlen(array_of_commands[2]));
+				strncpy(json_string, array_of_commands[2], strlen(array_of_commands[2]));*/
 				
 				if(dwell_time < 0 || dwell_time > 65535)
 					return SMD_RETURN_INVALID_PARAMETER;
@@ -755,21 +686,7 @@ void parse_smd_response_to_client_input(const char *input, const int cl) {
 	if(smd_response == SMD_RETURN_RESET_ERRORS_SUCCESS) {
 		write_to_client(cl, RESET_ERRORS_SUCCESS);
 	}
-	
-	//entered assembled move mode successfully - ready for programmed segments
-	if(smd_response == SMD_RETURN_READY_FOR_SEGMENTS) {
-		write_to_client(cl, READY_FOR_SEGMENTS);
-	}
-	
-	//tell the client to send the next segment
-	if(smd_response == SMD_RETURN_SEND_NEXT_SEGMENT) {
-		write_to_client(cl, SEND_NEXT_SEGMENT);
-	}
-	
-	//segment programming successful
-	if(smd_response == SMD_RETURN_SEGMENT_ACCEPTED) {
-		write_to_client(cl, SEGMENT_ACCEPTED);
-	}
+
 }
 
 int write_to_client(const int cl, const char *message) {
