@@ -395,8 +395,7 @@ SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl) {
 	
 	if(_program_block_first_block(cl) == SMD_RETURN_COMMAND_SUCCESS) {
 		
-		//client write is taken care of by _program_block_first_block()
-		return SMD_RETURN_HANDLED_BY_CLIENT;
+		return SMD_RETURN_READY_FOR_ASSEMBLED_MOVE;
 	}
 	
 	else {
@@ -465,12 +464,27 @@ static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
 		else {
 			
 			//check bits to make sure that the drive actually is ready to accept a move segment
-			fprintf(stderr, "input registers: %s\n", input_registers);
+			//bits 6 & 7 should be set to 1 if the drive is good to accept move segments
+			char binString[17] = {0};
+			int num_tokens = number_of_tokens(input_registers);
+			char *input_register_tokens[num_tokens];
+			
+			tokenize_client_input(input_register_tokens, input_registers, num_tokens);
+			
+			if(hex_string_to_bin_string(binString, 16, input_register_tokens[2]) == 0) {
+				
+				if(binString[6] == '1' && binString[7] == '1') {
+					return SMD_RETURN_COMMAND_SUCCESS;
+				}
+			}
+			
+			else {
+				return SMD_RETURN_COMMAND_FAILED;
+			}
 			
 			//if we are ready, write to client
-			write_to_client(cl, SEND_ASSEMBLED_DWELL_MOVE_JSON);
+			//write_to_client(cl, SEND_ASSEMBLED_DWELL_MOVE_JSON);
 			
-			return SMD_RETURN_COMMAND_SUCCESS;
 		}
 	}
 	

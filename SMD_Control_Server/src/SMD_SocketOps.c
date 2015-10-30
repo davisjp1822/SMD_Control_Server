@@ -686,7 +686,14 @@ void parse_smd_response_to_client_input(const char *input, const int cl) {
 	if(smd_response == SMD_RETURN_RESET_ERRORS_SUCCESS) {
 		write_to_client(cl, RESET_ERRORS_SUCCESS);
 	}
-
+	
+	//ready for an assembled move profile
+	if(smd_response == SMD_RETURN_READY_FOR_ASSEMBLED_MOVE) {
+		
+		STATUS_WAITING_FOR_ASSEMBLED_MOVE = 1;
+		write_to_client(cl, SEND_ASSEMBLED_MOVE_PARAMS);
+	}
+	
 }
 
 int write_to_client(const int cl, const char *message) {
