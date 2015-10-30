@@ -19,14 +19,16 @@
 #include <stdio.h>
 #include <modbus.h>
 
-extern char *DEVICE_IP;								/**< SMD device IP - this is defined by client upon connection */
-extern const char VERSION[8];						/**< Version string */
-extern const char SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
+extern char			*DEVICE_IP;							/**< SMD device IP - this is defined by client upon connection */
+extern const char	VERSION[8];							/**< Version string */
+extern const char	SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
 
-extern int16_t SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
-extern int16_t SERVER_PORT;							/**< The port on which this server should listen */
-extern int8_t VERBOSE;								/**< Enable verbose logging */
-extern modbus_t *smd_command_connection;			/**< Command connection to SMD Motor */
+extern int16_t		SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
+extern int16_t		SERVER_PORT;						/**< The port on which this server should listen */
+extern int8_t		VERBOSE;							/**< Enable verbose logging */
+extern modbus_t		*smd_command_connection;			/**< Command connection to SMD Motor */
+
+extern int8_t		STATUS_WAITING_FOR_ASSEMBLED_MOVE;	/**< Client has told us to wait for either a blend move or dwell move motion profile */
 
 /**
  Enum defining internal response codes for how the motor responds to direct modbus commands. These are not variables that are sent externally to the client.
@@ -53,11 +55,7 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_READY_TO_READ_CONFIG,				/**< Drive ready to put current configuration into input registers */
 	SMD_RETURN_RESET_ERRORS_SUCCESS,				/**< Error reset command successful */
 	SMD_RETURN_UNKNOWN_ERROR,						/**< Unknown error - shouldn't really be seen under normal circumstances */
-	
-	SMD_RETURN_READY_FOR_SEGMENTS,					/**< Assembled Move - Drive ready and waiting for segments */
-	SMD_RETURN_SEND_NEXT_SEGMENT,					/**< Assembled Move - Drive ready to accept next segment */
-	SMD_RETURN_SEGMENT_ACCEPTED						/**< Assembled Move - Segment accepted successfully */
-	
+	SMD_RETURN_READY_FOR_ASSEMBLED_MOVE				/**< SMD is ready to accept an assembled move profile */
 	
 } SMD_RESPONSE_CODES;
 
@@ -101,7 +99,7 @@ extern const char READY_TO_READ_CONFIG[32];				/**< Sends READY_TO_READ_CONFIG t
 extern const char GET_CURRENT_CONFIG_FAIL[32];			/**< Sends GET_CURRENT_CONFIG_FAIL to client */
 extern const char RELATIVE_MOVE_COMPLETE[32];			/**< Sends RELATIVE_MOVE_COMPLETE to client */
 extern const char RESET_ERRORS_SUCCESS[32];				/**< Sends RESET_ERRORS_SUCCESS to client */
-extern const char SEND_ASSEMBLED_DWELL_MOVE_JSON[32];	/**< Sends SEND_ASSEMBLED_DWELL_MOVE_JSON to client */
+extern const char SEND_ASSEMBLED_MOVE_PARAMS[32];		/**< Sends SEND_ASSEMBLED_MOVE_PROFILE to client */
 
 /*
  Definitions of string constants that define motor commands to the server from the client
@@ -120,12 +118,15 @@ extern const char RESET_ERRORS[32];					/**< Command to reset errors */
 extern const char READ_INPUT_REGISTERS[32];			/**< Command to read input registers, outputs registers back to client in format 0x0, 0x0, 0, 0, 0, 0, 0, 0, 0, 0 */
 extern const char PRESET_MOTOR_POSITION[32];		/**< Command to preset motor position (presetMotorPosition,pos) */
 extern const char PRESET_ENCODER_POSITION[32];		/**< Command to preset encoder position (presetEncoderPosition,pos) */
-extern const char SAVE_CONFIG_TO_DRIVE[32];			/**< Command to save configuration to drive (saveConfig, control_word,config_word,start_speed,motor_steps_per_turn, encoder_pulses_per_turn,idle_current_percentage,motor_current_percentage */
+extern const char SAVE_CONFIG_TO_DRIVE[32];			/**< Command to save configuration to drive 
+													 (saveConfig, control_word,config_word,start_speed,motor_steps_per_turn, 
+													 encoder_pulses_per_turn,idle_current_percentage,motor_current_percentage */
 extern const char LOAD_CURRENT_CONFIGURATION[32];	/**< Command to load current configuration into the input registers (loadCurrentConfiguration)*/
 extern const char READ_CURRENT_CONFIGURATION[32];	/**< Command to read current configuration (readCurrentConfiguration), returns string to client */
 extern const char FIND_HOME_CW[32];					/**< Command to home clockwise (homeCW,accel,decel,jerk,speed) */
 extern const char FIND_HOME_CCW[32];				/**< Command to home counter-clockwise (homeCCW,accel,decel,jerk,speed) */
-extern const char PROGRAM_ASSEMBLED_MOVE[32];		/**< Command to tell the drive to prepare to accept JSON describing an assembled move. Writes SEND_ASSEMBLED_DWELL_MOVE_JSON */
-extern const char RUN_ASSEMBLED_DWELL_MOVE[32];		/**< Assembled Move - Command telling drive to run the loaded assembled move (runAssembledDwellMove,direc,dwell_time) */
+extern const char PROGRAM_ASSEMBLED_MOVE[32];		/**< Command to tell the drive to prepare to accept JSON describing an assembled move. */
+extern const char RUN_ASSEMBLED_DWELL_MOVE[32];		/**< Assembled Move - Command telling drive to run the 
+													 loaded assembled move (runAssembledDwellMove,direc,dwell_time) */
 
 #endif /* SMD_CONSTANTS_H */
