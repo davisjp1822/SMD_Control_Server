@@ -135,8 +135,6 @@ SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_RE
 			//registers_string = &cmd_args.registers_string;
 			strncpy(registers_string, cmd_args.registers_string, strlen(cmd_args.registers_string));
 			
-			fprintf(stderr, "should print registers: %s\n", registers_string);
-			
 			free(cmd_args.registers_string);
 			return cmd_args.result;
 		}
@@ -327,7 +325,6 @@ static void *_read_modbus_registers(void *args) {
 			
 			if(cmd_args->registers_string != NULL) {
 				cmd_args->registers_string = strdup(client_write_string);
-				fprintf(stderr, "first registers_string: %s\n", cmd_args->registers_string);
 			}
 		}
 		
