@@ -38,8 +38,6 @@ typedef struct read_modbus_command_args {
 	
 } read_modbus_command_args;
 
-int LOCK_COMMS;
-pthread_mutex_t lock;
 
 /* Local function declarations */
 
@@ -48,101 +46,86 @@ static void *_read_modbus_registers(void *args);
 
 /* Public function bodies */
 
-SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, const int num_registers, const char *command_name) {
-	
-	if (pthread_mutex_init(&lock, NULL) != 0) {
-		printf("Cannot get mutex\n");
-		return 0;
-	}
-	
-	else if(LOCK_COMMS == 1) {
+SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values,
+									   const int num_registers, const char *command_name) {
 		
-		printf("Comms are locked when trying to send modbus command\n");
+	pthread_t tid;
+	send_modbus_command_args cmd_args;
+	
+	cmd_args.registers = registers;
+	cmd_args.values = values;
+	cmd_args.num_registers = num_registers;
+	cmd_args.command_name = command_name;
+	
+	if(pthread_create(&tid, NULL, _send_modbus_command, &cmd_args) != 0) {
+		
+		log_message("Could not create Modbus connection thread!\n");
+		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else {
 		
-		pthread_mutex_lock(&lock);
-		
-		LOCK_COMMS = 1;
-		
-		pthread_t tid;
-		send_modbus_command_args cmd_args;
-		
-		cmd_args.registers = registers;
-		cmd_args.values = values;
-		cmd_args.num_registers = num_registers;
-		cmd_args.command_name = command_name;
-		
-		if(pthread_create(&tid, NULL, _send_modbus_command, &cmd_args) != 0) {
-			
-			log_message("Could not create Modbus connection thread!\n");
-		}
-		
-		else {
-			
-			LOCK_COMMS = 0;
-			pthread_mutex_unlock(&lock);
-			
-			pthread_join(tid, NULL);
-			return cmd_args.result;
-		}
+		pthread_join(tid, NULL);
+		return cmd_args.result;
 	}
-	
-	log_message("FATAL: Modbus threading should never have made it here!!!\n");
-	return 0;
 }
 
-SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl, char *registers_string) {
+SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl) {
 	
-	if (pthread_mutex_init(&lock, NULL) != 0) {
-		printf("Cannot get mutex\n");
-		return 0;
+	return return_modbus_registers(registers, reg_read_type, cl, NULL, 128);
+}
+
+SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type,
+										 const int cl, char *registers_string, size_t registers_string_buf_size) {
+		
+	pthread_t tid;
+	read_modbus_command_args cmd_args;
+	
+	cmd_args.registers = registers;
+	cmd_args.reg_read_type = reg_read_type;
+	cmd_args.cl = cl;
+	
+	if(registers_string) {
+		cmd_args.registers_string = malloc(sizeof(char) * registers_string_buf_size);
 	}
 	
-	else if(LOCK_COMMS == 1) {
+	if(registers_string_buf_size < 128) {
 		
-		printf("Comms are locked when trying to send modbus command\n");
+		fprintf(stderr, "size: %lu\n", registers_string_buf_size);
+		log_message("Registers buffer size is not greater than or equal to 128\n");
+		
+		if(registers_string) {
+			free(cmd_args.registers_string);
+		}
+		
+		return SMD_RETURN_COMMAND_FAILED;
+		
+	}
+	
+	else if(pthread_create(&tid, NULL, _read_modbus_registers, &cmd_args) != 0) {
+		
+		log_message("Could not create Modbus read registers thread!\n");
+		
+		if(registers_string) {
+			free(cmd_args.registers_string);
+		}
+		
+		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else {
 		
-		pthread_mutex_lock(&lock);
+		pthread_join(tid, NULL);
 		
-		LOCK_COMMS = 1;
-		
-		pthread_t tid;
-		read_modbus_command_args cmd_args;
-		
-		cmd_args.registers = registers;
-		cmd_args.reg_read_type = reg_read_type;
-		cmd_args.cl = cl;
-		cmd_args.registers_string = malloc(sizeof(char) * 128);
-		
-		if(pthread_create(&tid, NULL, _read_modbus_registers, &cmd_args) != 0) {
+		if(registers_string) {
 			
-			log_message("Could not create Modbus read registers thread!\n");
-		}
-		
-		else {
-			
-			LOCK_COMMS = 0;
-			
-			pthread_mutex_unlock(&lock);
-			
-			pthread_join(tid, NULL);
-			
-			//registers_string = &cmd_args.registers_string;
-			strncpy(registers_string, cmd_args.registers_string, strlen(cmd_args.registers_string));
-			
+			strlcpy(registers_string, cmd_args.registers_string, registers_string_buf_size);
 			free(cmd_args.registers_string);
-			return cmd_args.result;
+			
 		}
 		
+		return cmd_args.result;
 	}
-	
-	log_message("FATAL: Modbus read registers threading should never have made it here!!!\n");
-	return 0;
 }
 
 /* Local function bodies */
@@ -257,7 +240,6 @@ static void *_read_modbus_registers(void *args) {
 		snprintf(errorString, sizeof(errorString), "Could not connect to SMD when trying to read input registers with error: %s\n", modbus_strerror(errno));
 		log_message(errorString);
 		
-		//return SMD_RETURN_NO_ROUTE_TO_HOST;
 		cmd_args->result = SMD_RETURN_NO_ROUTE_TO_HOST;
 	}
 	
@@ -276,7 +258,6 @@ static void *_read_modbus_registers(void *args) {
 			snprintf(errorString, sizeof(errorString), "Could not read input registers with error: %s\n", modbus_strerror(errno));
 			log_message(errorString);
 			
-			//return SMD_RETURN_COMMAND_FAILED;
 			cmd_args->result = SMD_RETURN_COMMAND_FAILED;
 		}
 		
@@ -288,35 +269,54 @@ static void *_read_modbus_registers(void *args) {
 				memset(&temp, 0, sizeof(temp));
 				
 				//only add leading 0x for items that are legitimately in hex
-				if(i == 0 || i == 1)
+				if(i == 0 || i == 1) {
+					
 					snprintf(temp, 16, "0x%X", tab_status_words_reg[i]);
+					
+				}
 				
-				else
+				else {
+			
 					snprintf(temp, 16, "%d", (int16_t)tab_status_words_reg[i]);
 				
-				//add the leading character
+				}
+				
+				//add the leading id (,, or ### - which depends on what type of input register we are printing)
 				if(i==0) {
 					
 					char idString[4];
 					
 					if(cmd_args->reg_read_type == SMD_READ_INPUT_REGISTERS) {
+						
 						strncpy(idString, ",,\0", strlen(",,\0"));
+						
 					}
 					
 					if(cmd_args->reg_read_type == SMD_READ_CONFIG_REGISTERS) {
+						
 						strncpy(idString, "###\0", strlen("###\0"));
 					}
 					
-					snprintf(client_write_string, sizeof(client_write_string), "%s%s", idString, temp);
+					snprintf(client_write_string, sizeof(client_write_string), "%s%s,", idString, temp);
 				}
 				
+				//not the start of the string - just add a "," unless we are the last item, in which case do not concatenate a comma
 				else {
-					snprintf(client_write_string, sizeof(client_write_string), "%s,%s", client_write_string, temp);
+					
+					if(i != rc-1) {
+						
+						strlcat(temp, ",", sizeof(temp));
+						
+					}
+					
+					//finally, add temp (the constructed input register data point) to the rest of the string
+					strlcat(client_write_string, temp, sizeof(client_write_string));
 				}
+				
 			}
 			
-			//close the string with a linebreak so that the data is sent
-			snprintf(client_write_string, sizeof(client_write_string), "%s%s", client_write_string, "\n");
+			//close the string with a linebreak so that the data is processed properly by the client
+			strlcat(client_write_string, "\n", sizeof(client_write_string));
 			
 			//write the registers to the client and save the string to the return struct
 			if(cmd_args->cl > 0) {

@@ -32,16 +32,30 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, 
 
 
 /**
-	@fn SMD_RESPONSE_CODES read_modbus_registers(const int *registers, const int start, const int end, const SMD_REGISTER_READ_TYPE reg_read_type)
+	@fn SMD_RESPONSE_CODES SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl)
 	@brief Reads input registers from the drive so that the drive status and configuration can be formatted to send to the client (reads the first 10 registers (0-10)
 	@param registers Array (uint16_t) that specifies the array that will hold the return values
 	@param int Starting register
 	@param int Ending register
 	@param reg_read_type Specify how the client return string will be formatted (input registers (,,) or configuration (###)
 	@param cl Socket handle for client that is to be written the return string
-	@param registers_string String showing retrieved input registers values
 	@return SMD_RESPONSE_CODES
  */
-SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl, char *registers_string);
+SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl);
+
+/**
+	@fn SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl, char *registers_string, size_t registers_string_buf_size)
+	@brief Reads input registers from the drive so that the drive status and configuration can be formatted to send to the client (reads the first 10 registers (0-10). Also returns the input registers string to registers_string
+	@param registers Array (uint16_t) that specifies the array that will hold the return values
+	@param int Starting register
+	@param int Ending register
+	@param reg_read_type Specify how the client return string will be formatted (input registers (,,) or configuration (###)
+	@param cl Socket handle for client that is to be written the return string
+	@param registers_string String showing retrieved input registers values
+	@param registers_string_buf_size Size of registers_string buffer. MUST BE AT LEAST 128.
+	@return SMD_RESPONSE_CODES
+ */
+SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type,
+										   const int cl, char *registers_string, size_t registers_string_buf_size);
 
 #endif /* SMD_Modbus_h */
