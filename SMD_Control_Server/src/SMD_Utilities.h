@@ -61,6 +61,17 @@ int number_of_tokens(const char *command_string);
  */
 void tokenize_client_input(char **array_of_commands, const char *input, int num_tokens);
 
+
+/**
+	@fn int hex_string_to_bin_string(char *return_string, size_t bin_length, const char *input)
+	@brief Converts a hex value into a binary string.
+	@param return_string String pointer that will hold the binary string. MUST be sized to accomodate bin_length +1
+	@param buf_size Size of return_string buffer
+	@param input Input hex string, can lead with 0x or not.
+	@return Returns 0 if successful, -1 if not
+ */
+int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *input);
+
 /**
 	@fn void log_message(char *message)
 	@brief If in verbose mode, logs message

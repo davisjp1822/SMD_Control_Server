@@ -64,9 +64,10 @@ SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 	uint16_t tab_status_words_reg[10];
 	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl, NULL);
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
+
 		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
@@ -96,7 +97,7 @@ SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
 	uint16_t tab_status_words_reg[10];
 	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_CONFIG_REGISTERS, cl, NULL);
+	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_CONFIG_REGISTERS, cl);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 		return SMD_RETURN_COMMAND_FAILED;
@@ -448,14 +449,15 @@ static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
 	//2. Check the input registers to see if we were successful. If we were, return COMMAND_SUCCESS
 	if(rc == SMD_RETURN_COMMAND_SUCCESS) {
 		
-		sleep(2);
+		sleep(1);
 		
-		char input_registers[128] = {0};
+		char input_registers[128];
+		memset(input_registers, 0, sizeof(input_registers));
 		
 		uint16_t tab_status_words_reg[10];
 		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
 		
-		int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers);
+		int rc = return_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
 		
 		if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 			return SMD_RETURN_COMMAND_FAILED;
@@ -464,14 +466,14 @@ static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
 		else {
 			
 			//check bits to make sure that the drive actually is ready to accept a move segment
-			//bits 6 & 7 should be set to 1 if the drive is good to accept move segments
-			char binString[17] = {0};
+			//per AMCI documentation, bits 6 & 7 should be set to 1 if the drive is good to accept move segments
+			char binString[16] = {0};
 			int num_tokens = number_of_tokens(input_registers);
 			char *input_register_tokens[num_tokens];
 			
 			tokenize_client_input(input_register_tokens, input_registers, num_tokens);
 			
-			if(hex_string_to_bin_string(binString, 16, input_register_tokens[2]) == 0) {
+			if(hex_string_to_bin_string(binString, sizeof(binString), input_register_tokens[2]) == 0) {
 				
 				if(binString[6] == '1' && binString[7] == '1') {
 					return SMD_RETURN_COMMAND_SUCCESS;
@@ -481,10 +483,6 @@ static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
 			else {
 				return SMD_RETURN_COMMAND_FAILED;
 			}
-			
-			//if we are ready, write to client
-			//write_to_client(cl, SEND_ASSEMBLED_DWELL_MOVE_JSON);
-			
 		}
 	}
 	
