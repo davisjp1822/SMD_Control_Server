@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */ = {isa = PBXBuildFile; fileRef = A31C09701BCAED760074D25E /* SMD_Modbus.c */; settings = {ASSET_TAGS = (); }; };
+		A306C7541BE6A99700B43D8E /* cJSON_Utils.c in Sources */ = {isa = PBXBuildFile; fileRef = A306C7501BE6A99700B43D8E /* cJSON_Utils.c */; };
+		A306C7551BE6A99700B43D8E /* cJSON.c in Sources */ = {isa = PBXBuildFile; fileRef = A306C7521BE6A99700B43D8E /* cJSON.c */; };
+		A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */ = {isa = PBXBuildFile; fileRef = A31C09701BCAED760074D25E /* SMD_Modbus.c */; };
 		A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */; };
 		A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */; };
 		A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */; };
 		A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */; };
-		A3EDEFA71BBFFD70003DB4FE /* SMD_SocketOps.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */; settings = {ASSET_TAGS = (); }; };
+		A3EDEFA71BBFFD70003DB4FE /* SMD_SocketOps.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEFA61BBFFD70003DB4FE /* SMD_SocketOps.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +31,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A306C7501BE6A99700B43D8E /* cJSON_Utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cJSON_Utils.c; path = SMD_Control_Server/src/vendor/cJSON_Utils.c; sourceTree = SOURCE_ROOT; };
+		A306C7511BE6A99700B43D8E /* cJSON_Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cJSON_Utils.h; path = SMD_Control_Server/src/vendor/cJSON_Utils.h; sourceTree = SOURCE_ROOT; };
+		A306C7521BE6A99700B43D8E /* cJSON.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cJSON.c; path = SMD_Control_Server/src/vendor/cJSON.c; sourceTree = SOURCE_ROOT; };
+		A306C7531BE6A99700B43D8E /* cJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cJSON.h; path = SMD_Control_Server/src/vendor/cJSON.h; sourceTree = SOURCE_ROOT; };
 		A31C096C1BCAED460074D25E /* SMD_Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Constants.h; sourceTree = "<group>"; };
 		A31C096D1BCAED460074D25E /* SMD_Motor_Commands.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Motor_Commands.h; sourceTree = "<group>"; };
 		A31C096E1BCAED460074D25E /* SMD_SocketOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_SocketOps.h; sourceTree = "<group>"; };
@@ -54,9 +60,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A306C73E1BE55B9400B43D8E /* vendor */ = {
+			isa = PBXGroup;
+			children = (
+				A306C73F1BE55B9400B43D8E /* cJSON */,
+			);
+			path = vendor;
+			sourceTree = "<group>";
+		};
+		A306C73F1BE55B9400B43D8E /* cJSON */ = {
+			isa = PBXGroup;
+			children = (
+				A306C7501BE6A99700B43D8E /* cJSON_Utils.c */,
+				A306C7511BE6A99700B43D8E /* cJSON_Utils.h */,
+				A306C7521BE6A99700B43D8E /* cJSON.c */,
+				A306C7531BE6A99700B43D8E /* cJSON.h */,
+			);
+			path = cJSON;
+			sourceTree = "<group>";
+		};
 		A3EDEF951BBEFA8D003DB4FE /* src */ = {
 			isa = PBXGroup;
 			children = (
+				A306C73E1BE55B9400B43D8E /* vendor */,
 				A31C096C1BCAED460074D25E /* SMD_Constants.h */,
 				A31C096D1BCAED460074D25E /* SMD_Motor_Commands.h */,
 				A31C096E1BCAED460074D25E /* SMD_SocketOps.h */,
@@ -154,6 +180,8 @@
 			files = (
 				A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */,
 				A3EDEFA71BBFFD70003DB4FE /* SMD_SocketOps.c in Sources */,
+				A306C7551BE6A99700B43D8E /* cJSON.c in Sources */,
+				A306C7541BE6A99700B43D8E /* cJSON_Utils.c in Sources */,
 				A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */,
 				A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */,
 				A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */,
