@@ -15,8 +15,9 @@
 #include "SMD_Utilities.h"
 #include "SMD_Modbus.h"
 #include "SMD_SocketOps.h"
+#include "cJSON.h"
 
-static SMD_RESPONSE_CODES _program_block_first_block(int cl);
+static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl);
 
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
@@ -51,7 +52,9 @@ void SMD_close_command_connection() {
 		modbus_close(smd_command_connection);
 		modbus_free(smd_command_connection);
 		smd_command_connection = NULL;
+		
 		SMD_CONNECTED = 0;
+		STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
 		free(DEVICE_IP);
 	}
 }
@@ -392,9 +395,9 @@ SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, in
 	}
 }
 
-SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl) {
+SMD_RESPONSE_CODES SMD_program_assembled_move(int cl) {
 	
-	if(_program_block_first_block(cl) == SMD_RETURN_COMMAND_SUCCESS) {
+	if(_SMD_program_block_first_block(cl) == SMD_RETURN_COMMAND_SUCCESS) {
 		
 		return SMD_RETURN_READY_FOR_ASSEMBLED_MOVE;
 	}
@@ -406,6 +409,50 @@ SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl) {
 	}
 }
 
+SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) {
+	
+	/*
+	 *	Steps for success!
+	 *	1. Parse the JSON - if it doesn't pass, fail.
+	 *	2. If it passes, check number of segments. If the number is greater than 16, fail.
+	 *	3. Figure out what kind of move we are - blend or dwell. Set global flags accordingly.
+	 *	4. Send each move with _program_move_segment
+	 *	4a. Check input registers to see if move was successful
+	 *	4b.	If successful, prepare for next move with _SMD_prepare_for_next_segment()
+	 *	5. Return successfully when all is done.
+	 */
+	
+	cJSON *root = cJSON_Parse(json_string);
+	int i = 0;
+	int num_segments = 0;
+	
+	//1. valid JSON?
+	if(root == 0) {
+		fprintf(stderr, "not valid JSON\n");
+		return SMD_RETURN_COMMAND_FAILED;
+	}
+	
+	//2. Okay, it's valid, but how many segments?
+	for (i=0; i<cJSON_GetArraySize(root); i++) {
+		
+		cJSON *subitem=cJSON_GetArrayItem(root,i);
+		
+		if(strncmp(subitem->string, "segment", strlen("segment")) == 0) {
+			num_segments++;
+		}
+	}
+	
+	//no segments or too many segments? Bad!
+	if(num_segments == 0 || num_segments > 16) {
+		return SMD_RETURN_COMMAND_FAILED;
+	}
+	
+	fprintf(stderr, "JSON: %s\n", cJSON_Print(root));
+	
+	return SMD_RETURN_COMMAND_SUCCESS;
+}
+
+//TODO change to SMD_run_...
 SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type) {
 	
 	int32_t LSW = 0;
@@ -436,7 +483,7 @@ SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwel
 
 /***** ASSEMBLED MOVE FUNCTIONS *****/
 
-static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
+static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
 	
 	int rc;
 	
@@ -471,7 +518,9 @@ static SMD_RESPONSE_CODES _program_block_first_block(int cl) {
 			int num_tokens = number_of_tokens(input_registers);
 			char *input_register_tokens[num_tokens];
 			
-			tokenize_client_input(input_register_tokens, input_registers, num_tokens);
+			if(tokenize_client_input(input_register_tokens, input_registers, num_tokens, ARRAYSIZE(input_register_tokens)) != 0) {
+				return SMD_RETURN_COMMAND_FAILED;
+			}
 			
 			if(hex_string_to_bin_string(binString, sizeof(binString), input_register_tokens[2]) == 0) {
 				

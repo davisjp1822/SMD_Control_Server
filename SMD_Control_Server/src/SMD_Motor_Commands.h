@@ -214,10 +214,21 @@ SMD_RESPONSE_CODES SMD_find_home(int direction,
 				  int16_t jerk);
 
 /**
-	@fn SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl)
-	@brief Tells the drive to get ready to accept the JSON describing an assembled move. Upon success, this will write SEND_ASSEMBLED_DWELL_MOVE_JSON to the client
+	@fn SMD_RESPONSE_CODES SMD_program_assembled_move(int cl)
+	@brief Tells the drive to get ready to accept the JSON describing an assembled move. Upon success, this will write SEND_ASSEMBLED_MOVE_PARAMETERS to the client
  */
-SMD_RESPONSE_CODES SMD_program_assembled_dwell_move(int cl);
+SMD_RESPONSE_CODES SMD_program_assembled_move(int cl);
+
+/**
+	@fn SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string)
+	@brief When SMD_program_assembled_move is called, the next command to the host *must* be a valid JSON string describing the move.
+		This string cannot contain more than 16 moves. Once the moves are programmed, the drive will be put back into a normal state, and 
+		run_assembled_move may be called. JSON follows format:
+		{"1":{"target_pos_inches":5,"programmed_speed":1500,"accel":150,"decel":150,"jerk":0},"2":{"target_pos_inches":-5,"programmed_speed":2000,"accel":150,"decel":150,"jerk":0},"3":{"target_pos_inches":5,"programmed_speed":2500,"accel":150,"decel":150,"jerk":0},"4":{"target_pos_inches":-5,"programmed_speed":3000,"accel":150,"decel":150,"jerk":0},"type":"dwell"}
+	@return SMD_RETURN_COMMAND_SUCCESS
+	@return SMD_RETURN_COMMAND_FAILURE
+ */
+SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string);
 
 /**
 	@fn run_assembled_move(int16_t blend_move_direction, int32_t dwell_time)

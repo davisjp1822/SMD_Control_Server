@@ -202,7 +202,7 @@ int parse_socket_input(const char *input, const int cl) {
 		Also, all of these commands require a connection to the SMD. If there is no connection, return SMD_RETURN_NO_ROUTE_TO_HOST
 	 */
 	
-	if(SMD_CONNECTED == 1) {
+	if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 0) {
 		
 		if(strstr(input, JOG_CW) !=NULL || strstr(input, JOG_CCW) !=NULL) {
 			
@@ -563,7 +563,7 @@ int parse_socket_input(const char *input, const int cl) {
 		
 		else if(strncmp(input, PROGRAM_ASSEMBLED_MOVE, strlen(PROGRAM_ASSEMBLED_MOVE)) == 0) {
 			
-			return SMD_program_assembled_dwell_move(cl);
+			return SMD_program_assembled_move(cl);
 		}
 		
 		else if(strncmp(input, RUN_ASSEMBLED_DWELL_MOVE, strlen(RUN_ASSEMBLED_DWELL_MOVE)) == 0) {
@@ -601,6 +601,26 @@ int parse_socket_input(const char *input, const int cl) {
 		//the client submitted a command that was not recognized
 		else {
 			return SMD_RETURN_INVALID_INPUT;
+		}
+	}
+	
+	//the next input HAS to be the move JSON
+	else if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 1) {
+		
+		//if valid JSON, proceed with programming
+		if(SMD_parse_and_upload_assembled_move(input) == SMD_RETURN_COMMAND_SUCCESS) {
+			
+			STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
+			return SMD_RETURN_COMMAND_SUCCESS;
+		}
+		
+		//if not valid JSON, return failure, reset STATUS_WAITING_FOR_ASSEMBLED_MOVE, and reset errors
+		else {
+			
+			STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
+			SMD_reset_errors();
+			
+			return SMD_RETURN_COMMAND_FAILED;
 		}
 	}
 	
