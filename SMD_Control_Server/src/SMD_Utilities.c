@@ -74,19 +74,31 @@ int number_of_tokens(const char *command_string) {
 }
 
 //TODO - this implementation is unsafe
-void tokenize_client_input(char **array_of_commands, const char *input, int num_tokens) {
+int tokenize_client_input(char **array_of_commands, const char *input, int num_tokens, const size_t array_of_commands_size) {
 
 	char *token, *string, *tofree;
 	tofree = string = strdup(input);
+	
 	num_tokens = 0;
+	int return_array_size = 0;
 	
 	while ((token = strsep(&string, ",")) != NULL) {
 		array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
 		strcpy(array_of_commands[num_tokens], token);
 		num_tokens++;
+		return_array_size++;
+	}
+	
+	if(return_array_size > array_of_commands_size) {
+		
+		log_message("tokenize_client_input: array_of_commands buffer size not big enough for number of tokens!\n");
+		
+		free(tofree);
+		return -1;
 	}
 	
 	free(tofree);
+	return 0;
 }
 
 void log_message(const char *message) {

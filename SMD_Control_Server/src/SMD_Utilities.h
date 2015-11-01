@@ -58,8 +58,10 @@ int number_of_tokens(const char *command_string);
 	@param array_of_commands destination array for tokens
 	@param input Input string from the client
 	@param num_tokens Number of tokens in array_of_commands
+	@param array_of_commands_size Size of array_of_commands
+	@return Returns 0 if successful, -1 if error
  */
-void tokenize_client_input(char **array_of_commands, const char *input, int num_tokens);
+int tokenize_client_input(char **array_of_commands, const char *input, int num_tokens, const size_t array_of_commands_size);
 
 
 /**
