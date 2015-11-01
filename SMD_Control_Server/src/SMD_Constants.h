@@ -16,6 +16,8 @@
 #ifndef SMD_CONSTANTS_H
 #define SMD_CONSTANTS_H
 
+#define ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 #include <stdio.h>
 #include <modbus.h>
 
