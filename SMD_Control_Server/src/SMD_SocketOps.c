@@ -19,13 +19,15 @@
 #include "SMD_Utilities.h"
 #include "SMD_Motor_Commands.h"
 
+#define BUF_SIZE 8192
+
 void open_server_socket() {
 	
 	struct sockaddr_in addr;
 	struct sockaddr_storage client_addr;
 	socklen_t len;
 	int16_t cl,rc,fd;
-	char buf[2048];
+	char buf[BUF_SIZE];
 	
 	if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("Socket Error");
@@ -83,7 +85,7 @@ void open_server_socket() {
 	while (1) {
 		
 		//this clears the buffer, gets it ready for more input
-		bzero(buf, 2048);
+		bzero(buf, BUF_SIZE);
 		
 		//should fork maybe?
 		
@@ -145,7 +147,9 @@ int parse_socket_input(const char *input, const int cl) {
 			else {
 				
 				int i = 0;
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
 				
 				//loop through the input and convert to int
 				for(i=0; i<num_tokens; i++) {
@@ -187,6 +191,7 @@ int parse_socket_input(const char *input, const int cl) {
 		
 		//if not connected, and the command is not 'connect', return 'invalid_input'
 		else {
+			log_message(input);
 			return SMD_RETURN_INVALID_INPUT;
 		}
 	}
@@ -224,7 +229,9 @@ int parse_socket_input(const char *input, const int cl) {
 				
 				int i = 0;
 				
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
 				
 				//loop through the input and convert to int
 				for(i=0; i<5; i++) {
@@ -290,7 +297,9 @@ int parse_socket_input(const char *input, const int cl) {
 				
 				int i = 0;
 				
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
 				
 				//loop through the input and convert to int
 				for(i=0; i<5; i++) {
@@ -357,7 +366,9 @@ int parse_socket_input(const char *input, const int cl) {
 				
 				int i = 0;
 				
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
 				
 				for(i=0; i<num_tokens; i++) {
 					
@@ -421,7 +432,9 @@ int parse_socket_input(const char *input, const int cl) {
 				
 				int i = 0;
 				
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
 				
 				for(i=0; i<num_tokens; i++) {
 					
@@ -513,7 +526,10 @@ int parse_socket_input(const char *input, const int cl) {
 			
 			else {
 				
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
 				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
 				return SMD_preset_motor_position(pos);
@@ -534,7 +550,10 @@ int parse_socket_input(const char *input, const int cl) {
 			
 			else {
 
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
 				pos = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
 				return SMD_preset_encoder_position(pos);
@@ -561,7 +580,9 @@ int parse_socket_input(const char *input, const int cl) {
 			
 			else {
 				
-				tokenize_client_input(array_of_commands, input, num_tokens);
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
 				
 				dwell_time = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
