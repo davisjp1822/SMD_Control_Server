@@ -45,6 +45,7 @@ const char GET_CURRENT_CONFIG_FAIL[32] = "GET_CURRENT_CONFIG_FAIL\n";
 const char RELATIVE_MOVE_COMPLETE[32] = "REL_MOVE_COMPLETE\n";
 const char RESET_ERRORS_SUCCESS[32] = "RESET_ERRORS_SUCCESS\n";
 const char SEND_ASSEMBLED_MOVE_PARAMS[32] = "SEND_ASSEMBLED_MOVE_PARAMETERS\n";
+const char ASSEMBLED_MOVE_ACCEPTED[32] = "ASSEMBLED_MOVE_ACCEPTED\n";
 
 //command constants (used by client and server)
 const char CONNECT[32] = "connect";

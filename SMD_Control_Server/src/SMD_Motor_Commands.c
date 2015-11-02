@@ -17,7 +17,19 @@
 #include "SMD_SocketOps.h"
 #include "cJSON.h"
 
+typedef struct assembled_move_segment {
+	
+	int32_t target_pos_inches;
+	int32_t programmed_speed;
+	int16_t accel;
+	int16_t decel;
+	int16_t jerk;
+	
+} assembled_move_segment;
+
 static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl);
+static SMD_RESPONSE_CODES _SMD_program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
+static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment();
 
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
@@ -420,16 +432,22 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) 
 	 *	4a. Check input registers to see if move was successful
 	 *	4b.	If successful, prepare for next move with _SMD_prepare_for_next_segment()
 	 *	5. Return successfully when all is done.
+	 *
+	 *	sleep() statements are in here to give the drive/network time to catch-up.
+	 *
 	 */
 	
 	cJSON *root = cJSON_Parse(json_string);
 	int i = 0;
 	int num_segments = 0;
+	assembled_move_segment segments[16];
 	
 	//1. valid JSON?
 	if(root == 0) {
-		fprintf(stderr, "not valid JSON\n");
+		
+		log_message("!!! Invalid JSON describing assembled move\n");
 		return SMD_RETURN_COMMAND_FAILED;
+		
 	}
 	
 	//2. Okay, it's valid, but how many segments?
@@ -438,17 +456,101 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) 
 		cJSON *subitem=cJSON_GetArrayItem(root,i);
 		
 		if(strncmp(subitem->string, "segment", strlen("segment")) == 0) {
+			
+			assembled_move_segment new_segment;
+			new_segment.target_pos_inches = cJSON_GetObjectItem(subitem, "target_pos_inches")->valueint;
+			new_segment.programmed_speed = cJSON_GetObjectItem(subitem, "programmed_speed")->valueint;
+			new_segment.accel = cJSON_GetObjectItem(subitem, "accel")->valueint;
+			new_segment.decel = cJSON_GetObjectItem(subitem, "decel")->valueint;
+			new_segment.jerk = cJSON_GetObjectItem(subitem, "jerk")->valueint;
+			
+			segments[i] = new_segment;
 			num_segments++;
 		}
 	}
 	
 	//no segments or too many segments? Bad!
 	if(num_segments == 0 || num_segments > 16) {
+		
+		log_message("!!! Too few, or too many moves for assembled move\n");
 		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
-	fprintf(stderr, "JSON: %s\n", cJSON_Print(root));
+	//3. TODO - set flags
 	
+	//4. loop through moves and send each one
+	for(i=0; i<ARRAYSIZE(segments); i++) {
+		
+		assembled_move_segment s = segments[i];
+		char input_registers[128];
+		
+		memset(input_registers, 0, sizeof(input_registers));
+		memset(input_registers, 0, sizeof(input_registers));
+		
+		fprintf(stderr, "Programming Move Segment #%d with position %d\n", i+1, s.target_pos_inches);
+		_SMD_program_move_segment(s.target_pos_inches, s.programmed_speed, s.accel, s.decel, s.jerk);
+		sleep(1);
+		
+		//4a. check input registers to see if segment was accepted
+		
+		uint16_t tab_status_words_reg[10];
+		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+		
+		int rc = return_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
+		sleep(1);
+		
+		if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
+			
+			log_message("!!! Could not read input registers when programming assembled move\n");
+			return SMD_RETURN_COMMAND_FAILED;
+		}
+		
+		//move was accepted if 0, tell drive to get ready for next segment...
+		if(input_registers[6] == '0') {
+			
+			//4b. Prepare for the next segment!
+			if(_SMD_prepare_for_next_segment() == SMD_RETURN_COMMAND_SUCCESS) {
+				
+				sleep(1);
+				
+				int rc = return_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
+				
+				if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
+					
+					log_message("!!! Could not read input registers when programming assembled move\n");
+					return SMD_RETURN_COMMAND_FAILED;
+				}
+				
+				//check the input registers again to make sure bit 9 is set (bit 9 is 6 for our purposes)
+				// if it is set - transmit next move!
+				if(input_registers[6] == '1') {
+					
+					if( i !=ARRAYSIZE(segments)) {
+						log_message("Segment Accepted! Ready for the next one...\n");
+					}
+				}
+				
+			}
+			
+			//prepare_for_next_segment could not connect/was not successful
+			else {
+				
+				log_message("!!! Drive did not accept prepare_for_next_segment command\n");
+				return SMD_RETURN_COMMAND_FAILED;
+			}
+		}
+		
+		//something went wrong and input registers were not set - bail
+		else {
+			
+			log_message("!!! Assembled Move: First move segment sent, but input registers MSW 9 not reset\n");
+			return SMD_RETURN_COMMAND_FAILED;
+			
+		}
+		
+	}
+	
+	//return if nothing goes wrong
 	return SMD_RETURN_COMMAND_SUCCESS;
 }
 
@@ -538,74 +640,23 @@ static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
 	return SMD_RETURN_COMMAND_FAILED;
 }
 
-int prepare_for_next_segment() {
+static SMD_RESPONSE_CODES _SMD_program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
 	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
+	struct Words posWords = convert_int_to_words(target_pos);
+	struct Words speedWords = convert_int_to_words(speed);
 	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
+	int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
+	int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 6144};
 		
-		int rc, i;
-		
-		int registers[2] = {1025, 1024};
-		int values[2] =	{32768, 2048};
-		
-		for(i=0; i<2; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
+	return send_modbus_command(registers, values, 9, "program_move_segment");
+	
 }
 
-int program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
-	
-	modbus_t *ctx = NULL;
-	ctx = modbus_new_tcp(DEVICE_IP, 502);
-	
-	//try and connect to see what happens
-	if( strlen(DEVICE_IP) == 0 || modbus_connect(ctx) == -1 ) {
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return -3;
-	}
-	else {
+static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment() {
 		
-		int rc,i;
-		struct Words posWords = convert_int_to_words(target_pos);
-		struct Words speedWords = convert_int_to_words(speed);
-		
-		//write the registers
-		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
-		int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 6144};
-		
-		//fprintf(stderr, "trying to program segment with:\n posUpper: %d\n pos lower: %d\n speed upper: %d\n speed lower: %d\n accel: %d\n decel: %d\n jerk: %d\n", posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk);
-		
-		for(i=0; i<9; i++) {
-			rc = modbus_write_register(ctx, registers[i], values[i]);
-			
-			if( rc == -1 ) {
-				return -1;
-			}
-		}
-		
-		//fprintf(stderr, "programmed move with:\n posUpper: %d\n pos lower: %d\n speed upper: %d\n speed lower: %d\n accel: %d\n decel: %d\n jerk: %d\n", posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk);
-		
-		modbus_close(ctx);
-		modbus_free(ctx);
-		return 0;
-	}
+	int registers[2] = {1025, 1024};
+	int values[2] =	{32768, 2048};
+
+	return send_modbus_command(registers, values, 2, "prepare_for_next_segment");
 }
 

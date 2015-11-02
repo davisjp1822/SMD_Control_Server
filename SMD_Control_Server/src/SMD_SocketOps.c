@@ -85,11 +85,11 @@ void open_server_socket() {
 	while (1) {
 		
 		//this clears the buffer, gets it ready for more input
-		bzero(buf, BUF_SIZE);
+		memset(buf, 0, sizeof(buf));
 		
-		//should fork maybe?
+		rc=read(cl,buf,sizeof(buf));
 		
-		if((rc=read(cl,buf,sizeof(buf))) > 0) {
+		if(rc > 0) {
 			
 			parse_smd_response_to_client_input(buf, cl);
 		}
@@ -191,7 +191,7 @@ int parse_socket_input(const char *input, const int cl) {
 		
 		//if not connected, and the command is not 'connect', return 'invalid_input'
 		else {
-			log_message(input);
+	
 			return SMD_RETURN_INVALID_INPUT;
 		}
 	}
@@ -611,7 +611,7 @@ int parse_socket_input(const char *input, const int cl) {
 		if(SMD_parse_and_upload_assembled_move(input) == SMD_RETURN_COMMAND_SUCCESS) {
 			
 			STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
-			return SMD_RETURN_COMMAND_SUCCESS;
+			return SMD_RETURN_ASSEMBLED_MOVE_ACCEPTED;
 		}
 		
 		//if not valid JSON, return failure, reset STATUS_WAITING_FOR_ASSEMBLED_MOVE, and reset errors
@@ -633,7 +633,7 @@ int parse_socket_input(const char *input, const int cl) {
 
 void parse_smd_response_to_client_input(const char *input, const int cl) {
 	
-	int smd_response = smd_response=parse_socket_input(input,cl);
+	int smd_response = parse_socket_input(input,cl);
 	
 	//successful run - tell the client
 	if(smd_response == SMD_RETURN_COMMAND_SUCCESS ) {
@@ -733,6 +733,11 @@ void parse_smd_response_to_client_input(const char *input, const int cl) {
 		
 		STATUS_WAITING_FOR_ASSEMBLED_MOVE = 1;
 		write_to_client(cl, SEND_ASSEMBLED_MOVE_PARAMS);
+	}
+	
+	//the assembled move was accepted!
+	if(smd_response == SMD_RETURN_ASSEMBLED_MOVE_ACCEPTED) {
+		write_to_client(cl, ASSEMBLED_MOVE_ACCEPTED);
 	}
 	
 }

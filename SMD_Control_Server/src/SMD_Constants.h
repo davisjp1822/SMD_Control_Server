@@ -57,7 +57,8 @@ typedef enum SMD_RESPONSE_CODES {
 	SMD_RETURN_READY_TO_READ_CONFIG,				/**< Drive ready to put current configuration into input registers */
 	SMD_RETURN_RESET_ERRORS_SUCCESS,				/**< Error reset command successful */
 	SMD_RETURN_UNKNOWN_ERROR,						/**< Unknown error - shouldn't really be seen under normal circumstances */
-	SMD_RETURN_READY_FOR_ASSEMBLED_MOVE				/**< SMD is ready to accept an assembled move profile */
+	SMD_RETURN_READY_FOR_ASSEMBLED_MOVE,			/**< SMD is ready to accept an assembled move profile */
+	SMD_RETURN_ASSEMBLED_MOVE_ACCEPTED				/**< The assembled move was accepted by the drive and can now be executed */
 	
 } SMD_RESPONSE_CODES;
 
@@ -102,6 +103,7 @@ extern const char GET_CURRENT_CONFIG_FAIL[32];			/**< Sends GET_CURRENT_CONFIG_F
 extern const char RELATIVE_MOVE_COMPLETE[32];			/**< Sends RELATIVE_MOVE_COMPLETE to client */
 extern const char RESET_ERRORS_SUCCESS[32];				/**< Sends RESET_ERRORS_SUCCESS to client */
 extern const char SEND_ASSEMBLED_MOVE_PARAMS[32];		/**< Sends SEND_ASSEMBLED_MOVE_PROFILE to client */
+extern const char ASSEMBLED_MOVE_ACCEPTED[32];			/**< Sends ASSEMBLED_MOVE_ACCEPTED to client */
 
 /*
  Definitions of string constants that define motor commands to the server from the client
