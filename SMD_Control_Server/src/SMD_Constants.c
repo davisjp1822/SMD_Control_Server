@@ -17,6 +17,7 @@ modbus_t		*smd_command_connection = NULL;
 int16_t			SERVER_PORT = 7000;
 int8_t			VERBOSE = 0;
 int8_t			STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
+SMD_ASSEMBLED_MOVE_TYPE	STATUS_TYPE_ASSEMBLED_MOVE = SMD_ASSEMBLED_MOVE_NONE;
 
 #ifdef __linux
 	const char SOCKET_PATH[16] = "\0/tmp/smd.socket";
@@ -44,8 +45,10 @@ const char READY_TO_READ_CONFIG[32] = "READY_TO_READ_CONFIG\n";
 const char GET_CURRENT_CONFIG_FAIL[32] = "GET_CURRENT_CONFIG_FAIL\n";
 const char RELATIVE_MOVE_COMPLETE[32] = "REL_MOVE_COMPLETE\n";
 const char RESET_ERRORS_SUCCESS[32] = "RESET_ERRORS_SUCCESS\n";
+
 const char SEND_ASSEMBLED_MOVE_PARAMS[32] = "SEND_ASSEMBLED_MOVE_PARAMETERS\n";
 const char ASSEMBLED_MOVE_ACCEPTED[32] = "ASSEMBLED_MOVE_ACCEPTED\n";
+const char MOVE_SEGMENT_ACCEPTED[32] = "MOVE_SEGMENT_ACCEPTED_";
 
 //command constants (used by client and server)
 const char CONNECT[32] = "connect";

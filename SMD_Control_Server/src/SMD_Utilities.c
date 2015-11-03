@@ -73,7 +73,6 @@ int number_of_tokens(const char *command_string) {
 	return num_tokens;
 }
 
-//TODO - this implementation is unsafe
 int tokenize_client_input(char **array_of_commands, const char *input, int num_tokens, const size_t array_of_commands_size) {
 
 	char *token, *string, *tofree;

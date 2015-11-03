@@ -421,7 +421,7 @@ SMD_RESPONSE_CODES SMD_program_assembled_move(int cl) {
 	}
 }
 
-SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) {
+SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, int cl) {
 	
 	/*
 	 *	Steps for success!
@@ -476,7 +476,20 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) 
 		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
-	//3. TODO - set flags
+	//3. Set flags - "type" should be either "blend" or "dwell"
+	char *type = cJSON_GetObjectItem(root, "type")->valuestring;
+	
+	if(strncmp(type, "dwell", strlen("dwell")) ==0) {
+		STATUS_TYPE_ASSEMBLED_MOVE = SMD_ASSEMBLED_MOVE_TYPE_DWELL;
+	}
+		
+	else if(strncmp(type, "blend", strlen("blend")) == 0) {
+		STATUS_TYPE_ASSEMBLED_MOVE = SMD_ASSEMBLED_MOVE_TYPE_BLEND;
+	}
+		
+	else {
+		return SMD_RETURN_COMMAND_FAILED;
+	}
 	
 	//4. loop through moves and send each one
 	for(i=0; i<ARRAYSIZE(segments); i++) {
@@ -527,6 +540,10 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) 
 					
 					if( i !=ARRAYSIZE(segments)) {
 						log_message("Segment Accepted! Ready for the next one...\n");
+						
+						char client_message[32];
+						snprintf(client_message, sizeof(client_message), "%s%d\n", MOVE_SEGMENT_ACCEPTED, i+1);
+						write_to_client(cl, client_message);
 					}
 				}
 				
@@ -554,18 +571,17 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string) 
 	return SMD_RETURN_COMMAND_SUCCESS;
 }
 
-//TODO change to SMD_run_...
-SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type) {
+SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type) {
 	
 	int32_t LSW = 0;
 	
-	if(move_type == SMD_ASSEMBLED_MOVE_TYPE_BLEND) {
+	if(move_type == SMD_ASSEMBLED_MOVE_TYPE_BLEND && STATUS_TYPE_ASSEMBLED_MOVE == SMD_ASSEMBLED_MOVE_TYPE_BLEND) {
 		
 		//0 == CW
 		LSW = blend_move_direction == 0 ? 32768 : 32784;
 	}
 	
-	if(move_type == SMD_ASSEMBLED_MOVE_TYPE_DWELL) {
+	else if(move_type == SMD_ASSEMBLED_MOVE_TYPE_DWELL && STATUS_TYPE_ASSEMBLED_MOVE == SMD_ASSEMBLED_MOVE_TYPE_DWELL) {
 		
 		if(dwell_time >= 0)
 			LSW = 33280;
@@ -573,6 +589,12 @@ SMD_RESPONSE_CODES run_assembled_move(int16_t blend_move_direction, int32_t dwel
 		else {
 			return SMD_RETURN_INVALID_PARAMETER;
 		}
+	}
+	
+	//the correct move type has to be set (set in SMD_parse_and_upload_assembled_move()) before we can proceed
+	//bail if it is not set...
+	else {
+		return SMD_RETURN_INVALID_PARAMETER;
 	}
 	
 	int registers[3] = {1025, 1033, 1024};

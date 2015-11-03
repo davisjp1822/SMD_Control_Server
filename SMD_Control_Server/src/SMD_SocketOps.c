@@ -593,7 +593,7 @@ int parse_socket_input(const char *input, const int cl) {
 				if(dwell_time < 0 || dwell_time > 65535)
 					return SMD_RETURN_INVALID_PARAMETER;
 				
-				return run_assembled_move(0, dwell_time, SMD_ASSEMBLED_MOVE_TYPE_DWELL);
+				return SMD_run_assembled_move(0, dwell_time, SMD_ASSEMBLED_MOVE_TYPE_DWELL);
 			}
 			
 		}
@@ -608,7 +608,7 @@ int parse_socket_input(const char *input, const int cl) {
 	else if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 1) {
 		
 		//if valid JSON, proceed with programming
-		if(SMD_parse_and_upload_assembled_move(input) == SMD_RETURN_COMMAND_SUCCESS) {
+		if(SMD_parse_and_upload_assembled_move(input, cl) == SMD_RETURN_COMMAND_SUCCESS) {
 			
 			STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
 			return SMD_RETURN_ASSEMBLED_MOVE_ACCEPTED;

@@ -21,17 +21,6 @@
 #include <stdio.h>
 #include <modbus.h>
 
-extern char			*DEVICE_IP;							/**< SMD device IP - this is defined by client upon connection */
-extern const char	VERSION[8];							/**< Version string */
-extern const char	SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
-
-extern int16_t		SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
-extern int16_t		SERVER_PORT;						/**< The port on which this server should listen */
-extern int8_t		VERBOSE;							/**< Enable verbose logging */
-extern modbus_t		*smd_command_connection;			/**< Command connection to SMD Motor */
-
-extern int8_t		STATUS_WAITING_FOR_ASSEMBLED_MOVE;	/**< Client has told us to wait for either a blend move or dwell move motion profile */
-
 /**
  Enum defining internal response codes for how the motor responds to direct modbus commands. These are not variables that are sent externally to the client.
  */
@@ -76,9 +65,22 @@ typedef enum SMD_REGISTER_READ_TYPE {
 typedef enum SMD_ASSEMBLED_MOVE_TYPE {
 	
 	SMD_ASSEMBLED_MOVE_TYPE_BLEND,				/** Assembled move type is blend - have to specify direction of movement (CW or CCW) upfront */
-	SMD_ASSEMBLED_MOVE_TYPE_DWELL				/** Assembled move type is dwell - direction can change and is specified in the individual moves */
+	SMD_ASSEMBLED_MOVE_TYPE_DWELL,				/** Assembled move type is dwell - direction can change and is specified in the individual moves */
+	SMD_ASSEMBLED_MOVE_NONE						/** No assembled move type is currently loaded into drive memory */
 	
 } SMD_ASSEMBLED_MOVE_TYPE;
+
+extern char						*DEVICE_IP;							/**< SMD device IP - this is defined by client upon connection */
+extern const char				VERSION[8];							/**< Version string */
+extern const char				SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
+
+extern int16_t					SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
+extern int16_t					SERVER_PORT;						/**< The port on which this server should listen */
+extern int8_t					VERBOSE;							/**< Enable verbose logging */
+extern modbus_t					*smd_command_connection;			/**< Command connection to SMD Motor */
+
+extern int8_t					STATUS_WAITING_FOR_ASSEMBLED_MOVE;	/**< Client has told us to wait for either a blend move or dwell move motion profile */
+extern SMD_ASSEMBLED_MOVE_TYPE	STATUS_TYPE_ASSEMBLED_MOVE;			/**< Type of assembled move that is loaded into drive memory */
 
 /*
  Definitions of string constants that are sent to the client (responses to commands).
@@ -102,8 +104,10 @@ extern const char READY_TO_READ_CONFIG[32];				/**< Sends READY_TO_READ_CONFIG t
 extern const char GET_CURRENT_CONFIG_FAIL[32];			/**< Sends GET_CURRENT_CONFIG_FAIL to client */
 extern const char RELATIVE_MOVE_COMPLETE[32];			/**< Sends RELATIVE_MOVE_COMPLETE to client */
 extern const char RESET_ERRORS_SUCCESS[32];				/**< Sends RESET_ERRORS_SUCCESS to client */
+
 extern const char SEND_ASSEMBLED_MOVE_PARAMS[32];		/**< Sends SEND_ASSEMBLED_MOVE_PROFILE to client */
 extern const char ASSEMBLED_MOVE_ACCEPTED[32];			/**< Sends ASSEMBLED_MOVE_ACCEPTED to client */
+extern const char MOVE_SEGMENT_ACCEPTED[32];			/**< Sends MOVE_SEGMENT_ACCEPTED_<SEGMENT NUMBER> to client */
 
 /*
  Definitions of string constants that define motor commands to the server from the client
