@@ -223,7 +223,13 @@ SMD_RESPONSE_CODES SMD_drive_enable() {
 	int registers[2] = {1025, 1024};
 	int values[2] =	{32768, 0};
 	
-	return send_modbus_command(registers, values, 2, "drive_enable");
+	if(send_modbus_command(registers, values, 2, "drive_enable") == SMD_RETURN_COMMAND_SUCCESS) {
+		return SMD_RETURN_ENABLE_SUCCESS;
+	}
+	
+	else {
+		return SMD_RETURN_COMMAND_FAILED;
+	}
 	
 }
 
@@ -232,7 +238,13 @@ SMD_RESPONSE_CODES SMD_drive_disable() {
 	int registers[2] = {1025, 1024};
 	int values[2] =	{0, 0};
 	
-	return send_modbus_command(registers, values, 2, "drive_disable");
+	if(send_modbus_command(registers, values, 2, "drive_disable") == SMD_RETURN_COMMAND_SUCCESS) {
+		return SMD_RETURN_DISABLE_SUCCESS;
+	}
+	
+	else {
+		return SMD_RETURN_COMMAND_FAILED;
+	}
 }
 
 SMD_RESPONSE_CODES SMD_hold_move() {
