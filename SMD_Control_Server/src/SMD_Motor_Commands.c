@@ -492,7 +492,7 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, 
 	}
 	
 	//4. loop through moves and send each one
-	for(i=0; i<ARRAYSIZE(segments); i++) {
+	for(i=0; i<num_segments; i++) {
 		
 		assembled_move_segment s = segments[i];
 		char input_registers[128];
