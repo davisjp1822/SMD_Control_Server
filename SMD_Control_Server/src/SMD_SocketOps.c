@@ -586,16 +586,40 @@ int parse_socket_input(const char *input, const int cl) {
 				
 				dwell_time = (int32_t)convert_string_to_long_int(array_of_commands[1]);
 				
-				//get json string size
-				/*json_string = malloc(sizeof(char) * strlen(array_of_commands[2]));
-				strncpy(json_string, array_of_commands[2], strlen(array_of_commands[2]));*/
-				
 				if(dwell_time < 0 || dwell_time > 65535)
 					return SMD_RETURN_INVALID_PARAMETER;
 				
 				return SMD_run_assembled_move(0, dwell_time, SMD_ASSEMBLED_MOVE_TYPE_DWELL);
 			}
 			
+		}
+		
+		else if(strncmp(input, RUN_ASSEMBLED_BLEND_MOVE, strlen(RUN_ASSEMBLED_BLEND_MOVE)) == 0) {
+			
+			char *array_of_commands[2];
+			
+			int num_tokens = 0;
+			int16_t direction = 0; /* 0 = CW, 1 = CCW */
+			
+			//loop through the input and convert to int
+			if((num_tokens = number_of_tokens(input)) != 2) {
+				return SMD_RETURN_INVALID_PARAMETER;
+			}
+			
+			else {
+				
+				if(tokenize_client_input(array_of_commands, input, num_tokens, ARRAYSIZE(array_of_commands)) != 0) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				direction = (int16_t)convert_string_to_long_int(array_of_commands[1]);
+				
+				if(direction < 0 || direction > 1) {
+					return SMD_RETURN_INVALID_PARAMETER;
+				}
+				
+				return SMD_run_assembled_move(direction, 0, SMD_ASSEMBLED_MOVE_TYPE_BLEND);
+			}
 		}
 		
 		//the client submitted a command that was not recognized

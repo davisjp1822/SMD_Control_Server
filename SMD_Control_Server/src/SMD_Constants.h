@@ -135,6 +135,8 @@ extern const char FIND_HOME_CW[32];					/**< Command to home clockwise (homeCW,a
 extern const char FIND_HOME_CCW[32];				/**< Command to home counter-clockwise (homeCCW,accel,decel,jerk,speed) */
 extern const char PROGRAM_ASSEMBLED_MOVE[32];		/**< Command to tell the drive to prepare to accept JSON describing an assembled move. */
 extern const char RUN_ASSEMBLED_DWELL_MOVE[32];		/**< Assembled Move - Command telling drive to run the 
-													 loaded assembled move (runAssembledDwellMove,direc,dwell_time) */
+													 loaded assembled move (runAssembledDwellMove,dwell_time) */
+extern const char RUN_ASSEMBLED_BLEND_MOVE[32];		/**< Assembled Move - Command telling drive to run the loaded blend move
+													 (runAssembledBlendMove,direction) where direction is 0=CW, 1=CCW */
 
 #endif /* SMD_CONSTANTS_H */

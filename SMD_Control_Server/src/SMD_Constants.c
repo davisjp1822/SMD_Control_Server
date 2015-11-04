@@ -71,3 +71,4 @@ const char FIND_HOME_CW[32] = "homeCW";
 const char FIND_HOME_CCW[32] = "homeCCW";
 const char PROGRAM_ASSEMBLED_MOVE[32] = "programAssembledMove";
 const char RUN_ASSEMBLED_DWELL_MOVE[32] = "runAssembledDwellMove";
+const char RUN_ASSEMBLED_BLEND_MOVE[32] = "runAssembledBlendMove";
