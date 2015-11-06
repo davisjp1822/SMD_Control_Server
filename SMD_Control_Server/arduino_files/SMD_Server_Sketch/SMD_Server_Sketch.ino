@@ -5,6 +5,8 @@
 #include <Process.h>
 #include <FileIO.h>
 
+int BLINK_LED = 0;
+
 void setup() {
 
   //Serial.begin(115200);
@@ -19,11 +21,12 @@ void setup() {
   //start the SMD Server.
   Process server;
   server.runShellCommand("export LD_LIBRARY_PATH=/mnt/sda1/smd_server/lib && ifconfig eth1 10.20.6.1 && /mnt/sda1/smd_server/SMDServer -d");
+  BLINK_LED = 1;
   
   //turn on the LED to let us know that we are good
   pinMode(13,OUTPUT);
   
-  while(true) {
+  while(BLINK_LED == 1) {
     digitalWrite(13,HIGH);
     delay(150);
     digitalWrite(13,LOW);
@@ -32,6 +35,7 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
+  //if the SMDServer program is not running, stop the LEDs
+  
 }

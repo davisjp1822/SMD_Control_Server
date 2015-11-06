@@ -15,7 +15,7 @@
 #include "SMD_Utilities.h"
 #include "SMD_Modbus.h"
 #include "SMD_SocketOps.h"
-#include "cJSON.h"
+#include "vendor/cJSON.h"
 
 typedef struct assembled_move_segment {
 	

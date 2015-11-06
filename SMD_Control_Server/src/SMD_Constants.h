@@ -71,7 +71,7 @@ typedef enum SMD_ASSEMBLED_MOVE_TYPE {
 } SMD_ASSEMBLED_MOVE_TYPE;
 
 extern char						*DEVICE_IP;							/**< SMD device IP - this is defined by client upon connection */
-extern const char				VERSION[8];							/**< Version string */
+extern const char				SMD_VERSION[8];						/**< Version string */
 extern const char				SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
 
 extern int16_t					SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
@@ -140,3 +140,4 @@ extern const char RUN_ASSEMBLED_BLEND_MOVE[32];		/**< Assembled Move - Command t
 													 (runAssembledBlendMove,direction) where direction is 0=CW, 1=CCW */
 
 #endif /* SMD_CONSTANTS_H */
+

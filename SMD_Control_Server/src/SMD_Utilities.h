@@ -82,3 +82,4 @@ int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *i
 void log_message(const char *message);
 
 #endif /* SMD_UTILITIES_H */
+

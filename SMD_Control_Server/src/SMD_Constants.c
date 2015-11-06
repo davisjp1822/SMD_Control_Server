@@ -12,7 +12,7 @@
 
 char			*DEVICE_IP;
 int16_t			SMD_CONNECTED = 0;
-const char		VERSION[8] = "2.0";
+const char		SMD_VERSION[8] = "2.0";
 modbus_t		*smd_command_connection = NULL;
 int16_t			SERVER_PORT = 7000;
 int8_t			VERBOSE = 0;
@@ -72,3 +72,4 @@ const char FIND_HOME_CCW[32] = "homeCCW";
 const char PROGRAM_ASSEMBLED_MOVE[32] = "programAssembledMove";
 const char RUN_ASSEMBLED_DWELL_MOVE[32] = "runAssembledDwellMove";
 const char RUN_ASSEMBLED_BLEND_MOVE[32] = "runAssembledBlendMove";
+

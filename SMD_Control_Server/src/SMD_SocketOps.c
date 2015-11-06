@@ -781,3 +781,4 @@ int write_to_client(const int cl, const char *message) {
 		return 0;
 	}
 }
+
