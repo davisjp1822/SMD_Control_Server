@@ -249,8 +249,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CFLAGS = --pedantic -Wall -std=c99 -O2 -I/usr/local/include/modbus
-AM_LDFLAGS = -lmodbus -ldl -L/usr/local/lib
+AM_CFLAGS = --pedantic -Wall -std=c99 -O2
+AM_LDFLAGS = -lmodbus -ldl
 SMDControl_SOURCES = SMD_Constants.c SMD_Utilities.c SMD_Modbus.c SMD_Motor_Commands.c SMD_SocketOps.c SMDControlDaemon.c vendor/cJSON_Utils.c vendor/cJSON.c
 all: all-am
 
