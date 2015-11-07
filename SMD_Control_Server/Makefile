@@ -286,7 +286,7 @@ top_builddir = .
 top_srcdir = .
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = src
-CLEANFILES = config.log config.status aclocal.m4
+CLEANFILES = config.log config.status
 all: all-recursive
 
 .SUFFIXES:
