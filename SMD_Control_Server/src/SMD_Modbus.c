@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
 
 typedef struct send_modbus_command_args {
 	
@@ -72,7 +73,7 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values,
 
 SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl) {
 	
-	return return_modbus_registers(registers, reg_read_type, cl, NULL, 128);
+	return return_modbus_registers(registers, reg_read_type, cl, NULL, (size_t)128);
 }
 
 SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type,

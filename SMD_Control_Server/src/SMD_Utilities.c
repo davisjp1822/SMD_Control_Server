@@ -7,6 +7,7 @@
 //
 
 #include <unistd.h>
+#include <string.h>
 
 #include "SMD_Constants.h"
 #include "SMD_Utilities.h"
