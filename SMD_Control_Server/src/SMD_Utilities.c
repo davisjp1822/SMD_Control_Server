@@ -144,7 +144,6 @@ int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *i
 	int i;
 	
 	char bits[5];
-	char *temp = NULL;
 	int temp_idx_counter = 0;
 	
 	for(i=0; i<strlen(input); i++) {
@@ -153,114 +152,239 @@ int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *i
 				
 			case '0': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0000");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0000\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
 			}
 			case '1': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0001");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0001\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
 			}
 			case '2': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0010");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0010\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '3': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0011");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0011\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '4': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0100");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0100\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '5': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0101");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0101\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '6': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0110");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0110\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '7': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "0111");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "0111\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '8': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1000");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1000\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case '9': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1001");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1001\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case 'A': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1010");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1010\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case 'B': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1011");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1011\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case 'C': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1100");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1100\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case 'D': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1101");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1101\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case 'E': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1110");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1110\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
+				
 			}
 			case 'F': {
 				
-				temp = realloc(temp, 4);
 				temp_idx_counter +=4;
-				snprintf(bits, sizeof(bits), "1111");
+				
+				if(temp_idx_counter > buf_size) {
+					
+					return -1;
+				}
+				
+				strncpy(bits, "1111\0", sizeof(char) *5);
+				strncat(return_string, bits, buf_size);
+				
 				break;
 			}
 				
@@ -270,26 +394,7 @@ int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *i
 			}
 		}
 		
-		//add the bits to the end of the temp string
-		strlcat(temp, bits, temp_idx_counter+1);
-		
 	}
 	
-	//bounds check the return string
-	if(temp_idx_counter > buf_size) {
-		fprintf(stderr, "Buffer too small!\n");
-		
-		free(temp);
-		return -1;
-	}
-	
-	//copy the pointer if the buffer size is agreeable
-	else {
-		
-		strlcpy(return_string, temp, buf_size+1);
-		
-		free(temp);
-		return 0;
-	}
-	
+	return 0;
 }
