@@ -92,7 +92,6 @@ SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_
 	
 	if(registers_string_buf_size < 128) {
 		
-		fprintf(stderr, "size: %lu\n", registers_string_buf_size);
 		log_message("Registers buffer size is not greater than or equal to 128\n");
 		
 		if(registers_string) {
@@ -120,7 +119,7 @@ SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_
 		
 		if(registers_string) {
 			
-			strlcpy(registers_string, cmd_args.registers_string, registers_string_buf_size);
+			strncpy(registers_string, cmd_args.registers_string, registers_string_buf_size);
 			free(cmd_args.registers_string);
 			
 		}
@@ -306,18 +305,18 @@ static void *_read_modbus_registers(void *args) {
 					
 					if(i != rc-1) {
 						
-						strlcat(temp, ",", sizeof(temp));
+						strncat(temp, ",", strlen(temp));
 						
 					}
 					
 					//finally, add temp (the constructed input register data point) to the rest of the string
-					strlcat(client_write_string, temp, sizeof(client_write_string));
+					strncat(client_write_string, temp, strlen(client_write_string));
 				}
 				
 			}
 			
 			//close the string with a linebreak so that the data is processed properly by the client
-			strlcat(client_write_string, "\n", sizeof(client_write_string));
+			strncat(client_write_string, "\n", strlen(client_write_string));
 			
 			//write the registers to the client and save the string to the return struct
 			if(cmd_args->cl > 0) {
