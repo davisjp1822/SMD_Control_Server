@@ -73,6 +73,7 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values,
 
 SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl) {
 	
+	/* in this case, since registers_string is NULL, registers_string_buf_size can be hardcoded to 128 as to not trip the size test */
 	return return_modbus_registers(registers, reg_read_type, cl, NULL, (size_t)128);
 }
 
@@ -200,15 +201,17 @@ static void *_send_modbus_command(void *args) {
 				cmd_args->result = SMD_RETURN_COMMAND_FAILED;
 			}
 			
-			char message[1024];
-			snprintf(message,
-					 sizeof(message),
-					 "Successfully wrote value %d to Modbus register %d for command %s\n",
-					 cmd_args->values[i],
-					 cmd_args->registers[i],
-					 cmd_args->command_name);
+			else {
+				char message[1024];
+				snprintf(message,
+						 sizeof(message),
+						 "Successfully wrote value %d to Modbus register %d for command %s\n",
+						 cmd_args->values[i],
+						 cmd_args->registers[i],
+						 cmd_args->command_name);
 			
-			log_message(message);
+				log_message(message);
+			}
 			
 		}
 		
