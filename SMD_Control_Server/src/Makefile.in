@@ -86,7 +86,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = SMDControl$(EXEEXT)
+bin_PROGRAMS = SMDServer$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -99,13 +99,12 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_SMDControl_OBJECTS = SMD_Constants.$(OBJEXT) \
-	SMD_Utilities.$(OBJEXT) SMD_Modbus.$(OBJEXT) \
-	SMD_Motor_Commands.$(OBJEXT) SMD_SocketOps.$(OBJEXT) \
-	SMDControlDaemon.$(OBJEXT) vendor/cJSON_Utils.$(OBJEXT) \
-	vendor/cJSON.$(OBJEXT)
-SMDControl_OBJECTS = $(am_SMDControl_OBJECTS)
-SMDControl_LDADD = $(LDADD)
+am_SMDServer_OBJECTS = SMD_Constants.$(OBJEXT) SMD_Utilities.$(OBJEXT) \
+	SMD_Modbus.$(OBJEXT) SMD_Motor_Commands.$(OBJEXT) \
+	SMD_SocketOps.$(OBJEXT) SMDControlDaemon.$(OBJEXT) \
+	vendor/cJSON_Utils.$(OBJEXT) vendor/cJSON.$(OBJEXT)
+SMDServer_OBJECTS = $(am_SMDServer_OBJECTS)
+SMDServer_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -134,8 +133,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(SMDControl_SOURCES)
-DIST_SOURCES = $(SMDControl_SOURCES)
+SOURCES = $(SMDServer_SOURCES)
+DIST_SOURCES = $(SMDServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -251,7 +250,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = --pedantic -Wall -std=c99 -O2 -pthread
 AM_LDFLAGS = -lmodbus -ldl -lm
-SMDControl_SOURCES = SMD_Constants.c SMD_Utilities.c SMD_Modbus.c SMD_Motor_Commands.c SMD_SocketOps.c SMDControlDaemon.c vendor/cJSON_Utils.c vendor/cJSON.c
+SMDServer_SOURCES = SMD_Constants.c SMD_Utilities.c SMD_Modbus.c SMD_Motor_Commands.c SMD_SocketOps.c SMDControlDaemon.c vendor/cJSON_Utils.c vendor/cJSON.c
 all: all-am
 
 .SUFFIXES:
@@ -338,9 +337,9 @@ vendor/cJSON_Utils.$(OBJEXT): vendor/$(am__dirstamp) \
 vendor/cJSON.$(OBJEXT): vendor/$(am__dirstamp) \
 	vendor/$(DEPDIR)/$(am__dirstamp)
 
-SMDControl$(EXEEXT): $(SMDControl_OBJECTS) $(SMDControl_DEPENDENCIES) $(EXTRA_SMDControl_DEPENDENCIES) 
-	@rm -f SMDControl$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(SMDControl_OBJECTS) $(SMDControl_LDADD) $(LIBS)
+SMDServer$(EXEEXT): $(SMDServer_OBJECTS) $(SMDServer_DEPENDENCIES) $(EXTRA_SMDServer_DEPENDENCIES) 
+	@rm -f SMDServer$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(SMDServer_OBJECTS) $(SMDServer_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
