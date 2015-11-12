@@ -17,6 +17,7 @@
 #define SMD_CONSTANTS_H
 
 #define ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+#define INPUT_REGISTER_STRING_SIZE 17
 
 #include <stdio.h>
 #include <modbus.h>

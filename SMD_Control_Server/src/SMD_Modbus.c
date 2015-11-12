@@ -31,7 +31,7 @@ typedef struct send_modbus_command_args {
 
 typedef struct read_modbus_command_args {
 	
-	const uint16_t *registers;
+	char (*registers)[INPUT_REGISTER_STRING_SIZE];
 	SMD_REGISTER_READ_TYPE reg_read_type;
 	int cl;
 	SMD_RESPONSE_CODES result;
@@ -71,14 +71,14 @@ SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values,
 	}
 }
 
-SMD_RESPONSE_CODES read_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl) {
+SMD_RESPONSE_CODES read_modbus_registers(char registers[][INPUT_REGISTER_STRING_SIZE], const int registers_count, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl) {
 	
 	/* in this case, since registers_string is NULL, registers_string_buf_size can be hardcoded to 128 as to not trip the size test */
-	return return_modbus_registers(registers, reg_read_type, cl, NULL, (size_t)128);
+	return return_modbus_registers(registers, registers_count, reg_read_type, cl, NULL, 128);
 }
 
-SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_REGISTER_READ_TYPE reg_read_type,
-										 const int cl, char *registers_string, size_t registers_string_buf_size) {
+SMD_RESPONSE_CODES return_modbus_registers(char registers[][INPUT_REGISTER_STRING_SIZE], const int registers_count, const SMD_REGISTER_READ_TYPE reg_read_type,
+										 const int cl, char *registers_string, int registers_string_buf_size) {
 		
 	pthread_t tid;
 	read_modbus_command_args cmd_args;
@@ -93,7 +93,7 @@ SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_
 	
 	if(registers_string_buf_size < 128) {
 		
-		log_message("Registers buffer size is not greater than or equal to 128\n");
+		log_message("Registers string buffer size is not greater than or equal to 128\n");
 		
 		if(registers_string) {
 			free(cmd_args.registers_string);
@@ -101,6 +101,18 @@ SMD_RESPONSE_CODES return_modbus_registers(const uint16_t *registers, const SMD_
 		
 		return SMD_RETURN_COMMAND_FAILED;
 		
+	}
+	
+	/* the array really needs to be length of 10 */
+	if(registers_count != 10) {
+		
+		log_message("Registers array needs to be size 10\n");
+		
+		if(registers_string) {
+			free(cmd_args.registers_string);
+		}
+		
+		return SMD_RETURN_COMMAND_FAILED;
 	}
 	
 	else if(pthread_create(&tid, NULL, _read_modbus_registers, &cmd_args) != 0) {
@@ -248,12 +260,10 @@ static void *_read_modbus_registers(void *args) {
 	
 	else {
 		
-		int rc = 0, i = 0;
-		uint16_t tab_status_words_reg[10];
-		char client_write_string[128];
-		
-		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
-		memset(&client_write_string, 0, sizeof(client_write_string));
+		int rc = 0;
+		int i = 0;
+		char client_write_string[128] = {'\0'};
+		uint16_t tab_status_words_reg[10] = {0};
 		
 		if( (rc=modbus_read_registers(ctx, 0, 10, tab_status_words_reg)) == -1 ) {
 			
@@ -267,27 +277,27 @@ static void *_read_modbus_registers(void *args) {
 		else {
 			for( i=0; i < rc; i++ ) {
 				
-				char temp[16];
-				
-				memset(&temp, 0, sizeof(temp));
+				char temp[16] = {'\0'};
 				
 				//only add leading 0x for items that are legitimately in hex
 				if(i == 0 || i == 1) {
 					
 					snprintf(temp, 16, "0x%X", tab_status_words_reg[i]);
+					strncpy(cmd_args->registers[i], temp, sizeof(cmd_args->registers[i]));
 					
 				}
 				
 				else {
 			
 					snprintf(temp, 16, "%d", (int16_t)tab_status_words_reg[i]);
+					strncpy(cmd_args->registers[i], temp, sizeof(cmd_args->registers[i]));
 				
 				}
 				
 				//add the leading id (,, or ### - which depends on what type of input register we are printing)
 				if(i==0) {
 					
-					char idString[4];
+					char idString[4] = {'\0'};
 					
 					if(cmd_args->reg_read_type == SMD_READ_INPUT_REGISTERS) {
 						
@@ -329,6 +339,7 @@ static void *_read_modbus_registers(void *args) {
 			if(cmd_args->registers_string != NULL) {
 				cmd_args->registers_string = strdup(client_write_string);
 			}
+			
 		}
 		
 		modbus_close(ctx);

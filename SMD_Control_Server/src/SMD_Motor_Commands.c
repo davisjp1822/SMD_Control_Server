@@ -76,10 +76,9 @@ void SMD_close_command_connection() {
 
 SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 	
-	uint16_t tab_status_words_reg[10];
-	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+	char registers[10][INPUT_REGISTER_STRING_SIZE];
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, cl);
+	int rc = read_modbus_registers(registers, ARRAYSIZE(registers), SMD_READ_INPUT_REGISTERS, cl);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 
@@ -89,6 +88,7 @@ SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 	else {
 		
 		//read_modbus_registers writes the string to the client
+		//TODO - write to client here instead of in read_modbus_registers
 		return SMD_RETURN_HANDLED_BY_CLIENT;
 	}
 	
@@ -109,10 +109,9 @@ SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) {
 
 SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
 
-	uint16_t tab_status_words_reg[10];
-	memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+	char tab_status_words_reg[10][INPUT_REGISTER_STRING_SIZE];
 	
-	int rc = read_modbus_registers(tab_status_words_reg, SMD_READ_CONFIG_REGISTERS, cl);
+	int rc = read_modbus_registers(tab_status_words_reg, ARRAYSIZE(tab_status_words_reg), SMD_READ_CONFIG_REGISTERS, cl);
 	
 	if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 		return SMD_RETURN_COMMAND_FAILED;
@@ -507,38 +506,41 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, 
 	for(i=0; i<num_segments; i++) {
 		
 		assembled_move_segment s = segments[i];
-		char input_registers[128];
+		char input_registers[128] = {0};
 		
-		memset(input_registers, 0, sizeof(input_registers));
-		memset(input_registers, 0, sizeof(input_registers));
-		
-		fprintf(stderr, "Programming Move Segment #%d with position %d\n", i+1, s.target_pos_inches);
 		_SMD_program_move_segment(s.target_pos_inches, s.programmed_speed, s.accel, s.decel, s.jerk);
 		sleep(1);
 		
 		//4a. check input registers to see if segment was accepted
 		
-		uint16_t tab_status_words_reg[10];
-		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+		char tab_status_words_reg[10][INPUT_REGISTER_STRING_SIZE];
 		
-		int rc = return_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
+		int rc = return_modbus_registers(tab_status_words_reg, ARRAYSIZE(tab_status_words_reg), SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
+		
+		//the sleep allows for the drive to settle
 		sleep(1);
 		
+		//if we can't get the input registers, fail
 		if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 			
 			log_message("!!! Could not read input registers when programming assembled move\n");
 			return SMD_RETURN_COMMAND_FAILED;
 		}
 		
+		//save the status word MSW to a string, and convert to a binary string
+		char *status_MSW = tab_status_words_reg[0];
+		char bin_string[17] = {'\0'};
+		hex_string_to_bin_string(bin_string, sizeof(bin_string), status_MSW);
+		
 		//move was accepted if 0, tell drive to get ready for next segment...
-		if(input_registers[6] == '0') {
+		if(bin_string[6] == '0') {
 			
 			//4b. Prepare for the next segment!
 			if(_SMD_prepare_for_next_segment() == SMD_RETURN_COMMAND_SUCCESS) {
 				
 				sleep(1);
 				
-				int rc = return_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
+				int rc = return_modbus_registers(tab_status_words_reg, ARRAYSIZE(tab_status_words_reg), SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
 				
 				if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 					
@@ -548,13 +550,17 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, 
 				
 				//check the input registers again to make sure bit 9 is set (bit 9 is 6 for our purposes)
 				// if it is set - transmit next move!
-				if(input_registers[6] == '1') {
+				status_MSW = tab_status_words_reg[0];
+				memset(bin_string, '\0', sizeof(bin_string));
+				hex_string_to_bin_string(bin_string, sizeof(bin_string), status_MSW);
+				
+				if(bin_string[6] == '1') {
 					
-					if( i !=ARRAYSIZE(segments)) {
+					if(i !=num_segments) {
 						log_message("Segment Accepted! Ready for the next one...\n");
 						
 						char client_message[32];
-						snprintf(client_message, sizeof(client_message), "%s%d\n", MOVE_SEGMENT_ACCEPTED, i+1);
+						snprintf(client_message, sizeof(client_message), "%s%d_OF_%d\n", MOVE_SEGMENT_ACCEPTED, i+1, num_segments);
 						write_to_client(cl, client_message);
 					}
 				}
@@ -577,7 +583,7 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, 
 			
 		}
 		
-	}
+	} //for loop for segments upload
 	
 	//return if nothing goes wrong
 	return SMD_RETURN_COMMAND_SUCCESS;
@@ -637,10 +643,9 @@ static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
 		char input_registers[128];
 		memset(input_registers, 0, sizeof(input_registers));
 		
-		uint16_t tab_status_words_reg[10];
-		memset(&tab_status_words_reg, 0, sizeof(tab_status_words_reg));
+		char tab_status_words_reg[10][INPUT_REGISTER_STRING_SIZE];
 		
-		int rc = return_modbus_registers(tab_status_words_reg, SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
+		int rc = return_modbus_registers(tab_status_words_reg, ARRAYSIZE(tab_status_words_reg), SMD_READ_INPUT_REGISTERS, -1, input_registers, sizeof(input_registers));
 		
 		if(rc == SMD_RETURN_NO_ROUTE_TO_HOST || rc == SMD_RETURN_COMMAND_FAILED) {
 			return SMD_RETURN_COMMAND_FAILED;
