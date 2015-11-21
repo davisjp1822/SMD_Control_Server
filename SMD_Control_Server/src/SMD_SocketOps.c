@@ -200,9 +200,29 @@ int parse_socket_input(const char *input, const int cl) {
 		JOG_CW, JOG_CCW, FIND_HOME_CW and FIND_HOME_CCW all use strstr() because of string similarity when doing the comparison
 	 
 		Also, all of these commands require a connection to the SMD. If there is no connection, return SMD_RETURN_NO_ROUTE_TO_HOST
+	 
+		Several scenarios exist, depending on what state the drive is currently in, and what we want to do.
+		
+		*** Scenario 1
+		Standard motion - drive is connected, and we are listening for commands over the socket interface. There is no assembled move in progress,
+		and we are not accepting commands from the manual controls. All of the different mode states are set in this scenario by the client.
+	 
+		*** Scenario 2
+		We are connected to the motor, and are in manual mode. The *only* command that will be accepted from the client is stopManualMode, resetErrors,
+		or readInputRegisters.
+		Everything else is invalid input.
+	 
+		*** Scenario 3
+		We are connected to the motor, but in the process of loading an assembled move. The only valid input at this point is a JSON object
+		representing an assembled move.
+	 
+		*** Scenario 4
+		This is the fallthrough state. Something borked.
+	 
 	 */
 	
-	if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 0) {
+	/* Scenario 1 */
+	if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 0 && STATUS_MANUAL_MODE_ENABLE == 0) {
 		
 		if(strstr(input, JOG_CW) !=NULL || strstr(input, JOG_CCW) !=NULL) {
 			
@@ -622,13 +642,57 @@ int parse_socket_input(const char *input, const int cl) {
 			}
 		}
 		
+		else if(strncmp(input, START_MANUAL_MODE, strlen(START_MANUAL_MODE)) == 0) {
+			
+			/* Set STATUS_MANUAL_MODE_ENABLE and call the function that spins off a thread to handle listening to the manual inputs */
+			STATUS_MANUAL_MODE_ENABLE = 1;
+			return SMD_set_manual_mode();
+		}
+		
 		//the client submitted a command that was not recognized
 		else {
 			return SMD_RETURN_INVALID_INPUT;
 		}
 	}
 	
-	//the next input HAS to be the move JSON
+	/* Scenario 2 */
+	if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 0 && STATUS_MANUAL_MODE_ENABLE == 1) {
+		
+		if(strncmp(input, STOP_MANUAL_MODE, strlen(STOP_MANUAL_MODE)) == 0) {
+			
+			/* set bit to stop manual mode and then issue an immediate stop command to the motor */
+			STATUS_MANUAL_MODE_ENABLE = 0;
+			
+			SMD_RESPONSE_CODES response = SMD_immed_stop();
+			
+			/* if the command fails, disconnect and bail! */
+			if(response == SMD_RETURN_COMMAND_FAILED) {
+				
+				SMD_close_command_connection();
+				return SMD_RETURN_COMMAND_FAILED;
+			}
+			
+			else {
+				return SMD_RETURN_COMMAND_SUCCESS;
+			}
+		}
+		
+		else if(strncmp(input, RESET_ERRORS, strlen(RESET_ERRORS)) == 0) {
+			
+			return SMD_reset_errors();
+		}
+		
+		else if(strncmp(input, READ_INPUT_REGISTERS, strlen(READ_INPUT_REGISTERS)) == 0) {
+			
+			return SMD_read_input_registers(cl);
+		}
+		
+		else {
+			return SMD_RETURN_INVALID_INPUT;
+		}
+	}
+	
+	/* Scenario 3 */
 	else if(SMD_CONNECTED == 1 && STATUS_WAITING_FOR_ASSEMBLED_MOVE == 1) {
 		
 		//if valid JSON, proceed with programming
@@ -648,7 +712,7 @@ int parse_socket_input(const char *input, const int cl) {
 		}
 	}
 	
-	//tells the client that the SMD is not connected
+	/* Scenario 4 */
 	else {
 		return SMD_RETURN_NO_ROUTE_TO_HOST;
 	}

@@ -246,4 +246,13 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, 
  */
 SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type);
 
+/**
+	@fn SMD_RESPONSE_CODES SMD_set_manual_mode()
+	@brief Sets the state of this host controller to manual. In this mode, the only command that will be accepted from the client is "stopManualMode".
+	This mode looks for input from ANALOG_VAL_FILE_PATH and DIRECTION_VAL_FILE_PATH, and tells the drive to move accordingly.
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
+	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
+ */
+SMD_RESPONSE_CODES SMD_set_manual_mode();
+
 #endif /* SMD_Motor_Commands_h */

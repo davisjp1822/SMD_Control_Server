@@ -10,6 +10,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "SMD_Motor_Commands.h"
 #include "SMD_Utilities.h"
@@ -30,6 +31,8 @@ typedef struct assembled_move_segment {
 static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl);
 static SMD_RESPONSE_CODES _SMD_program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk);
 static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment();
+
+static void *_manual_mode_controller();
 
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
@@ -66,6 +69,7 @@ void SMD_close_command_connection() {
 		smd_command_connection = NULL;
 		
 		SMD_CONNECTED = 0;
+		STATUS_MANUAL_MODE_ENABLE = 0;
 		STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
 		free(DEVICE_IP);
 	}
@@ -622,6 +626,20 @@ SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t 
 	
 }
 
+SMD_RESPONSE_CODES SMD_set_manual_mode() {
+	
+	pthread_t tid;
+	
+	if(pthread_create(&tid, NULL, _manual_mode_controller, NULL) != 0) {
+		
+		log_message("Could not create manual mode thread!\n");
+		return SMD_RETURN_COMMAND_FAILED;
+	}
+	
+	/* return immediately, so that we can accept other commands from the client */
+	return SMD_RETURN_COMMAND_SUCCESS;
+}
+
 
 /***** ASSEMBLED MOVE FUNCTIONS *****/
 
@@ -697,5 +715,17 @@ static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment() {
 	int values[2] =	{32768, 2048};
 
 	return send_modbus_command(registers, values, 2, "prepare_for_next_segment");
+}
+
+/***** MANUAL MODE FUNCTIONS *****/
+
+static void *_manual_mode_controller() {
+
+	log_message("Starting manual mode...\n");
+	sleep(10);
+	
+	log_message("manual mode done!\n");
+	
+	pthread_exit(NULL);
 }
 

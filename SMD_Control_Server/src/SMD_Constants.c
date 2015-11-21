@@ -12,18 +12,22 @@
 
 char			*DEVICE_IP;
 int16_t			SMD_CONNECTED = 0;
-const char		SMD_VERSION[8] = "2.0";
+const char		SMD_VERSION[8] = "3.0";
 modbus_t		*smd_command_connection = NULL;
 int16_t			SERVER_PORT = 7000;
 int8_t			VERBOSE = 0;
 int8_t			STATUS_WAITING_FOR_ASSEMBLED_MOVE = 0;
+int8_t			STATUS_MANUAL_MODE_ENABLE = 0;
 SMD_ASSEMBLED_MOVE_TYPE	STATUS_TYPE_ASSEMBLED_MOVE = SMD_ASSEMBLED_MOVE_NONE;
 
 #ifdef __linux
-	const char SOCKET_PATH[16] = "\0/tmp/smd.socket";
+	const char SOCKET_PATH[32] = "\0/tmp/smd.socket";
 #else
-	const char SOCKET_PATH[16] = "/tmp/smd.socket";
+	const char SOCKET_PATH[32] = "/tmp/smd.socket";
 #endif
+
+char		*ANALOG_VAL_FILE_PATH = "/tmp/analog_value";
+char		*DIRECTION_VAL_FILE_PATH = "/tmp/jog_state";
 
 //client output constants
 const char COMMAND_SUCCESS[32] = "COMMAND_SUCCESS\n";
@@ -72,4 +76,6 @@ const char FIND_HOME_CCW[32] = "homeCCW";
 const char PROGRAM_ASSEMBLED_MOVE[32] = "programAssembledMove";
 const char RUN_ASSEMBLED_DWELL_MOVE[32] = "runAssembledDwellMove";
 const char RUN_ASSEMBLED_BLEND_MOVE[32] = "runAssembledBlendMove";
+const char START_MANUAL_MODE[32] = "startManualMode";
+const char STOP_MANUAL_MODE[32] = "stopManualMode";
 

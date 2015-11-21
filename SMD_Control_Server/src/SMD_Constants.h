@@ -73,7 +73,12 @@ typedef enum SMD_ASSEMBLED_MOVE_TYPE {
 
 extern char						*DEVICE_IP;							/**< SMD device IP - this is defined by client upon connection */
 extern const char				SMD_VERSION[8];						/**< Version string */
-extern const char				SOCKET_PATH[16];					/**< The socket path - on Linux, this will be a hidden socket. Otherwise, it will be in /tmp/smd.socket. */
+extern const char				SOCKET_PATH[32];					/**< The socket path - on Linux, this will be a hidden socket.
+																	 Default is /tmp/smd.socket. */
+extern char						*ANALOG_VAL_FILE_PATH;				/**< Analog file path - used when in manual mode. Value written to file should be between
+																	 0 and 1023. Default is /tmp/analog_value. */
+extern char						*DIRECTION_VAL_FILE_PATH;			/**< Direction (CW or CCW) file path - used in manual mode. 1 is CCW, 0 is CW). Default is
+																	 /tmp/jog_state */
 
 extern int16_t					SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
 extern int16_t					SERVER_PORT;						/**< The port on which this server should listen */
@@ -81,6 +86,7 @@ extern int8_t					VERBOSE;							/**< Enable verbose logging */
 extern modbus_t					*smd_command_connection;			/**< Command connection to SMD Motor */
 
 extern int8_t					STATUS_WAITING_FOR_ASSEMBLED_MOVE;	/**< Client has told us to wait for either a blend move or dwell move motion profile */
+extern int8_t					STATUS_MANUAL_MODE_ENABLE;			/**< Manual mode has been enabled and is active */
 extern SMD_ASSEMBLED_MOVE_TYPE	STATUS_TYPE_ASSEMBLED_MOVE;			/**< Type of assembled move that is loaded into drive memory */
 
 /*
@@ -139,6 +145,10 @@ extern const char RUN_ASSEMBLED_DWELL_MOVE[32];		/**< Assembled Move - Command t
 													 loaded assembled move (runAssembledDwellMove,dwell_time) */
 extern const char RUN_ASSEMBLED_BLEND_MOVE[32];		/**< Assembled Move - Command telling drive to run the loaded blend move
 													 (runAssembledBlendMove,direction) where direction is 0=CW, 1=CCW */
+
+extern const char START_MANUAL_MODE[32];					/**< Command that puts the drive into manual mode 
+															 (for reading input values from an analog sensor and direction switch). */
+extern const char STOP_MANUAL_MODE[32];
 
 #endif /* SMD_CONSTANTS_H */
 
