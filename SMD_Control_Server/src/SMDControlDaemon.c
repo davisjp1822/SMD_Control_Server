@@ -43,7 +43,7 @@ void parse_args(int argc, char **argv) {
 	
 	int opt = 0;
 	
-	while ((opt = getopt(argc, argv, "dhvp:a:j:")) != -1) {
+	while ((opt = getopt(argc, argv, "dhvp:m:")) != -1) {
 		
 		switch (opt) {
 				
@@ -70,12 +70,8 @@ void parse_args(int argc, char **argv) {
 				
 				break;
 				
-			case 'a' :
-				ANALOG_VAL_FILE_PATH = optarg;
-				break;
-				
-			case 'j' :
-				DIRECTION_VAL_FILE_PATH = optarg;
+			case 'm' :
+				MANUAL_VALS_FILE_PATH = optarg;
 				break;
 				
 			case 'h' :

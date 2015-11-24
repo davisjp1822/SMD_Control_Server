@@ -26,8 +26,7 @@ SMD_ASSEMBLED_MOVE_TYPE	STATUS_TYPE_ASSEMBLED_MOVE = SMD_ASSEMBLED_MOVE_NONE;
 	const char SOCKET_PATH[32] = "/tmp/smd.socket";
 #endif
 
-char		*ANALOG_VAL_FILE_PATH = "/tmp/analog_value";
-char		*DIRECTION_VAL_FILE_PATH = "/tmp/jog_state";
+char			*MANUAL_VALS_FILE_PATH = "/tmp/smd_manual_values";
 
 //client output constants
 const char COMMAND_SUCCESS[32] = "COMMAND_SUCCESS\n";

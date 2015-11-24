@@ -75,10 +75,9 @@ extern char						*DEVICE_IP;							/**< SMD device IP - this is defined by clien
 extern const char				SMD_VERSION[8];						/**< Version string */
 extern const char				SOCKET_PATH[32];					/**< The socket path - on Linux, this will be a hidden socket.
 																	 Default is /tmp/smd.socket. */
-extern char						*ANALOG_VAL_FILE_PATH;				/**< Analog file path - used when in manual mode. Value written to file should be between
-																	 0 and 1023. Default is /tmp/analog_value. */
-extern char						*DIRECTION_VAL_FILE_PATH;			/**< Direction (CW or CCW) file path - used in manual mode. 1 is CCW, 0 is CW). Default is
-																	 /tmp/jog_state */
+extern char						*MANUAL_VALS_FILE_PATH;				/**< Manual mode file path - used when in manual mode. Format is 1,1024: first number is the
+																	 direction (1=CW, 0=CCW), second number (0-1023) is the potentiometer input value Default is 
+																	 /tmp/smd_manual_values */
 
 extern int16_t					SMD_CONNECTED;						/**< Bit specifying if the SMD is currently connected */
 extern int16_t					SERVER_PORT;						/**< The port on which this server should listen */

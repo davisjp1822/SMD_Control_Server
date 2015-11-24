@@ -12,6 +12,11 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <fcntl.h>
+
 #include "SMD_Motor_Commands.h"
 #include "SMD_Utilities.h"
 #include "SMD_Modbus.h"
@@ -722,9 +727,81 @@ static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment() {
 static void *_manual_mode_controller() {
 
 	log_message("Starting manual mode...\n");
-	sleep(10);
 	
-	log_message("manual mode done!\n");
+	char buf[128] = {0};
+	size_t nbytes = 0;
+	
+	int32_t jog_value = 0;
+	int32_t pot_value = 0;
+	
+	char *array_of_commands[2] = {0};
+	
+	while(STATUS_MANUAL_MODE_ENABLE == 1) {
+		
+		if( access(MANUAL_VALS_FILE_PATH, R_OK) != -1 ) {
+			
+			int filed = open(MANUAL_VALS_FILE_PATH, O_RDONLY);
+			
+			if( filed < 0 ) {
+				log_message("Could not open analog file!\n");
+			}
+			
+			else {
+				
+				nbytes = read(filed, buf, 16);
+				
+				if(nbytes > 0) {
+					
+					/* removes newline from buffer value */
+					size_t ln = strlen(buf) - 1;
+					
+					if (buf[ln] == '\n') {
+						buf[ln] = '\0';
+					}
+					
+					/* parse the manual parameters - format is 1,1024: where 1=CW, 0=CCW, 0-1023 for analog value */
+					//TODO: add configurable scaling for pot value!
+					
+					if(number_of_tokens(buf) == 2) {
+						
+						tokenize_client_input(array_of_commands, buf, 2, ARRAYSIZE(array_of_commands));
+						
+						/* check input */
+						jog_value = convert_string_to_long_int(array_of_commands[0]);
+						pot_value = convert_string_to_long_int(array_of_commands[1]);
+						
+						if((jog_value == 0 || jog_value == 1) && (pot_value >=0 && pot_value <= 1023)) {
+							
+							fprintf(stderr, "jog direction %d with speed %d\n", jog_value, pot_value);
+							
+						}
+						
+						else {
+							log_message("Bad input from manual mode input file");
+						}
+						
+						/* clean-up after tokenize_client_input */
+						free(array_of_commands[0]);
+						free(array_of_commands[1]);
+					}
+					
+				}
+				
+				close(filed);
+				
+			}
+			
+		}
+		
+		else {
+			log_message("No manual file found\n");
+		}
+		
+		/* give the CPU a break! sleep for 1ms */
+		usleep(1000);
+	}
+	
+	log_message("manual mode exiting!\n");
 	
 	pthread_exit(NULL);
 }
