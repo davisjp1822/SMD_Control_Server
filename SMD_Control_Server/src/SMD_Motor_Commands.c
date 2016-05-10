@@ -23,6 +23,16 @@
 #include "SMD_SocketOps.h"
 #include "vendor/cJSON.h"
 
+#define POT_SCALE 30
+
+typedef enum SMD_JOG_DIRECTION {
+	
+	NO_DIRECTION = 100,
+	CLOCKWISE = 0,
+	COUNTER_CLOCKWISE = 1
+	
+} SMD_JOG_DIRECTION;
+
 typedef struct assembled_move_segment {
 	
 	int32_t target_pos_inches;
@@ -682,6 +692,8 @@ static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
 			int num_tokens = number_of_tokens(input_registers);
 			char *input_register_tokens[num_tokens];
 			
+			SMD_RESPONSE_CODES response = SMD_RETURN_COMMAND_FAILED;
+			
 			if(tokenize_client_input(input_register_tokens, input_registers, num_tokens, ARRAYSIZE(input_register_tokens)) != 0) {
 				return SMD_RETURN_COMMAND_FAILED;
 			}
@@ -689,13 +701,22 @@ static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
 			if(hex_string_to_bin_string(binString, sizeof(binString), input_register_tokens[2]) == 0) {
 				
 				if(binString[6] == '1' && binString[7] == '1') {
-					return SMD_RETURN_COMMAND_SUCCESS;
+					response = SMD_RETURN_COMMAND_SUCCESS;
 				}
 			}
 			
 			else {
-				return SMD_RETURN_COMMAND_FAILED;
+				response = SMD_RETURN_COMMAND_FAILED;
 			}
+			
+			/* clean-up and return status code */
+			int i=0;
+			
+			for(i=0; i<num_tokens; i++) {
+				free(input_register_tokens[i]);
+			}
+			
+			return response;
 		}
 	}
 	
@@ -731,8 +752,10 @@ static void *_manual_mode_controller() {
 	char buf[128] = {0};
 	size_t nbytes = 0;
 	
-	int32_t jog_value = 0;
+	SMD_JOG_DIRECTION jog_value = NO_DIRECTION;
+	SMD_JOG_DIRECTION current_jog_direction = NO_DIRECTION;
 	int32_t pot_value = 0;
+	int32_t current_speed = 0;
 	
 	char *array_of_commands[2] = {0};
 	
@@ -766,18 +789,87 @@ static void *_manual_mode_controller() {
 						
 						tokenize_client_input(array_of_commands, buf, 2, ARRAYSIZE(array_of_commands));
 						
-						/* check input */
-						jog_value = convert_string_to_long_int(array_of_commands[0]);
-						pot_value = convert_string_to_long_int(array_of_commands[1]);
+						/* set variables and range check input */
+						pot_value = (convert_string_to_long_int(array_of_commands[1]))*POT_SCALE;
 						
-						if((jog_value == 0 || jog_value == 1) && (pot_value >=0 && pot_value <= 1023)) {
+						/* convert jog value to use our typedef */
+						jog_value = convert_string_to_long_int(array_of_commands[0]) == 0 ? CLOCKWISE : COUNTER_CLOCKWISE;
+						
+						if((jog_value == CLOCKWISE || jog_value == COUNTER_CLOCKWISE) && (pot_value/POT_SCALE >=0 && pot_value/POT_SCALE <= 1023)) {
 							
-							fprintf(stderr, "jog direction %d with speed %d\n", jog_value, pot_value);
+							//fprintf(stderr, "jog direction %d with speed %d\n", jog_value, pot_value);
+							
+							/* 
+							 * For each update from the file, give the motor a new command, but only if the data has changed.
+							 * (Compare to current_speed and current_jog_direction)
+							 * If the jog direction changes, issue a holdMove, sleep for 10ms, and then issue the jog command.
+							 *
+							 */
+							 
+							 /* if current_jog_direction == NO_DIRECTION, this is the first move - so just do it 
+							  * and set current_speed and current_jog_direction
+							  */
+							if(current_jog_direction == NO_DIRECTION) {
+								
+								current_jog_direction = jog_value;
+								current_speed = pot_value;
+								
+								/* issue updated jog command */
+								if(pot_value != 0) {
+									
+									char message[1024];
+									snprintf(message, sizeof(message), "First jog direction %d and speed %d\n", current_jog_direction, current_speed);
+									log_message(message);
+									SMD_jog(current_jog_direction, 250, 250, 0, current_speed);
+									
+								}
+								
+							}
+							
+							/* pot has been turned to 0 - we should stop */
+							else if(pot_value == 0) {
+								
+								/* if we are already stopped, do nothing */
+								if(current_speed != 0) {
+									
+									log_message("Input speed is 0, stopping!\n");
+									current_speed = 0;
+									SMD_hold_move();
+								}
+								
+								current_jog_direction = jog_value;
+							}
+							
+							/* we have moved before (or are currently moving) - if values are different, we should update the drive w/ new values */
+							else if(current_speed != pot_value || current_jog_direction != jog_value) {
+								
+								if(current_speed != pot_value ) {
+									current_speed = pot_value;
+								}
+								
+								/* if we switch direction, issue a hold move and sleep for 500ms */
+								if(current_jog_direction != jog_value) {
+									
+									log_message("Updating jog direction!\n");
+									current_jog_direction = jog_value;
+									SMD_hold_move();
+									usleep(500000);
+									
+								}
+									
+								/* issue updated jog command */
+								char message[1024];
+								snprintf(message, sizeof(message), "Updated jog move with direction %d and speed %d\n", current_jog_direction, current_speed);
+								log_message(message);
+									
+								SMD_jog(current_jog_direction, 250, 250, 0, current_speed);
+								
+							}
 							
 						}
 						
 						else {
-							log_message("Bad input from manual mode input file");
+							log_message("Bad input from manual mode input file\n");
 						}
 						
 						/* clean-up after tokenize_client_input */
@@ -797,8 +889,8 @@ static void *_manual_mode_controller() {
 			log_message("No manual file found\n");
 		}
 		
-		/* give the CPU a break! sleep for 1ms */
-		usleep(1000);
+		/* give the CPU a break! sleep for 3ms */
+		usleep(3000);
 	}
 	
 	log_message("manual mode exiting!\n");

@@ -1,10 +1,10 @@
 // John Davis
 // Copyright 2015 3ML LLC
 
-#include <Bridge.h>
 #include <Process.h>
 #include <FileIO.h>
 #include <Console.h>
+#include <Bridge.h>
 
 #define ANALOG_INPUT A1
 #define DIRECTION_SWITCH 3
@@ -15,8 +15,7 @@ int POT_VALUE = 0;
 
 /* 0 is CW, 1 is CCW */
 int JOG_DIRECTION = 0;
-String ANALOG_FILE_PATH = String("/tmp/analog_value");
-String DIRECTION_SWITCH_FILE_PATH = String("/tmp/jog_state");
+String MANUAL_VALUES_FILE_PATH = String("/tmp/smd_manual_values");
 
 void setup() {
   
@@ -30,15 +29,12 @@ void setup() {
   
   //start the SMD Server.
   Process server;
-  server.runShellCommand("export LD_LIBRARY_PATH=/mnt/sda1/smd_server/lib && ifconfig eth1 10.20.6.1 && /mnt/sda1/smd_server/SMDServer -d");
+  server.runShellCommand("export LD_LIBRARY_PATH=/mnt/sda1/smd_server/lib && ifconfig eth1 10.20.6.2 && /mnt/sda1/smd_server/SMDServer -d");
   LED_ON = 1;
 
   //create some files that hold our values
-  Process analogFile;
-  analogFile.runShellCommand("touch /tmp/" + ANALOG_FILE_PATH);
-
-  Process jogDirectionFile;
-  jogDirectionFile.runShellCommand("touch /tmp/" + DIRECTION_SWITCH_FILE_PATH);
+  Process manualFile;
+  manualFile.runShellCommand("touch /tmp/" + MANUAL_VALUES_FILE_PATH);
   
   //turn on the LED to let us know that we are good
   pinMode(13,OUTPUT);
@@ -61,16 +57,12 @@ void loop() {
       JOG_DIRECTION = digitalRead(DIRECTION_SWITCH);
     
       // print out the value you read:
-      Process updateAnalogFile;
-      String commandString = "echo " + String(POT_VALUE)  + " > " + ANALOG_FILE_PATH; 
-      updateAnalogFile.runShellCommand(commandString);
-    
-      Process updateJogDirection;
-      commandString = "echo " + String(JOG_DIRECTION)  + " > " + DIRECTION_SWITCH_FILE_PATH;
-      updateJogDirection.runShellCommand(commandString);
+      Process updateManualFile;
+      String commandString = "echo " + String(JOG_DIRECTION)  + "," + String(POT_VALUE) + " > " + MANUAL_VALUES_FILE_PATH; 
+      updateManualFile.runShellCommand(commandString);
     
       checkLED();
-      delay(5); 
+      delay(1); 
   }
 
   //if we break out of the loop, it means that the SMD server process is no longer running
