@@ -1,0 +1,166 @@
+\hypertarget{_s_m_d___utilities_8h}{}\section{/\+Users/davisjp/\+Development/\+S\+M\+D\+\_\+\+Control\+\_\+\+Server/\+S\+M\+D\+\_\+\+Control\+\_\+\+Server/src/\+S\+M\+D\+\_\+\+Utilities.h File Reference}
+\label{_s_m_d___utilities_8h}\index{/\+Users/davisjp/\+Development/\+S\+M\+D\+\_\+\+Control\+\_\+\+Server/\+S\+M\+D\+\_\+\+Control\+\_\+\+Server/src/\+S\+M\+D\+\_\+\+Utilities.\+h@{/\+Users/davisjp/\+Development/\+S\+M\+D\+\_\+\+Control\+\_\+\+Server/\+S\+M\+D\+\_\+\+Control\+\_\+\+Server/src/\+S\+M\+D\+\_\+\+Utilities.\+h}}
+
+
+Helper functions and utilities.  
+
+
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_words}{Words}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_words}{Words} \hyperlink{_s_m_d___utilities_8h_a120fe9a80c1f7542c026022fd74626ce}{convert\+\_\+int\+\_\+to\+\_\+words} (int32\+\_\+t number)
+\begin{DoxyCompactList}\small\item\em Splits a 32 bit integer into 16 bit words. Useful when taking a speed command from a client and converting it into something the A\+M\+C\+I drive understands. \end{DoxyCompactList}\item 
+int32\+\_\+t \hyperlink{_s_m_d___utilities_8h_a768311fe8bcdaf80f6af86a78f15aff7}{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int} (const char $\ast$str)
+\begin{DoxyCompactList}\small\item\em Converts a string into a long int -\/ useful for turning client commands into integers for accel, decel, speed, etc. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___utilities_8h_a8575a8afb175a151d2a0328e25499ecb}{number\+\_\+of\+\_\+tokens} (const char $\ast$command\+\_\+string)
+\begin{DoxyCompactList}\small\item\em Counts the number of parameters (separate from the command itself) sent from the client to the server. \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___utilities_8h_a334434b704dfeda878fc3318618477c3}{tokenize\+\_\+client\+\_\+input} (char $\ast$$\ast$array\+\_\+of\+\_\+commands, const char $\ast$input, int num\+\_\+tokens, const size\+\_\+t array\+\_\+of\+\_\+commands\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Tokenizes the client input (separated by ,) \end{DoxyCompactList}\item 
+int \hyperlink{_s_m_d___utilities_8h_aed4b645762ba21fb244b82d1720f8fcc}{hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string} (char $\ast$return\+\_\+string, size\+\_\+t buf\+\_\+size, const char $\ast$input)
+\begin{DoxyCompactList}\small\item\em Converts a hex value into a binary string. \end{DoxyCompactList}\item 
+void \hyperlink{_s_m_d___utilities_8h_a0457940e53a1eeb12167a7601bb65234}{log\+\_\+message} (const char $\ast$message)
+\begin{DoxyCompactList}\small\item\em If in verbose mode, logs message. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Helper functions and utilities. 
+
+\begin{DoxyAuthor}{Author}
+John Davis \href{mailto:jd@pauldavisautomation.com}{\tt jd@pauldavisautomation.\+com} 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+September 30, 2015 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\hypertarget{_s_m_d___utilities_8h_a120fe9a80c1f7542c026022fd74626ce}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!convert\+\_\+int\+\_\+to\+\_\+words@{convert\+\_\+int\+\_\+to\+\_\+words}}
+\index{convert\+\_\+int\+\_\+to\+\_\+words@{convert\+\_\+int\+\_\+to\+\_\+words}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{convert\+\_\+int\+\_\+to\+\_\+words(int32\+\_\+t number)}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf Words} convert\+\_\+int\+\_\+to\+\_\+words (
+\begin{DoxyParamCaption}
+\item[{int32\+\_\+t}]{number}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a120fe9a80c1f7542c026022fd74626ce}
+
+
+Splits a 32 bit integer into 16 bit words. Useful when taking a speed command from a client and converting it into something the A\+M\+C\+I drive understands. 
+
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_words}{Words} 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___utilities_8h_a768311fe8bcdaf80f6af86a78f15aff7}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int@{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int}}
+\index{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int@{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int(const char $\ast$str)}]{\setlength{\rightskip}{0pt plus 5cm}int32\+\_\+t convert\+\_\+string\+\_\+to\+\_\+long\+\_\+int (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{str}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a768311fe8bcdaf80f6af86a78f15aff7}
+
+
+Converts a string into a long int -\/ useful for turning client commands into integers for accel, decel, speed, etc. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em str} & string to convert into 32 bit integer \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int32\+\_\+t 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___utilities_8h_aed4b645762ba21fb244b82d1720f8fcc}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string@{hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string}}
+\index{hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string@{hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string(char $\ast$return\+\_\+string, size\+\_\+t buf\+\_\+size, const char $\ast$input)}]{\setlength{\rightskip}{0pt plus 5cm}int hex\+\_\+string\+\_\+to\+\_\+bin\+\_\+string (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{return\+\_\+string, }
+\item[{size\+\_\+t}]{buf\+\_\+size, }
+\item[{const char $\ast$}]{input}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_aed4b645762ba21fb244b82d1720f8fcc}
+
+
+Converts a hex value into a binary string. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em return\+\_\+string} & String pointer that will hold the binary string. M\+U\+S\+T be sized to accomodate bin\+\_\+length +1 \\
+\hline
+{\em buf\+\_\+size} & Size of return\+\_\+string buffer \\
+\hline
+{\em input} & Input hex string, can lead with 0x or not. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns 0 if successful, -\/1 if not 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___utilities_8h_a0457940e53a1eeb12167a7601bb65234}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!log\+\_\+message@{log\+\_\+message}}
+\index{log\+\_\+message@{log\+\_\+message}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{log\+\_\+message(const char $\ast$message)}]{\setlength{\rightskip}{0pt plus 5cm}void log\+\_\+message (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{message}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a0457940e53a1eeb12167a7601bb65234}
+
+
+If in verbose mode, logs message. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & Message to log \\
+\hline
+\end{DoxyParams}
+\hypertarget{_s_m_d___utilities_8h_a8575a8afb175a151d2a0328e25499ecb}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!number\+\_\+of\+\_\+tokens@{number\+\_\+of\+\_\+tokens}}
+\index{number\+\_\+of\+\_\+tokens@{number\+\_\+of\+\_\+tokens}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{number\+\_\+of\+\_\+tokens(const char $\ast$command\+\_\+string)}]{\setlength{\rightskip}{0pt plus 5cm}int number\+\_\+of\+\_\+tokens (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{command\+\_\+string}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a8575a8afb175a151d2a0328e25499ecb}
+
+
+Counts the number of parameters (separate from the command itself) sent from the client to the server. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em command\+\_\+string} & Raw command string sent from client \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Number of tokens 
+\end{DoxyReturn}
+\hypertarget{_s_m_d___utilities_8h_a334434b704dfeda878fc3318618477c3}{}\index{S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}!tokenize\+\_\+client\+\_\+input@{tokenize\+\_\+client\+\_\+input}}
+\index{tokenize\+\_\+client\+\_\+input@{tokenize\+\_\+client\+\_\+input}!S\+M\+D\+\_\+\+Utilities.\+h@{S\+M\+D\+\_\+\+Utilities.\+h}}
+\subsubsection[{tokenize\+\_\+client\+\_\+input(char $\ast$$\ast$array\+\_\+of\+\_\+commands, const char $\ast$input, int num\+\_\+tokens, const size\+\_\+t array\+\_\+of\+\_\+commands\+\_\+size)}]{\setlength{\rightskip}{0pt plus 5cm}int tokenize\+\_\+client\+\_\+input (
+\begin{DoxyParamCaption}
+\item[{char $\ast$$\ast$}]{array\+\_\+of\+\_\+commands, }
+\item[{const char $\ast$}]{input, }
+\item[{int}]{num\+\_\+tokens, }
+\item[{const size\+\_\+t}]{array\+\_\+of\+\_\+commands\+\_\+size}
+\end{DoxyParamCaption}
+)}\label{_s_m_d___utilities_8h_a334434b704dfeda878fc3318618477c3}
+
+
+Tokenizes the client input (separated by ,) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em array\+\_\+of\+\_\+commands} & destination array for tokens \\
+\hline
+{\em input} & Input string from the client \\
+\hline
+{\em num\+\_\+tokens} & Number of tokens in array\+\_\+of\+\_\+commands \\
+\hline
+{\em array\+\_\+of\+\_\+commands\+\_\+size} & Size of array\+\_\+of\+\_\+commands \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns 0 if successful, -\/1 if error 
+\end{DoxyReturn}

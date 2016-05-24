@@ -16,8 +16,8 @@
 #ifndef SMD_CONSTANTS_H
 #define SMD_CONSTANTS_H
 
-#define ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
-#define INPUT_REGISTER_STRING_SIZE 17
+#define ARRAYSIZE(arr) (sizeof(arr) / sizeof(arr[0]))	/**< Macro to help define array size */
+#define INPUT_REGISTER_STRING_SIZE 17					/**< Size of the input register user string */
 
 #include <stdio.h>
 #include <modbus.h>
@@ -62,6 +62,10 @@ typedef enum SMD_REGISTER_READ_TYPE {
 	SMD_READ_CONFIG_REGISTERS					/** Read input registers (sends client back string with configuration starting with ### */
 	
 } SMD_REGISTER_READ_TYPE;
+
+/**
+ Enum describing the types of assembled moves available
+ */
 
 typedef enum SMD_ASSEMBLED_MOVE_TYPE {
 	
@@ -145,9 +149,8 @@ extern const char RUN_ASSEMBLED_DWELL_MOVE[32];		/**< Assembled Move - Command t
 extern const char RUN_ASSEMBLED_BLEND_MOVE[32];		/**< Assembled Move - Command telling drive to run the loaded blend move
 													 (runAssembledBlendMove,direction) where direction is 0=CW, 1=CCW */
 
-extern const char START_MANUAL_MODE[32];					/**< Command that puts the drive into manual mode 
-															 (for reading input values from an analog sensor and direction switch). */
-extern const char STOP_MANUAL_MODE[32];
+extern const char START_MANUAL_MODE[32];			/**< BETA - Command that puts the drive into manual mode (for reading input values from an analog sensor and direction switch). */
+extern const char STOP_MANUAL_MODE[32];				/**< BETA - Command that takes drive out of manual mode (for reading input values from an analog sensor and direction switch). */
 
 #endif /* SMD_CONSTANTS_H */
 

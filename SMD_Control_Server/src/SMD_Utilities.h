@@ -37,7 +37,7 @@ struct Words {
 struct Words convert_int_to_words(int32_t number);
 
 /**
-	@fn int32_t convert_string_to_long_int(char *str)
+	@fn int32_t convert_string_to_long_int(const char *str)
 	@brief Converts a string into a long int - useful for turning client commands into integers for accel, decel, speed, etc
 	@param str string to convert into 32 bit integer
 	@return int32_t
@@ -53,7 +53,7 @@ int32_t convert_string_to_long_int(const char *str);
 int number_of_tokens(const char *command_string);
 
 /**
-	@fn void tokenize_client_input(char *array_of_commands, const char *input)
+	@fn int tokenize_client_input(char **array_of_commands, const char *input, int num_tokens, const size_t array_of_commands_size)
 	@brief Tokenizes the client input (separated by ,)
 	@param array_of_commands destination array for tokens
 	@param input Input string from the client
@@ -65,7 +65,7 @@ int tokenize_client_input(char **array_of_commands, const char *input, int num_t
 
 
 /**
-	@fn int hex_string_to_bin_string(char *return_string, size_t bin_length, const char *input)
+	@fn int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *input)
 	@brief Converts a hex value into a binary string.
 	@param return_string String pointer that will hold the binary string. MUST be sized to accomodate bin_length +1
 	@param buf_size Size of return_string buffer
@@ -75,7 +75,7 @@ int tokenize_client_input(char **array_of_commands, const char *input, int num_t
 int hex_string_to_bin_string(char *return_string, size_t buf_size, const char *input);
 
 /**
-	@fn void log_message(char *message)
+	@fn void log_message(const char *message)
 	@brief If in verbose mode, logs message
 	@param message Message to log
  */

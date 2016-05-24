@@ -220,7 +220,7 @@ SMD_RESPONSE_CODES SMD_find_home(int direction,
 SMD_RESPONSE_CODES SMD_program_assembled_move(int cl);
 
 /**
-	@fn SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string)
+	@fn SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, int cl)
 	@brief When SMD_program_assembled_move is called, the next command to the host *must* be a valid JSON string describing the move.
 		This string cannot contain more than 16 moves. Once the moves are programmed, the drive will be put back into a normal state, and 
 		run_assembled_move may be called. JSON follows format:
@@ -234,12 +234,11 @@ SMD_RESPONSE_CODES SMD_program_assembled_move(int cl);
 SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, int cl);
 
 /**
-	@fn run_assembled_move(int16_t blend_move_direction, int32_t dwell_time)
+	@fn SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type);
 	@brief Runs the current assembled move that is in memory. 
 	@param blend_move_direction 0 is CW, 1 is CCW
 	@param dwell_time Specified dwell time between segments, in milliseconds
 	@param move_type Specifies what type of assembled move we are doing
-	@param cl Valid client socket to tell that we are ready for the move profile JSON
 	@return SMD_RESPONSE_CODES SMD_RETURN_NO_ROUTE_TO_HOST if failure
 	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_SUCCESS if success
 	@return SMD_RESPONSE_CODES SMD_RETURN_COMMAND_FAILURE if failure
