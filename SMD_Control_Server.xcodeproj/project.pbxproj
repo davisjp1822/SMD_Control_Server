@@ -41,6 +41,7 @@
 		A31C096F1BCAED460074D25E /* SMD_Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMD_Utilities.h; sourceTree = "<group>"; };
 		A31C09701BCAED760074D25E /* SMD_Modbus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMD_Modbus.c; sourceTree = "<group>"; };
 		A31C09711BCAED760074D25E /* SMD_Modbus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMD_Modbus.h; sourceTree = "<group>"; };
+		A3961F9A1CF3E37800FE5D72 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Constants.c; sourceTree = "<group>"; };
 		A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Motor_Commands.c; sourceTree = "<group>"; };
 		A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
@@ -118,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				A3EDEF951BBEFA8D003DB4FE /* src */,
+				A3961F9A1CF3E37800FE5D72 /* LICENSE */,
 			);
 			path = SMD_Control_Server;
 			sourceTree = "<group>";
