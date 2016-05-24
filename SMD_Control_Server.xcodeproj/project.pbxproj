@@ -10,6 +10,7 @@
 		A306C7541BE6A99700B43D8E /* cJSON_Utils.c in Sources */ = {isa = PBXBuildFile; fileRef = A306C7501BE6A99700B43D8E /* cJSON_Utils.c */; };
 		A306C7551BE6A99700B43D8E /* cJSON.c in Sources */ = {isa = PBXBuildFile; fileRef = A306C7521BE6A99700B43D8E /* cJSON.c */; };
 		A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */ = {isa = PBXBuildFile; fileRef = A31C09701BCAED760074D25E /* SMD_Modbus.c */; };
+		A3961F9C1CF3E40100FE5D72 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = A3961F9B1CF3E40100FE5D72 /* README.md */; };
 		A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9D1BBEFA8D003DB4FE /* SMDControlDaemon.c */; };
 		A3EDEFA21BBEFD47003DB4FE /* SMD_Constants.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */; };
 		A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */; };
@@ -42,6 +43,7 @@
 		A31C09701BCAED760074D25E /* SMD_Modbus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SMD_Modbus.c; sourceTree = "<group>"; };
 		A31C09711BCAED760074D25E /* SMD_Modbus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMD_Modbus.h; sourceTree = "<group>"; };
 		A3961F9A1CF3E37800FE5D72 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		A3961F9B1CF3E40100FE5D72 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		A3EDEF9A1BBEFA8D003DB4FE /* SMD_Constants.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Constants.c; sourceTree = "<group>"; };
 		A3EDEF9B1BBEFA8D003DB4FE /* SMD_Motor_Commands.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Motor_Commands.c; sourceTree = "<group>"; };
 		A3EDEF9C1BBEFA8D003DB4FE /* SMD_Utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SMD_Utilities.c; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 			children = (
 				A3EDEF951BBEFA8D003DB4FE /* src */,
 				A3961F9A1CF3E37800FE5D72 /* LICENSE */,
+				A3961F9B1CF3E40100FE5D72 /* README.md */,
 			);
 			path = SMD_Control_Server;
 			sourceTree = "<group>";
@@ -186,6 +189,7 @@
 				A306C7541BE6A99700B43D8E /* cJSON_Utils.c in Sources */,
 				A3EDEFA31BBEFD47003DB4FE /* SMD_Utilities.c in Sources */,
 				A3EDEFA41BBEFD47003DB4FE /* SMD_Motor_Commands.c in Sources */,
+				A3961F9C1CF3E40100FE5D72 /* README.md in Sources */,
 				A31C09721BCAED760074D25E /* SMD_Modbus.c in Sources */,
 				A3EDEFA11BBEFD47003DB4FE /* SMDControlDaemon.c in Sources */,
 			);

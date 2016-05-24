@@ -12,7 +12,13 @@ if [ -f "/etc/arduino/openwrt-yun-release" ]; then
 	./configure CPPFLAGS="-I/mnt/sda1/smd_server/include/modbus" LDFLAGS="-L/mnt/sda1/smd_server/lib"
 
 else
-	./configure CPPFLAGS="/usr/local/include/libmodbus" LDFLAGS="/usr/local/lib"
+	echo "Building..."
+
+	./configure CPPFLAGS="-I/usr/local/include/modbus" LDFLAGS="-L/usr/local/lib"
+	make
+
+	echo
+	echo "**********Binary is at src/SMDServer"
 
 fi
 
