@@ -6,6 +6,169 @@
  *  Copyright © 2015 3ML LLC. All rights reserved.
  */
 
+/** \mainpage SMDServer Commands
+ *	\section Introduction
+ *		The goal of this software is to support all of the commands listed in the AMCI manual for the SMD series motors. Those commands are documented in the AMCI
+ *		[SMD user manual](http://www.amci.com/stepper-motor-control/integrated-stepper-motor-control-smd23e.asp).
+ *	
+ *		If you haven't already done so, you __really__ need to read README.md in the root directory. Dependencies, limitations, and other important info are all
+ *		contained in this file.
+ *		
+ *		Comments, suggestions, bugs, etc. should all be directed to [jd@pauldavisautomation.com](jd@pauldavisautomation.com)
+ *
+ *	\section Commands
+ *		All of these commands are used while connected to the server using `telnet` or some other terminal emulation program. 
+ *
+ *		If you get unexplained errors, you
+ *		may want to run SMDServer in verbose (debug) mode: `SMDServer -v`
+ *
+ *	\subsection connect
+ *	Command format is as so (replace IP address with the SMD IP address):
+ *
+ *	`connect,10.0.6.50`
+ *
+ *	If successful, server responds with `SMD_CONNECT_SUCCESS`
+ *
+ *
+ *	\subsection disconnect
+ *	Command format is as follows (no IP address required):
+ *
+ *	`disconnect`
+ *
+ *	No response is given by the server. The network light on the SMD should stop blinking at this time.
+ *
+ *
+ *	\subsection driveEnable
+ *	Command format is as follows:
+ *
+ *	`driveEnable`
+ *
+ *	If successful, server responds with `ENABLE_SUCCESS`
+ *
+ *
+ *	\subsection driveDisable
+ *	Command format is as follows:
+ *
+ *	`driveDisable`
+ *
+ *	If successful, server responds with `DISABLE_SUCCESS`
+ *
+ *
+ *	\subsection  jogCW
+ *	Jogs the drive clockwise. 
+ *
+ *	The format of the command is as follows:
+ *
+ *	`jogCW,accel,decel,jerk,speed`
+ *
+ *	The following limits apply:
+ *	*accel* must be a positive integer between 1-5000
+ *
+ *	*decel* must be a postive integer between 1-5000
+ *
+ *	*jerk* must be a positive integer between 0-5000
+ *
+ *	*speed* must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999
+ *
+ *
+ *	\subsection jogCCW
+ *	Jogs the drive counter clockwise.
+ *
+ *	The format of the command is as follows:
+ *
+ *	`jogCCW,accel,decel,jerk,speed`
+ *
+ *	The following limits apply:
+ *	*accel* must be a positive integer between 1-5000
+ *
+ *	*decel* must be a postive integer between 1-5000
+ *
+ *	*jerk* must be a positive integer between 0-5000
+ *
+ *	*speed* must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999
+ *
+ *
+ *	\subsection relativeMove
+ *	Moves the motor a specified number steps, following a trapezoidal move profile. The motor does __not__ need to be homed.
+ *
+ *	The format of the command is as follows:
+ *
+ *	`relativeMove,rel_pos,accel,decel,jerk,speed`
+ *
+ *	The following limits apply:
+ *	rel_pos* must be an integer between -8,388,607 and +8,388,607
+ *
+ *	*accel* must be a positive integer between 1-5000
+ *
+ *	*decel* must be a postive integer between 1-5000
+ *
+ *	*jerk* must be a positive integer between 0-5000
+ *
+ *	*speed* must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999
+ *
+ *
+ *	\subsection holdMove
+ *	Stops motion using the deceleration value specified in the active move profile. The drive will __not__ register a *Position Invalid* error.
+ *
+ *	The format of the command is as follows:
+ *	`holdMove`
+ *
+ *	\subsection immedStop
+ *	Stops motion using a hard stop with no deceleration. The drive __will__ register a *Position Invalid* error and will need to be re-homed.
+ *
+ *	The format of the command is as follows:
+ *	`immedStop`
+ *
+ *
+ *	\subsection resetErrors
+ *	Resets and errors in the drive that prevent motion. Depending on home state, some errors may persist. Consult AMCI manual for more details.
+ *
+ *	The format of this command is:
+ *	`resetErrors`
+ *
+ *
+ *	\subsection readInputRegisters
+ *	Command to read input registers, outputs registers back to client in format 0x0, 0x0, 0, 0, 0, 0, 0, 0, 0, 0
+ *
+ *
+ *	\subsection presetMotorPosition
+ *
+ *
+ *	\subsection presetEncoderPosition
+ *
+ *
+ *	\subsection saveConfig
+ *
+ *
+ *	\subsection loadCurrentConfiguration
+ *
+ *
+ *	\subsection readCurrentConfiguration
+ *
+ *
+ *	\subsection homeCW
+ *
+ *
+ *	\subsection homeCCW
+ *
+ *
+ *	\subsection programAssembledMove
+ *
+ *
+ *	\subsection runAssembledDwellMove
+ *
+ *
+ *	\subsection runAssembledBlendMove
+ *
+ *
+ *	\subsection startManualMode
+ *
+ *
+ *	\subsection stopManualMode
+ *
+ *
+*/
+
 /**
  * @file SMD_Constants.h
  * @author John Davis <jd@pauldavisautomation.com>

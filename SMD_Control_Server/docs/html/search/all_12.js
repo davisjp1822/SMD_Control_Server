@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['words',['Words',['../struct_words.html',1,'']]],
-  ['write_5ferror',['WRITE_ERROR',['../_s_m_d___constants_8h.html#ae285ae8156981461d5daeeb42c8620b5',1,'SMD_Constants.h']]]
+  ['verbose',['VERBOSE',['../_s_m_d___constants_8h.html#ad91b8055c328029861b835fa448ec989',1,'SMD_Constants.h']]]
 ];

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.10"/>
-<title>SMD Control Server: Globals</title>
+<title>SMD Control Server: /Users/davisjp/Development/SMD_Control_Server/SMD_Control_Server/src/SMD_SocketOps.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,21 +62,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
-      <li class="current"><a href="globals.html"><span>Globals</span></a></li>
+      <li><a href="globals.html"><span>Globals</span></a></li>
     </ul>
   </div>
-  <div id="navrow3" class="tabs2">
-    <ul class="tablist">
-      <li><a href="globals.html"><span>All</span></a></li>
-      <li><a href="globals_func.html"><span>Functions</span></a></li>
-      <li><a href="globals_vars.html"><span>Variables</span></a></li>
-      <li><a href="globals_type.html"><span>Typedefs</span></a></li>
-      <li class="current"><a href="globals_enum.html"><span>Enumerations</span></a></li>
-      <li><a href="globals_eval.html"><span>Enumerator</span></a></li>
-      <li><a href="globals_defs.html"><span>Macros</span></a></li>
-    </ul>
-  </div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -91,19 +79,45 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">SMD_SocketOps.h File Reference</div>  </div>
+</div><!--header-->
 <div class="contents">
-&#160;<ul>
-<li>SMD_ASSEMBLED_MOVE_TYPE
-: <a class="el" href="_s_m_d___constants_8h.html#aa01cdf128324b19daf909259ac276745">SMD_Constants.h</a>
-</li>
-<li>SMD_REGISTER_READ_TYPE
-: <a class="el" href="_s_m_d___constants_8h.html#a2c9bb35de755ab4eeebd9785d227dbd6">SMD_Constants.h</a>
-</li>
-<li>SMD_RESPONSE_CODES
-: <a class="el" href="_s_m_d___constants_8h.html#ab55865c9c0ae991977b044752dd26f74">SMD_Constants.h</a>
-</li>
-</ul>
-</div><!-- contents -->
+
+<p>Socket operations and data parsing.  
+<a href="#details">More...</a></p>
+
+<p><a href="_s_m_d___socket_ops_8h_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a985de43f6c674cf87c33b4874dc02359"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a985de43f6c674cf87c33b4874dc02359"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_s_m_d___socket_ops_8h.html#a985de43f6c674cf87c33b4874dc02359">open_server_socket</a> ()</td></tr>
+<tr class="memdesc:a985de43f6c674cf87c33b4874dc02359"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens the server socket specified by SERVER_PORT. <br /></td></tr>
+<tr class="separator:a985de43f6c674cf87c33b4874dc02359"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a554ed0a45bf06aa00fdef5f2653f567d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a554ed0a45bf06aa00fdef5f2653f567d"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>parse_socket_input</b> (const char *input, const int cl)</td></tr>
+<tr class="separator:a554ed0a45bf06aa00fdef5f2653f567d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ef9a484ae6b65806e05e860d582ac07"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5ef9a484ae6b65806e05e860d582ac07"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>parse_smd_response_to_client_input</b> (const char *input, const int cl)</td></tr>
+<tr class="separator:a5ef9a484ae6b65806e05e860d582ac07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ff146e1cb31da10162ce0af4634e7ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ff146e1cb31da10162ce0af4634e7ff"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>write_to_client</b> (const int cl, const char *message)</td></tr>
+<tr class="separator:a3ff146e1cb31da10162ce0af4634e7ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Socket operations and data parsing. </p>
+<dl class="section author"><dt>Author</dt><dd>John Davis &lt;<a href="#" onclick="location.href='mai'+'lto:'+'jd@'+'pa'+'uld'+'av'+'isa'+'ut'+'oma'+'ti'+'on.'+'co'+'m'; return false;">jd@pa<span style="display: none;">.nosp@m.</span>ulda<span style="display: none;">.nosp@m.</span>visau<span style="display: none;">.nosp@m.</span>toma<span style="display: none;">.nosp@m.</span>tion.<span style="display: none;">.nosp@m.</span>com</a> </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>September 30, 2015 </dd></dl>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated on Thu May 26 2016 21:56:38 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">

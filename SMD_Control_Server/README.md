@@ -46,9 +46,44 @@ Setup and Installation
 
 ### AMCI Motor
 1. READ THE [MANUAL](http://www.amci.com/pdfs/integrated-stepper-control/smd-series-ethernet-integrated-stepper-motor-drives.pdf), paying special attention to the pinout diagrams. The SMD power connector is **NOT** protected against reversed wiring.
-2. Download the [AMCI NetConfigurator software](http://www.amci.com/configuration-software/amci-net-configurator.zip) and configure your motor's IP address. Do not forget to set the motor to Modbus/TCP!!
+2. Download the [AMCI NetConfigurator software](http://www.amci.com/configuration-software/amci-net-configurator.zip) and configure your motor's IP address. Do not forget to set the motor to **Modbus/TCP**!!
 3. Configure your motor in the configuration screen to fit your application.
 4. Power cycle the motor.
 
 Creating Motion
 ------
+First and foremost, you will want to start SMDCS. Navigate to where the compiled binary is stored (typically at *src/SMDControl*), and execute the following the launch the daemon:
+
+```bash
+# must be root (or use sudo) to run SMDServer
+
+# if you want to see console output, specify -v
+$ sudo src/SMDServer -v
+
+# if you want to run as a daemon, specify -d
+$ sudo src/SMDServer -d
+
+# if you want to specify the port, use -p (default is port 7000)
+$ sudo src/SMDServer -v -p 4242
+```
+
+Assuming your motor is hooked-up and configured as recommended before, you should be able to telnet to your server and start issuing commands. Some examples would be:
+
+```bash
+#assuming your motor IP address is 10.20.6.50
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+resetErrors
+COMMAND_SUCCESS
+jogCW,250,250,5000,0 # jog clockwise with 250 accel, 250 decel, 5000 steps/rev velocity, and 0 jerk
+COMMAND_SUCCESS
+holdMove # stops the move
+COMMAND_SUCCESS
+disconnect
+```
+
+Of course, full documentation may be foudn in *docs/html*. I **highly** recommend browsing the docs, as they will provide all of the motion commands available!
+
+

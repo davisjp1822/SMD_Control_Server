@@ -25,7 +25,7 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SMD Control Server
    </div>
-   <div id="projectbrief">A UNIX-socket server for controlling AMCI Modbus/TCP stepper drives.</div>
+   <div id="projectbrief">A server for controlling AMCI Modbus/TCP stepper drives.</div>
   </td>
  </tr>
  </tbody>
@@ -114,15 +114,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SMD_Modbus_h */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_s_m_d___modbus_8h_html_a7b9288a40707287f7e83879946c1803d"><div class="ttname"><a href="_s_m_d___modbus_8h.html#a7b9288a40707287f7e83879946c1803d">return_modbus_registers</a></div><div class="ttdeci">SMD_RESPONSE_CODES return_modbus_registers(char registers[][INPUT_REGISTER_STRING_SIZE], const int registers_count, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl, char *registers_string, int registers_string_buf_size)</div><div class="ttdoc">Reads input registers from the drive so that the drive status and configuration can be formatted to s...</div></div>
 <div class="ttc" id="_s_m_d___modbus_8h_html_a6761a917f48aad804f7831de6f5fe6bb"><div class="ttname"><a href="_s_m_d___modbus_8h.html#a6761a917f48aad804f7831de6f5fe6bb">read_modbus_registers</a></div><div class="ttdeci">SMD_RESPONSE_CODES read_modbus_registers(char registers[][INPUT_REGISTER_STRING_SIZE], const int registers_count, const SMD_REGISTER_READ_TYPE reg_read_type, const int cl)</div><div class="ttdoc">Reads input registers from the drive so that the drive status and configuration can be formatted to s...</div></div>
-<div class="ttc" id="_s_m_d___constants_8h_html_ab55865c9c0ae991977b044752dd26f74"><div class="ttname"><a href="_s_m_d___constants_8h.html#ab55865c9c0ae991977b044752dd26f74">SMD_RESPONSE_CODES</a></div><div class="ttdeci">SMD_RESPONSE_CODES</div><div class="ttdef"><b>Definition:</b> SMD_Constants.h:28</div></div>
-<div class="ttc" id="_s_m_d___constants_8h_html_aeafcfd071f8910ebff3416598db693cd"><div class="ttname"><a href="_s_m_d___constants_8h.html#aeafcfd071f8910ebff3416598db693cd">INPUT_REGISTER_STRING_SIZE</a></div><div class="ttdeci">#define INPUT_REGISTER_STRING_SIZE</div><div class="ttdef"><b>Definition:</b> SMD_Constants.h:20</div></div>
+<div class="ttc" id="_s_m_d___constants_8h_html_ab55865c9c0ae991977b044752dd26f74"><div class="ttname"><a href="_s_m_d___constants_8h.html#ab55865c9c0ae991977b044752dd26f74">SMD_RESPONSE_CODES</a></div><div class="ttdeci">SMD_RESPONSE_CODES</div><div class="ttdef"><b>Definition:</b> SMD_Constants.h:191</div></div>
+<div class="ttc" id="_s_m_d___constants_8h_html_aeafcfd071f8910ebff3416598db693cd"><div class="ttname"><a href="_s_m_d___constants_8h.html#aeafcfd071f8910ebff3416598db693cd">INPUT_REGISTER_STRING_SIZE</a></div><div class="ttdeci">#define INPUT_REGISTER_STRING_SIZE</div><div class="ttdef"><b>Definition:</b> SMD_Constants.h:183</div></div>
 <div class="ttc" id="_s_m_d___constants_8h_html"><div class="ttname"><a href="_s_m_d___constants_8h.html">SMD_Constants.h</a></div><div class="ttdoc">Constants pertaining to network communication and program configuration. </div></div>
 <div class="ttc" id="_s_m_d___modbus_8h_html_a8e056f8cd49f09006796f4c05cb7fe08"><div class="ttname"><a href="_s_m_d___modbus_8h.html#a8e056f8cd49f09006796f4c05cb7fe08">send_modbus_command</a></div><div class="ttdeci">SMD_RESPONSE_CODES send_modbus_command(const int *registers, const int *values, const int num_registers, const char *command_name)</div><div class="ttdoc">Sends a Modbus/TCP command to the SMD drive. Handles all of the overhead, such as threading...</div></div>
-<div class="ttc" id="_s_m_d___constants_8h_html_a2c9bb35de755ab4eeebd9785d227dbd6"><div class="ttname"><a href="_s_m_d___constants_8h.html#a2c9bb35de755ab4eeebd9785d227dbd6">SMD_REGISTER_READ_TYPE</a></div><div class="ttdeci">SMD_REGISTER_READ_TYPE</div><div class="ttdef"><b>Definition:</b> SMD_Constants.h:59</div></div>
+<div class="ttc" id="_s_m_d___constants_8h_html_a2c9bb35de755ab4eeebd9785d227dbd6"><div class="ttname"><a href="_s_m_d___constants_8h.html#a2c9bb35de755ab4eeebd9785d227dbd6">SMD_REGISTER_READ_TYPE</a></div><div class="ttdeci">SMD_REGISTER_READ_TYPE</div><div class="ttdef"><b>Definition:</b> SMD_Constants.h:222</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 23 2016 21:16:27 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 26 2016 21:56:38 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address>

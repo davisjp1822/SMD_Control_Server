@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.10"/>
-<title>SMD Control Server: Main Page</title>
+<title>SMD Control Server: SMDServer Commands</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">SMD Control Server
    </div>
-   <div id="projectbrief">A UNIX-socket server for controlling AMCI Modbus/TCP stepper drives.</div>
+   <div id="projectbrief">A server for controlling AMCI Modbus/TCP stepper drives.</div>
   </td>
  </tr>
  </tbody>
@@ -76,13 +76,109 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div class="header">
   <div class="headertitle">
-<div class="title">SMD Control Server Documentation</div>  </div>
+<div class="title">SMDServer Commands </div>  </div>
 </div><!--header-->
 <div class="contents">
-</div><!-- contents -->
+<div class="textblock"><h1><a class="anchor" id="Introduction"></a>
+Introduction</h1>
+<p>The goal of this software is to support all of the commands listed in the AMCI manual for the SMD series motors. Those commands are documented in the AMCI <a href="http://www.amci.com/stepper-motor-control/integrated-stepper-motor-control-smd23e.asp">SMD user manual</a>.</p>
+<p>If you haven't already done so, you <b>really</b> need to read README.md in the root directory. Dependencies, limitations, and other important info are all contained in this file.</p>
+<p>Comments, suggestions, bugs, etc. should all be directed to <a href="jd@pauldavisautomation.com">jd@pauldavisautomation.com</a></p>
+<h1><a class="anchor" id="Commands"></a>
+Commands</h1>
+<p>All of these commands are used while connected to the server using <code>telnet</code> or some other terminal emulation program.</p>
+<p>If you get unexplained errors, you may want to run SMDServer in verbose (debug) mode: <code>SMDServer -v</code></p>
+<h2><a class="anchor" id="connect"></a>
+connect</h2>
+<p>Command format is as so (replace IP address with the SMD IP address):</p>
+<p><code>connect,10.0.6.50</code></p>
+<p>If successful, server responds with <code>SMD_CONNECT_SUCCESS</code></p>
+<h2><a class="anchor" id="disconnect"></a>
+disconnect</h2>
+<p>Command format is as follows (no IP address required):</p>
+<p><code>disconnect</code></p>
+<p>No response is given by the server. The network light on the SMD should stop blinking at this time.</p>
+<h2><a class="anchor" id="driveEnable"></a>
+driveEnable</h2>
+<p>Command format is as follows:</p>
+<p><code>driveEnable</code></p>
+<p>If successful, server responds with <code>ENABLE_SUCCESS</code></p>
+<h2><a class="anchor" id="driveDisable"></a>
+driveDisable</h2>
+<p>Command format is as follows:</p>
+<p><code>driveDisable</code></p>
+<p>If successful, server responds with <code>DISABLE_SUCCESS</code></p>
+<h2><a class="anchor" id="jogCW"></a>
+jogCW</h2>
+<p>Jogs the drive clockwise.</p>
+<p>The format of the command is as follows:</p>
+<p><code>jogCW,accel,decel,jerk,speed</code></p>
+<p>The following limits apply: <em>accel</em> must be a positive integer between 1-5000</p>
+<p><em>decel</em> must be a postive integer between 1-5000</p>
+<p><em>jerk</em> must be a positive integer between 0-5000</p>
+<p><em>speed</em> must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999</p>
+<h2><a class="anchor" id="jogCCW"></a>
+jogCCW</h2>
+<p>Jogs the drive counter clockwise.</p>
+<p>The format of the command is as follows:</p>
+<p><code>jogCCW,accel,decel,jerk,speed</code></p>
+<p>The following limits apply: <em>accel</em> must be a positive integer between 1-5000</p>
+<p><em>decel</em> must be a postive integer between 1-5000</p>
+<p><em>jerk</em> must be a positive integer between 0-5000</p>
+<p><em>speed</em> must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999</p>
+<h2><a class="anchor" id="relativeMove"></a>
+relativeMove</h2>
+<p>Moves the motor a specified number steps, following a trapezoidal move profile. The motor does <b>not</b> need to be homed.</p>
+<p>The format of the command is as follows:</p>
+<p><code>relativeMove,rel_pos,accel,decel,jerk,speed</code></p>
+<p>The following limits apply: rel_pos* must be an integer between -8,388,607 and +8,388,607</p>
+<p><em>accel</em> must be a positive integer between 1-5000</p>
+<p><em>decel</em> must be a postive integer between 1-5000</p>
+<p><em>jerk</em> must be a positive integer between 0-5000</p>
+<p><em>speed</em> must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999</p>
+<h2><a class="anchor" id="holdMove"></a>
+holdMove</h2>
+<p>Stops motion using the deceleration value specified in the active move profile. The drive will <b>not</b> register a <em>Position Invalid</em> error.</p>
+<p>The format of the command is as follows: <code>holdMove</code></p>
+<h2><a class="anchor" id="immedStop"></a>
+immedStop</h2>
+<p>Stops motion using a hard stop with no deceleration. The drive <b>will</b> register a <em>Position Invalid</em> error and will need to be re-homed.</p>
+<p>The format of the command is as follows: <code>immedStop</code></p>
+<h2><a class="anchor" id="resetErrors"></a>
+resetErrors</h2>
+<p>Resets and errors in the drive that prevent motion. Depending on home state, some errors may persist. Consult AMCI manual for more details.</p>
+<p>The format of this command is: <code>resetErrors</code></p>
+<h2><a class="anchor" id="readInputRegisters"></a>
+readInputRegisters</h2>
+<p>Command to read input registers, outputs registers back to client in format 0x0, 0x0, 0, 0, 0, 0, 0, 0, 0, 0</p>
+<h2><a class="anchor" id="presetMotorPosition"></a>
+presetMotorPosition</h2>
+<h2><a class="anchor" id="presetEncoderPosition"></a>
+presetEncoderPosition</h2>
+<h2><a class="anchor" id="saveConfig"></a>
+saveConfig</h2>
+<h2><a class="anchor" id="loadCurrentConfiguration"></a>
+loadCurrentConfiguration</h2>
+<h2><a class="anchor" id="readCurrentConfiguration"></a>
+readCurrentConfiguration</h2>
+<h2><a class="anchor" id="homeCW"></a>
+homeCW</h2>
+<h2><a class="anchor" id="homeCCW"></a>
+homeCCW</h2>
+<h2><a class="anchor" id="programAssembledMove"></a>
+programAssembledMove</h2>
+<h2><a class="anchor" id="runAssembledDwellMove"></a>
+runAssembledDwellMove</h2>
+<h2><a class="anchor" id="runAssembledBlendMove"></a>
+runAssembledBlendMove</h2>
+<h2><a class="anchor" id="startManualMode"></a>
+startManualMode</h2>
+<h2><a class="anchor" id="stopManualMode"></a>
+stopManualMode</h2>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 23 2016 21:16:27 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 26 2016 21:56:38 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address>

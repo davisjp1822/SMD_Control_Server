@@ -1,14 +1,10 @@
 var searchData=
 [
-  ['read_5fcurrent_5fconfiguration',['READ_CURRENT_CONFIGURATION',['../_s_m_d___constants_8h.html#adc2632f236771db278cdb67d3182e783',1,'SMD_Constants.h']]],
-  ['read_5finput_5fregisters',['READ_INPUT_REGISTERS',['../_s_m_d___constants_8h.html#a7c19218761d041924d11d539d47d2794',1,'SMD_Constants.h']]],
-  ['read_5fmodbus_5fregisters',['read_modbus_registers',['../_s_m_d___modbus_8h.html#a6761a917f48aad804f7831de6f5fe6bb',1,'SMD_Modbus.h']]],
-  ['ready_5fto_5fread_5fconfig',['READY_TO_READ_CONFIG',['../_s_m_d___constants_8h.html#aa7ccf72dd8e4c9fece18497ec3fde9a5',1,'SMD_Constants.h']]],
-  ['relative_5fmove',['RELATIVE_MOVE',['../_s_m_d___constants_8h.html#a9d1f406da1dc3094acf88ee9f4b73dce',1,'SMD_Constants.h']]],
-  ['relative_5fmove_5fcomplete',['RELATIVE_MOVE_COMPLETE',['../_s_m_d___constants_8h.html#a1c724f1b172dfab25afd34aa2db7f45d',1,'SMD_Constants.h']]],
-  ['reset_5ferrors',['RESET_ERRORS',['../_s_m_d___constants_8h.html#a923d67addd6afbd1c99085733c4b634d',1,'SMD_Constants.h']]],
-  ['reset_5ferrors_5fsuccess',['RESET_ERRORS_SUCCESS',['../_s_m_d___constants_8h.html#a2612376ede9cb1e27b81377772859d22',1,'SMD_Constants.h']]],
-  ['return_5fmodbus_5fregisters',['return_modbus_registers',['../_s_m_d___modbus_8h.html#a7b9288a40707287f7e83879946c1803d',1,'SMD_Modbus.h']]],
-  ['run_5fassembled_5fblend_5fmove',['RUN_ASSEMBLED_BLEND_MOVE',['../_s_m_d___constants_8h.html#a81de00021610f135ee1ce68de9b99a0f',1,'SMD_Constants.h']]],
-  ['run_5fassembled_5fdwell_5fmove',['RUN_ASSEMBLED_DWELL_MOVE',['../_s_m_d___constants_8h.html#a59d68e3fa0fa911642bca7dcee68494f',1,'SMD_Constants.h']]]
+  ['preset_5fencoder_5ffail',['PRESET_ENCODER_FAIL',['../_s_m_d___constants_8h.html#ad0a4310e1bf6ce1bcab1cac79de40157',1,'SMD_Constants.h']]],
+  ['preset_5fencoder_5fposition',['PRESET_ENCODER_POSITION',['../_s_m_d___constants_8h.html#acaa05e4c0c61d5fb138561d73f764b69',1,'SMD_Constants.h']]],
+  ['preset_5fencoder_5fsuccess',['PRESET_ENCODER_SUCCESS',['../_s_m_d___constants_8h.html#ac453565d430e510e727ef2925848a8ae',1,'SMD_Constants.h']]],
+  ['preset_5fmotor_5fposition',['PRESET_MOTOR_POSITION',['../_s_m_d___constants_8h.html#a833e096fd2764931fa35598416aa124b',1,'SMD_Constants.h']]],
+  ['preset_5fposition_5ffail',['PRESET_POSITION_FAIL',['../_s_m_d___constants_8h.html#a44ef7e2689e14db883b55dbc2b355fc7',1,'SMD_Constants.h']]],
+  ['preset_5fposition_5fsuccess',['PRESET_POSITION_SUCCESS',['../_s_m_d___constants_8h.html#a5f786795a12af39873ce5eca80aec687',1,'SMD_Constants.h']]],
+  ['program_5fassembled_5fmove',['PROGRAM_ASSEMBLED_MOVE',['../_s_m_d___constants_8h.html#a9d6a943f9e11ee71113bae5ce33d364b',1,'SMD_Constants.h']]]
 ];

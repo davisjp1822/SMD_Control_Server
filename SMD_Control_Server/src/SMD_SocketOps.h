@@ -6,6 +6,13 @@
 //  Copyright © 2015 3ML LLC. All rights reserved.
 //
 
+/**
+	* @file SMD_SocketOps.h
+	* @author John Davis <jd@pauldavisautomation.com
+	* @date September 30, 2015
+	* @brief Socket operations and data parsing. 
+ */
+
 #ifndef SMD_SocketOps_h
 #define SMD_SocketOps_h
 

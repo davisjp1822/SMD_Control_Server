@@ -1,0 +1,91 @@
+\hypertarget{index_Introduction}{}\section{Introduction}\label{index_Introduction}
+The goal of this software is to support all of the commands listed in the A\+M\+C\+I manual for the S\+M\+D series motors. Those commands are documented in the A\+M\+C\+I \href{http://www.amci.com/stepper-motor-control/integrated-stepper-motor-control-smd23e.asp}{\tt S\+M\+D user manual}.
+
+If you haven\textquotesingle{}t already done so, you {\bfseries really} need to read R\+E\+A\+D\+M\+E.\+md in the root directory. Dependencies, limitations, and other important info are all contained in this file.
+
+Comments, suggestions, bugs, etc. should all be directed to \href{jd@pauldavisautomation.com}{\tt jd@pauldavisautomation.\+com}\hypertarget{index_Commands}{}\section{Commands}\label{index_Commands}
+All of these commands are used while connected to the server using {\ttfamily telnet} or some other terminal emulation program.
+
+If you get unexplained errors, you may want to run S\+M\+D\+Server in verbose (debug) mode\+: {\ttfamily S\+M\+D\+Server -\/v}\hypertarget{index_connect}{}\subsection{connect}\label{index_connect}
+Command format is as so (replace I\+P address with the S\+M\+D I\+P address)\+:
+
+{\ttfamily connect,10.\+0.\+6.\+50}
+
+If successful, server responds with {\ttfamily S\+M\+D\+\_\+\+C\+O\+N\+N\+E\+C\+T\+\_\+\+S\+U\+C\+C\+E\+S\+S}\hypertarget{index_disconnect}{}\subsection{disconnect}\label{index_disconnect}
+Command format is as follows (no I\+P address required)\+:
+
+{\ttfamily disconnect}
+
+No response is given by the server. The network light on the S\+M\+D should stop blinking at this time.\hypertarget{index_driveEnable}{}\subsection{drive\+Enable}\label{index_driveEnable}
+Command format is as follows\+:
+
+{\ttfamily drive\+Enable}
+
+If successful, server responds with {\ttfamily E\+N\+A\+B\+L\+E\+\_\+\+S\+U\+C\+C\+E\+S\+S}\hypertarget{index_driveDisable}{}\subsection{drive\+Disable}\label{index_driveDisable}
+Command format is as follows\+:
+
+{\ttfamily drive\+Disable}
+
+If successful, server responds with {\ttfamily D\+I\+S\+A\+B\+L\+E\+\_\+\+S\+U\+C\+C\+E\+S\+S}\hypertarget{index_jogCW}{}\subsection{jog\+C\+W}\label{index_jogCW}
+Jogs the drive clockwise.
+
+The format of the command is as follows\+:
+
+{\ttfamily jog\+C\+W,accel,decel,jerk,speed}
+
+The following limits apply\+: {\itshape accel} must be a positive integer between 1-\/5000
+
+{\itshape decel} must be a postive integer between 1-\/5000
+
+{\itshape jerk} must be a positive integer between 0-\/5000
+
+{\itshape speed} must be a positive integer between configured starting speed (configured in A\+M\+C\+I Net\+Configurator) and 2,999,999\hypertarget{index_jogCCW}{}\subsection{jog\+C\+C\+W}\label{index_jogCCW}
+Jogs the drive counter clockwise.
+
+The format of the command is as follows\+:
+
+{\ttfamily jog\+C\+C\+W,accel,decel,jerk,speed}
+
+The following limits apply\+: {\itshape accel} must be a positive integer between 1-\/5000
+
+{\itshape decel} must be a postive integer between 1-\/5000
+
+{\itshape jerk} must be a positive integer between 0-\/5000
+
+{\itshape speed} must be a positive integer between configured starting speed (configured in A\+M\+C\+I Net\+Configurator) and 2,999,999\hypertarget{index_relativeMove}{}\subsection{relative\+Move}\label{index_relativeMove}
+Moves the motor a specified number steps, following a trapezoidal move profile. The motor does {\bfseries not} need to be homed.
+
+The format of the command is as follows\+:
+
+{\ttfamily relative\+Move,rel\+\_\+pos,accel,decel,jerk,speed}
+
+The following limits apply\+: rel\+\_\+pos$\ast$ must be an integer between -\/8,388,607 and +8,388,607
+
+{\itshape accel} must be a positive integer between 1-\/5000
+
+{\itshape decel} must be a postive integer between 1-\/5000
+
+{\itshape jerk} must be a positive integer between 0-\/5000
+
+{\itshape speed} must be a positive integer between configured starting speed (configured in A\+M\+C\+I Net\+Configurator) and 2,999,999\hypertarget{index_holdMove}{}\subsection{hold\+Move}\label{index_holdMove}
+Stops motion using the deceleration value specified in the active move profile. The drive will {\bfseries not} register a {\itshape Position Invalid} error.
+
+The format of the command is as follows\+: {\ttfamily hold\+Move}\hypertarget{index_immedStop}{}\subsection{immed\+Stop}\label{index_immedStop}
+Stops motion using a hard stop with no deceleration. The drive {\bfseries will} register a {\itshape Position Invalid} error and will need to be re-\/homed.
+
+The format of the command is as follows\+: {\ttfamily immed\+Stop}\hypertarget{index_resetErrors}{}\subsection{reset\+Errors}\label{index_resetErrors}
+Resets and errors in the drive that prevent motion. Depending on home state, some errors may persist. Consult A\+M\+C\+I manual for more details.
+
+The format of this command is\+: {\ttfamily reset\+Errors}\hypertarget{index_readInputRegisters}{}\subsection{read\+Input\+Registers}\label{index_readInputRegisters}
+Command to read input registers, outputs registers back to client in format 0x0, 0x0, 0, 0, 0, 0, 0, 0, 0, 0\hypertarget{index_presetMotorPosition}{}\subsection{preset\+Motor\+Position}\label{index_presetMotorPosition}
+\hypertarget{index_presetEncoderPosition}{}\subsection{preset\+Encoder\+Position}\label{index_presetEncoderPosition}
+\hypertarget{index_saveConfig}{}\subsection{save\+Config}\label{index_saveConfig}
+\hypertarget{index_loadCurrentConfiguration}{}\subsection{load\+Current\+Configuration}\label{index_loadCurrentConfiguration}
+\hypertarget{index_readCurrentConfiguration}{}\subsection{read\+Current\+Configuration}\label{index_readCurrentConfiguration}
+\hypertarget{index_homeCW}{}\subsection{home\+C\+W}\label{index_homeCW}
+\hypertarget{index_homeCCW}{}\subsection{home\+C\+C\+W}\label{index_homeCCW}
+\hypertarget{index_programAssembledMove}{}\subsection{program\+Assembled\+Move}\label{index_programAssembledMove}
+\hypertarget{index_runAssembledDwellMove}{}\subsection{run\+Assembled\+Dwell\+Move}\label{index_runAssembledDwellMove}
+\hypertarget{index_runAssembledBlendMove}{}\subsection{run\+Assembled\+Blend\+Move}\label{index_runAssembledBlendMove}
+\hypertarget{index_startManualMode}{}\subsection{start\+Manual\+Mode}\label{index_startManualMode}
+\hypertarget{SMD_Constants.h_stopManualMode}{}\subsection{stop\+Manual\+Mode}\label{SMD_Constants.h_stopManualMode}
