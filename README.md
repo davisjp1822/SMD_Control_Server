@@ -30,9 +30,10 @@ In other words, use this at your own risk. And TEST TEST TEST.
 Dependencies
 ------
 [libmodbus](https://github.com/stephane/libmodbus)
+
 [cJSON](https://github.com/kbranigan/cJSON)
 
-A C compiler.
+A C compiler (GCC is probably your best bet, honestly)
 
 Setup and Installation
 ------
@@ -52,6 +53,8 @@ Setup and Installation
 
 Creating Motion
 ------
+BEFORE DOING ANYTHING - READ THE DOCUMENTATION at `docs/html/index.html`.
+
 First and foremost, you will want to start SMDCS. Navigate to where the compiled binary is stored (typically at *src/SMDControl*), and execute the following the launch the daemon:
 
 ```bash
@@ -84,6 +87,6 @@ COMMAND_SUCCESS
 disconnect
 ```
 
-Of course, full documentation may be foudn in *docs/html*. I **highly** recommend browsing the docs, as they will provide all of the motion commands available!
+Of course, full documentation may be found in *docs/html*. I **highly** recommend browsing the docs, as they will provide all of the motion commands available!
 
 
