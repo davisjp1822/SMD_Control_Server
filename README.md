@@ -9,6 +9,10 @@ Designed as a portable motion controller for AMCI SMD series integrated stepper 
 
 More information on AMCI SMD series steppers may be found on [AMCI's website](http://www.amci.com/stepper-motor-control/integrated-stepper-motor-control-smd23e.asp)
 
+Click on the screenshot below for a video of the server in action!
+
+[!Screenshot](https://raw.githubusercontent.com/davisjp1822/SMD_Control_Server/master/Screenshots/youtube_screenshot.png)
+
 Limitations
 ------
 As of right now, SMDCS works only using Modbus/TCP. If you are willing to help out by reversing Ethernet/IP and contributing to a stack, let me know.
