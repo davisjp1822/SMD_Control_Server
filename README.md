@@ -31,6 +31,8 @@ This SOFTWARE PRODUCT is provided by 3ML LLC "as is" and "with all faults." 3ML 
 
 In other words, use this at your own risk. And TEST TEST TEST.
 
+Also, this software is not endorsed or supported in any way by Advanced Micro Controls Inc (AMCI). As such, no warranty is either implied or offered by AMCI. SMD is a trademark of AMCI used with permission.
+
 Dependencies
 ------
 [libmodbus](https://github.com/stephane/libmodbus)
