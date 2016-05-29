@@ -11,7 +11,7 @@ More information on AMCI SMD series steppers may be found on [AMCI's website](ht
 
 Click on the screenshot below for a video of the server in action!
 
-[!Screenshot](https://raw.githubusercontent.com/davisjp1822/SMD_Control_Server/master/Screenshots/youtube_screenshot.png)
+[[!Screenshot](https://raw.githubusercontent.com/davisjp1822/SMD_Control_Server/master/Screenshots/youtube_screenshot.png)]
 
 Limitations
 ------
