@@ -113,72 +113,180 @@ jogCW</h2>
 <p>Jogs the drive clockwise.</p>
 <p>The format of the command is as follows:</p>
 <p><code>jogCW,accel,decel,jerk,speed</code></p>
-<p>The following limits apply: <em>accel</em> must be a positive integer between 1-5000</p>
-<p><em>decel</em> must be a postive integer between 1-5000</p>
-<p><em>jerk</em> must be a positive integer between 0-5000</p>
-<p><em>speed</em> must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999</p>
+<p>The following limits apply: </p><pre class="fragment">*accel* must be a positive integer between 1-5000
+
+*decel* must be a postive integer between 1-5000
+
+*jerk* must be a positive integer between 0-5000
+
+*speed* must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999
+</pre><p>If successful, server responds with <code>COMMAND_SUCCESS</code></p>
 <h2><a class="anchor" id="jogCCW"></a>
 jogCCW</h2>
 <p>Jogs the drive counter clockwise.</p>
 <p>The format of the command is as follows:</p>
 <p><code>jogCCW,accel,decel,jerk,speed</code></p>
-<p>The following limits apply: <em>accel</em> must be a positive integer between 1-5000</p>
-<p><em>decel</em> must be a postive integer between 1-5000</p>
-<p><em>jerk</em> must be a positive integer between 0-5000</p>
-<p><em>speed</em> must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999</p>
+<p>The following limits apply: </p><pre class="fragment">*accel* must be a positive integer between 1-5000
+
+*decel* must be a postive integer between 1-5000
+
+*jerk* must be a positive integer between 0-5000
+
+*speed* must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999
+</pre><p>If successful, server responds with <code>COMMAND_SUCCESS</code></p>
 <h2><a class="anchor" id="relativeMove"></a>
 relativeMove</h2>
 <p>Moves the motor a specified number steps, following a trapezoidal move profile. The motor does <b>not</b> need to be homed.</p>
 <p>The format of the command is as follows:</p>
 <p><code>relativeMove,rel_pos,accel,decel,jerk,speed</code></p>
-<p>The following limits apply: rel_pos* must be an integer between -8,388,607 and +8,388,607</p>
-<p><em>accel</em> must be a positive integer between 1-5000</p>
-<p><em>decel</em> must be a postive integer between 1-5000</p>
-<p><em>jerk</em> must be a positive integer between 0-5000</p>
-<p><em>speed</em> must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999</p>
+<p>The following limits apply: </p><pre class="fragment">*rel_pos* must be an integer between -8,388,607 and +8,388,607
+
+*accel* must be a positive integer between 1-5000
+
+*decel* must be a postive integer between 1-5000
+
+*jerk* must be a positive integer between 0-5000
+
+*speed* must be a positive integer between configured starting speed (configured in AMCI NetConfigurator) and 2,999,999
+</pre><p>If successful, server responds with <code>REL_MOVE_COMPLETE</code></p>
 <h2><a class="anchor" id="holdMove"></a>
 holdMove</h2>
 <p>Stops motion using the deceleration value specified in the active move profile. The drive will <b>not</b> register a <em>Position Invalid</em> error.</p>
-<p>The format of the command is as follows: <code>holdMove</code></p>
+<p>The format of the command is as follows:</p>
+<p><code>holdMove</code></p>
+<p>If successful, server responds with <code>COMMAND_SUCCESS</code></p>
 <h2><a class="anchor" id="immedStop"></a>
 immedStop</h2>
 <p>Stops motion using a hard stop with no deceleration. The drive <b>will</b> register a <em>Position Invalid</em> error and will need to be re-homed.</p>
-<p>The format of the command is as follows: <code>immedStop</code></p>
+<p>The format of the command is as follows:</p>
+<p><code>immedStop</code></p>
+<p>If successful, server responds with <code>COMMAND_SUCCESS</code></p>
 <h2><a class="anchor" id="resetErrors"></a>
 resetErrors</h2>
 <p>Resets and errors in the drive that prevent motion. Depending on home state, some errors may persist. Consult AMCI manual for more details.</p>
-<p>The format of this command is: <code>resetErrors</code></p>
+<p>The format of this command is:</p>
+<p><code>resetErrors</code></p>
+<p>If successful, server responds with <code>RESET_ERRORS_SUCCESS</code></p>
 <h2><a class="anchor" id="readInputRegisters"></a>
 readInputRegisters</h2>
-<p>Command to read input registers, outputs registers back to client in format 0x0, 0x0, 0, 0, 0, 0, 0, 0, 0, 0</p>
+<p>Command to read input registers, outputs registers back to client in format 0x0, 0x0, 0, 0, 0, 0, 0, 0, 0, 0.</p>
+<p>The format of the input registers follows the byte order as specified in the user manual section titled <em>Input Registers</em>. That is, the left most 0x0 above is word 0.</p>
+<p>The format of this command is:</p>
+<p><code>readInputRegisters</code></p>
 <h2><a class="anchor" id="presetMotorPosition"></a>
 presetMotorPosition</h2>
+<p>Command that presets the motor position (motor counts) to a specified value.</p>
+<p>The format of the command is as follows:</p>
+<p><code>presetMotorPosition,pos</code></p>
+<p>The following limits apply: </p><pre class="fragment">*pos* must be an integer between -8,388,607 and +8,388,607
+</pre><p>If successful, server responds with <code>PRESET_POSITION_SUCCESS</code></p>
 <h2><a class="anchor" id="presetEncoderPosition"></a>
 presetEncoderPosition</h2>
-<h2><a class="anchor" id="saveConfig"></a>
-saveConfig</h2>
+<p>Command that presets the encoder position to a specified value.</p>
+<p>The format of the command is as follows:</p>
+<p><code>presetEncoderPosition,pos</code></p>
+<p>If successful, server responds with <code>PRESET_ENCODER_SUCCESS</code></p>
+<p>The following limits apply: </p><pre class="fragment">*pos* must be an integer between -8,388,607 and +8,388,607
+</pre><h2><a class="anchor" id="Configuration"></a>
+(loadCurrentConfiguration, readCurrentConfiguration, saveConfig)</h2>
+<p>Configuration is a bit of a tricky item with these drives. You really need to read the user manual and understand how the drive interprets the "configuration mode" bit in the Command Word or else you are going to run into problems with annoying errors and the like. Also, you will want to learn the difference between writing the configuration to the onboard flash versus just loading it into memory.</p>
+<p>When wrapping a GUI around this process, you will have to make sure to give the drive ample time to flip bits and process the information.</p>
+<p>In general though, the operation goes something like this (in order of operations from the client to the server):</p>
+<ol type="1">
+<li>Execute <code>loadCurrentConfiguration</code> to put the drive into Configuration Mode and load the input registers with the current configuration.</li>
+<li>Execute <code>readCurrentConfiguration</code> which will echo the current configuration to the client terminal using a similar format as the input (status) registers.</li>
+<li>Optionally, use saveConfig to send a configuration back to the SMD.</li>
+<li>To put the drive back into Command Mode, use <code>resetErrors</code> or <code>driveEnable</code> to flip the appropriate bits.</li>
+</ol>
 <h2><a class="anchor" id="loadCurrentConfiguration"></a>
 loadCurrentConfiguration</h2>
+<p>See above for explanation.</p>
+<p>The format of the command is as follows:</p>
+<p><code>loadCurrentConfiguration</code></p>
+<p>If successful, server responds with <code>READY_TO_READ_CONFIG</code></p>
 <h2><a class="anchor" id="readCurrentConfiguration"></a>
 readCurrentConfiguration</h2>
-<h2><a class="anchor" id="homeCW"></a>
+<p>See above (point 2) for explanation. The return format of the config input registers is as follows:</p>
+<p><code>###0x0,0x0,0,0,0,0,0,0,0,0</code></p>
+<p>Similar to the status input registers, this format is in the same order as the registers in the user manual (the leftmost word is Config Word 0)</p>
+<h2><a class="anchor" id="saveConfig"></a>
+saveConfig</h2>
+<p>Saves a configuration specified by the following command string to the drive:</p>
+<p><code>saveConfig,control_word,config_word,motor_starting_speed,motor_steps_per_turn,encoder_pulses_per_turn,idle_current_percentage,motor_current</code> </p><pre class="fragment">*control_word* is a decimal representation of the Control Word as outlined in the SMD user manual
+*config_word* is a decimal representation of the Config Word as outlined in the SMD user manual
+*motor_starting_speed is a positive integer between 1 and 1999999
+*motor_steps_per_turn* is a positive integer between 200 and 32767
+*encoder_pulses_per_turn* is 1024
+*idle_current_percentage* is an integer between 1 and 100, representing 1% of total motor current to 100% of 3.4A.
+*motor_current* is a value between 1 and 34, representing 1.0A to 3.4A
+</pre><h2><a class="anchor" id="homeCW"></a>
 homeCW</h2>
-<h2><a class="anchor" id="homeCCW"></a>
+<p>Executes a predefined homing routine where the motor jogs clockwise at the specified speed until seeing the Home Limit input close.</p>
+<p>The format of the command is as follows:</p>
+<p><code>homeCW,speed,accel,decel,jerk</code> </p><pre class="fragment">*speed* is an integer between 1 and 2999999
+*accel* is an integer between 1 and 5000
+*decel* is an integer between 1 and 5000
+*jerk* is an integer between 1 and 5000
+</pre><h2><a class="anchor" id="homeCCW"></a>
 homeCCW</h2>
-<h2><a class="anchor" id="programAssembledMove"></a>
+<p>Executes a predefined homing routine where the motor jogs counter clockwise at the specified speed until seeing the Home Limit input close.</p>
+<p>The format of the command is as follows:</p>
+<p><code>homeCCW,speed,accel,decel,jerk</code> </p><pre class="fragment">*speed* is an integer between 1 and 2999999
+*accel* is an integer between 1 and 5000
+*decel* is an integer between 1 and 5000
+*jerk* is an integer between 1 and 5000
+</pre><h2><a class="anchor" id="programAssembledMove"></a>
 programAssembledMove</h2>
+<p>You will definitely want to home the motor prior to trying an assembled move.</p>
+<p>Once homed, you upload the move profile to the drive using the following command:</p>
+<p><code>programAssembledMove,move_json</code></p>
+<p><em>move_json</em> is a JSON string with the following format: </p><pre class="fragment">{
+
+    "segment": {
+        "target_pos_inches": 5200,
+        "programmed_speed": 1000,
+        "accel": 150,
+        "decel": 150,
+        "jerk": 0
+    },
+    "segment": {
+        "target_pos_inches": 5200,
+        "programmed_speed": 2000,
+        "accel": 150,
+        "decel": 150,
+        "jerk": 0
+    },
+    "segment": {
+        "target_pos_inches": 5200,
+        "programmed_speed": 4000,
+        "accel": 150,
+        "decel": 150,
+        "jerk": 0
+    }
+}
+</pre><p>An assembled move profile can have up to <b>16</b> segments.</p>
+<p>It does take some time for the move to program, so be patient. Each move segment takes ~2 seconds.</p>
+<p>When the profile is successfully accepted, the server responds with <code>ASSEMBLED_MOVE_ACCEPTED</code> to the client.</p>
 <h2><a class="anchor" id="runAssembledDwellMove"></a>
 runAssembledDwellMove</h2>
-<h2><a class="anchor" id="runAssembledBlendMove"></a>
+<p>Once a move profile is loaded using <code>programAssembledMove</code>, it can be executed with either <code>runAssembledDwellMove</code> or <code>runAssembledBlendMove</code>.</p>
+<p>If the motor <b>changes direction</b>, you <b>MUST</b> use a dwell move! The dwell allows the motor to decel and then change directions.</p>
+<p>This format for this command is <code>runAssembledDwellMove,dwell_time</code>. </p><pre class="fragment">*dwell_time* is the time, in milliseconds (ms) that the drive should wait between move segments
+</pre><h2><a class="anchor" id="runAssembledBlendMove"></a>
 runAssembledBlendMove</h2>
-<h2><a class="anchor" id="startManualMode"></a>
+<p>Once a move profile is loaded using <code>programAssembledMove</code>, it can be executed with either <code>runAssembledDwellMove</code> or <code>runAssembledBlendMove</code>.</p>
+<p>If the motor <b>changes direction</b>, you <b>MUST</b> use a dwell move! The dwell allows the motor to decel and then change directions. There is no delay between segments in a blend move.</p>
+<p>This format for this command is <code>runAssembledBlendMove,direction</code>. </p><pre class="fragment">*direction* is the motor rotation direction - 0 is CW, 1, CCW
+</pre><h2><a class="anchor" id="startManualMode"></a>
 startManualMode</h2>
+<p>Used to enable manual control mode. Beta, and undocumented. If you want to do analog control over the network, you are good enough to read the source. I originally used this as a demo using an Arduino Yun. Check out the Arduino file in this repository for an idea of what is going on. Then, read the C source.</p>
 <h2><a class="anchor" id="stopManualMode"></a>
 stopManualMode</h2>
+<p>See above. There be dragons here. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 26 2016 21:56:38 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 29 2016 14:41:08 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address>

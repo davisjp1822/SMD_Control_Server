@@ -102,18 +102,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keywordtype">void</span> <a class="code" href="_s_m_d___socket_ops_8h.html#a985de43f6c674cf87c33b4874dc02359">open_server_socket</a>();</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keywordtype">int</span> parse_socket_input(<span class="keyword">const</span> <span class="keywordtype">char</span> *input, <span class="keyword">const</span> <span class="keywordtype">int</span> cl);</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keywordtype">int</span> <a class="code" href="_s_m_d___socket_ops_8h.html#a554ed0a45bf06aa00fdef5f2653f567d">parse_socket_input</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *input, <span class="keyword">const</span> <span class="keywordtype">int</span> cl);</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keywordtype">void</span> parse_smd_response_to_client_input(<span class="keyword">const</span> <span class="keywordtype">char</span> *input, <span class="keyword">const</span> <span class="keywordtype">int</span> cl);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keywordtype">int</span> write_to_client(<span class="keyword">const</span> <span class="keywordtype">int</span> cl, <span class="keyword">const</span> <span class="keywordtype">char</span> *message);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SMD_SocketOps_h */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keywordtype">void</span> <a class="code" href="_s_m_d___socket_ops_8h.html#a5ef9a484ae6b65806e05e860d582ac07">parse_smd_response_to_client_input</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *input, <span class="keyword">const</span> <span class="keywordtype">int</span> cl);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="keywordtype">int</span> <a class="code" href="_s_m_d___socket_ops_8h.html#a3ff146e1cb31da10162ce0af4634e7ff">write_to_client</a>(<span class="keyword">const</span> <span class="keywordtype">int</span> cl, <span class="keyword">const</span> <span class="keywordtype">char</span> *message);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SMD_SocketOps_h */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_s_m_d___socket_ops_8h_html_a985de43f6c674cf87c33b4874dc02359"><div class="ttname"><a href="_s_m_d___socket_ops_8h.html#a985de43f6c674cf87c33b4874dc02359">open_server_socket</a></div><div class="ttdeci">void open_server_socket()</div><div class="ttdoc">Opens the server socket specified by SERVER_PORT. </div></div>
+<div class="ttc" id="_s_m_d___socket_ops_8h_html_a554ed0a45bf06aa00fdef5f2653f567d"><div class="ttname"><a href="_s_m_d___socket_ops_8h.html#a554ed0a45bf06aa00fdef5f2653f567d">parse_socket_input</a></div><div class="ttdeci">int parse_socket_input(const char *input, const int cl)</div><div class="ttdoc">Parses raw input from the connected clients. </div></div>
+<div class="ttc" id="_s_m_d___socket_ops_8h_html_a3ff146e1cb31da10162ce0af4634e7ff"><div class="ttname"><a href="_s_m_d___socket_ops_8h.html#a3ff146e1cb31da10162ce0af4634e7ff">write_to_client</a></div><div class="ttdeci">int write_to_client(const int cl, const char *message)</div><div class="ttdoc">Writes a message back to the client. </div></div>
+<div class="ttc" id="_s_m_d___socket_ops_8h_html_a5ef9a484ae6b65806e05e860d582ac07"><div class="ttname"><a href="_s_m_d___socket_ops_8h.html#a5ef9a484ae6b65806e05e860d582ac07">parse_smd_response_to_client_input</a></div><div class="ttdeci">void parse_smd_response_to_client_input(const char *input, const int cl)</div><div class="ttdoc">Reads the status back from the raw Modbus commands and translates them into return codes that can be ...</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 26 2016 21:56:38 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 29 2016 14:41:07 for SMD Control Server by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address>
