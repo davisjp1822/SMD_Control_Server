@@ -1,5 +1,5 @@
 /*
-*  SMDControlDaemon.c
+*  main.c
 *  AMCI_SMD
 *
 *	Created by John Davis on 4/16/15. Copyright 2015 3ML LLC
