@@ -6,8 +6,9 @@
 //  Copyright © 2015 3ML LLC. All rights reserved.
 //
 
+#include "config.h"
+
 #include <modbus.h>
-#include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -22,6 +23,10 @@
 #include "SMD_Modbus.h"
 #include "SMD_SocketOps.h"
 #include <cJSON.h>
+
+#ifdef HAVE_STRING_H
+	#include <string.h>
+#endif
 
 #define POT_SCALE 30
 

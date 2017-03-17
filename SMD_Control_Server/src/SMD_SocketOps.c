@@ -6,6 +6,8 @@
 //  Copyright © 2015 3ML LLC. All rights reserved.
 //
 
+#include "config.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -18,6 +20,10 @@
 #include "SMD_Constants.h"
 #include "SMD_Utilities.h"
 #include "SMD_Motor_Commands.h"
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 
 #define BUF_SIZE 8192
 

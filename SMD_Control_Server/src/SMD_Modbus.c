@@ -6,6 +6,12 @@
 //  Copyright © 2015 3ML LLC. All rights reserved.
 //
 
+#include "config.h"
+
+#ifdef HAVE_STRING_H
+	#include <string.h>
+#endif
+
 #include "SMD_Modbus.h"
 #include "SMD_Constants.h"
 #include "SMD_Utilities.h"
@@ -13,7 +19,6 @@
 #include "SMD_Motor_Commands.h"
 
 #include <modbus.h>
-#include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>

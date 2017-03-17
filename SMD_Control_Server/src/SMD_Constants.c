@@ -7,8 +7,6 @@
 //
 
 #include "SMD_Constants.h"
-
-#include <stdio.h>
 #include "config.h"
 
 char			*DEVICE_IP;
