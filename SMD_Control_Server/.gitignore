@@ -1,3 +1,6 @@
+# autotools
+.deps
+
 # Prerequisites
 *.d
 

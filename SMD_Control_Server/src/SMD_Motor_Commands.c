@@ -21,7 +21,7 @@
 #include "SMD_Utilities.h"
 #include "SMD_Modbus.h"
 #include "SMD_SocketOps.h"
-#include "vendor/cJSON.h"
+#include <cJSON.h>
 
 #define POT_SCALE 30
 
