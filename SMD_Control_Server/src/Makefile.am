@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -pedantic -pthread -I/usr/local/include/modbus --std=gnu99
+AM_CFLAGS = -Wall -pedantic -pthread -I/usr/local/include/modbus -I/usr/local/include/cjson --std=gnu99
 AM_LDFLAGS = -lcjson -lm -lmodbus 
 
 bin_PROGRAMS = smd_server
