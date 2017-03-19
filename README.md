@@ -285,4 +285,6 @@ The binary string *0100 0100 0000 1000* tells us that (remember, least significa
 
 Of course, full documentation may be found in *docs/html*. I **highly** recommend browsing the docs, as they will provide all of the motion commands available!
 
+Also, check out the *examples* directory - there are some scripts in there that may be of interest.
+
 
