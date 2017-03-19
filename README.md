@@ -266,22 +266,22 @@ For example, using the Status Word 1 guide in the manual:
 
 The binary string *0100 0100 0000 1000* tells us that (remember, least significant bit is on the right):
 
-Bit 15 - (0) The motor is in command mode
-Bit 14 - (1) The controller is "OK"
-Bit 13 - (0) There is no configuration error
-Bit 12 - (0) There is no command error
-Bit 11 - (0) There is no input error
-Bit 10 - (1) The motor position is invalid and needs preset
-Bit 9 - (0) Tx move segment bit (used in programmed moves)
-Bit 8 - (0) Program move mode bit (used in programmed moves)
-Bit 7 - (0) Move complete bit
-Bit 6 - (0) Drive decelerating bit
-Bit 5 - (0) Drive accelerating bit
-Bit 4 - (0) Homing complete bit
-Bit 3 - (1) Axis stopped
-Bit 2 - (0) Hold state bit
-Bit 1 - (0) CCW move bit
-Bit 0 - (0) CW move bit
+* Bit 15 - (0) The motor is in command mode
+* Bit 14 - (1) The controller is "OK"
+* Bit 13 - (0) There is no configuration error
+* Bit 12 - (0) There is no command error
+* Bit 11 - (0) There is no input error
+* Bit 10 - (1) The motor position is invalid and needs preset
+* Bit 9 - (0) Tx move segment bit (used in programmed moves)
+* Bit 8 - (0) Program move mode bit (used in programmed moves)
+* Bit 7 - (0) Move complete bit
+* Bit 6 - (0) Drive decelerating bit
+* Bit 5 - (0) Drive accelerating bit
+* Bit 4 - (0) Homing complete bit
+* Bit 3 - (1) Axis stopped
+* Bit 2 - (0) Hold state bit
+* Bit 1 - (0) CCW move bit
+* Bit 0 - (0) CW move bit
 
 Of course, full documentation may be found in *docs/html*. I **highly** recommend browsing the docs, as they will provide all of the motion commands available!
 
