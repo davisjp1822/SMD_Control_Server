@@ -1,13 +1,15 @@
 # SMD_Control_Server
-## An elegant and speedy cross platform motion controller for [AMCI](www.amci.com) SMD series stepper motors.
+## An elegant and speedy cross platform motion controller for [AMCI](www.amci.com) SMD series stepper motors and ANG1E Networked Stepper Drives.
 
 Designed as a portable motion controller for AMCI SMD series integrated stepper motors and networked drives, SMD_Control_Server (SMDCS) is a socket-based motion control server that follows a handful of rules:
 
 1. Be fast - SMDCS is written in C, so it is fast and small and can be used on a number of hosts.
 2. Be portable - Written using portable ANSI (ish) C, SMDCS has minimal external dependencies, and should compile on all hosts.
-3. Be easy to integrate - SMDCS uses a socket interface and takes simple text commands. Control SMD motors with anything from telnet to a snazzy iOS mobile client.
+3. Be easy to integrate - SMDCS uses a socket interface and takes simple text commands. Control SMD/ANG1E motors/drives with anything from telnet to a snazzy iOS mobile client.
 
 More information on AMCI SMD series steppers may be found on [AMCI's website](http://www.amci.com/stepper-motor-control/integrated-stepper-motor-control-smd23e.asp)
+
+More information on AMCI ANG1E product may be found [here](https://www.amci.com/plc-automation-products/ang1-anynet-io-motion-controller-networked-io/).
 
 Click on the screenshot below for a video of the server in action!
 
@@ -17,7 +19,7 @@ Limitations
 ------
 As of right now, SMDCS works only using Modbus/TCP. If you are willing to help out by reversing Ethernet/IP and contributing to a stack, let me know.
 
-Also, SMDCS only supports the non-DLR (Device Level Ring) AMCI SMD motors. The Modbus implementation on the DLR motors is non-compatible with *libmodbus*. AMCI is working on it...
+Also, SMDCS only supports the non-DLR (Device Level Ring) AMCI SMD motors. The Modbus implementation on the DLR motors is non-compatible with *libmodbus*.
 
 SMDCS only supports one client connection at a time. One motion controller == one axis of motion. If you want to run multiple axes of motion from one machine, spawn however many SMDCS processes you would like all on different ports.
 
@@ -85,13 +87,13 @@ Doxygen, and then use Doxygen to build the documentation:
 Once the build is complete, there should be a newly created "docs" directory in the docs directory. Just open *docs/html/index.html*, and you can view the documentation tree.
  
 
-### AMCI Motor
-1. READ THE [MANUAL](http://www.amci.com/pdfs/integrated-stepper-control/smd-series-ethernet-integrated-stepper-motor-drives.pdf), paying special attention to the pinout diagrams. The SMD power connector is **NOT** protected against reversed wiring.
+### AMCI Setup
+1. READ THE [SMD MANUAL](http://www.amci.com/pdfs/integrated-stepper-control/smd-series-ethernet-integrated-stepper-motor-drives.pdf), or the [ANG1E MANUAL](https://www.amci.com/index.php/download_file/view/1818/391/) paying special attention to the pinout diagrams. The SMD power connector is **NOT** protected against reversed wiring.
 2. Download the [AMCI NetConfigurator software](http://www.amci.com/configuration-software/amci-net-configurator.zip) and configure your motor's IP address. Do not forget to set the motor to **Modbus/TCP**!!
 3. Configure your motor in the configuration screen to fit your application.
 4. Power cycle the motor.
 
-Creating Motion
+Creating Motion and Usage
 ------
 BEFORE DOING ANYTHING - READ THE DOCUMENTATION at `docs/html/index.html`.
 
@@ -112,8 +114,37 @@ $ sudo src/SMDServer -v -p 4242
 
 Assuming your motor is hooked-up and configured as recommended before, you should be able to telnet to your server and start issuing commands. Some examples would be:
 
+### Drive Enable/ Disable (apply or remove drive current)
 ```bash
-#assuming your motor IP address is 10.20.6.50
+# assuming your motor IP address is 10.20.6.50
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+driveEnable
+ENABLE_SUCCESS
+disconnect
+driveDisable
+DISABLE_SUCCESS
+disconnect
+```
+
+### Reset Errors - should be called after each Connect. Also resets command/ move errors.
+```bash
+# assuming your motor IP address is 10.20.6.50
+# CAUTION - if the drive is disabled, running resetErrors WILL ENABLE the drive!
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+resetErrors
+COMMAND_SUCCESS
+disconnect
+```
+
+### Jog Move (jogCW (clockwise) or jogCCW (counter-clockwise))
+```bash
+# assuming your motor IP address is 10.20.6.50
 
 $ telnet localhost 7000
 connect,10.20.6.50
@@ -126,6 +157,131 @@ holdMove # stops the move
 COMMAND_SUCCESS
 disconnect
 ```
+
+### Relative Move - Move a set distance (measured in steps)
+```bash
+# assuming your motor IP address is 10.20.6.50
+
+# Also, calling presetMotorPosition,0 sets the motor position to 0. Should do this before every relative move
+# for the relativeMove command, positive values move clockwise (CW), negative values move CCW
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+resetErrors
+COMMAND_SUCCESS
+presetMotorPosition,0
+PRESET_POSITION_SUCCESS
+relativeMove,1000,250,250,0,5000 # move clockwise 1000 steps with 250 accel, 250 decel, 0 jerk, and 5000 steps/rev velocity
+COMMAND_SUCCESS
+disconnect
+```
+
+### Hold Move - causes a move in progress to stop using the defined deceleration rate
+```bash
+# assuming your motor IP address is 10.20.6.50
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+resetErrors
+COMMAND_SUCCESS
+jogCW,250,250,0,5000
+COMMAND_SUCCESS
+holdMove
+COMMAND_SUCCESS
+disconnect
+```
+
+### Immediate Stop - causes a move in progress to stop immediately with no deceleration ramp.
+```bash
+# assuming your motor IP address is 10.20.6.50
+# After an immediate stop, the drive position must be reset (same with encoder position). You should also run resetErrors!
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+resetErrors
+COMMAND_SUCCESS
+jogCW,250,250,0,5000
+COMMAND_SUCCESS
+immedStop
+COMMAND_SUCCESS # really should run "resetErrors" after doing an immedStop
+disconnect
+```
+
+### Read Input Registers - get drive status
+```bash
+# assuming your motor IP address is 10.20.6.50
+
+$ telnet localhost 7000
+connect,10.20.6.50
+SMD_CONNECT_SUCCESS
+resetErrors
+COMMAND_SUCCESS
+readInputRegisters
+,,0x4408,0xA000,20,78,0,0,0,0,40,0 # more on this string below!
+disconnect
+```
+Okay - that string is a bit dense. Let me explain what it does.
+
+This is a formatted output string showing what AMCI calls the "Input Registers" from the drive. Input Registers show the realtime drive status - which is useful when trying to troubleshoot or write an interface that shows the drive status in a more friendly form.
+
+Reading left to right (starting after the ",," which is a delimiter), the values between the commas stand for:
+
+1. Status Word 1
+2. Status Word 2
+3. Motor Position (Upper Word - "thousands" of steps")
+4. Motor Position (Lower Word - "hundreds of steps")
+5. Encoder Position (Upper Word - "thousands" of steps")
+6. Encoder Position (Lower Word - "hundreds of steps")
+7. Captured Encoder Position (Upper Word - "thousands" of steps")
+8. Captured Encoder Position (Lower Word - "hundreds of steps")
+9. Programmed Motor Current (divide by 10 for actual current)
+10. Value of Acceleration Jerk Parameter
+
+For the positions, don't get confused by the upper/lower word stuff. Due to using a 16 bit microprocessor, the AMCI products need to separate
+larger numbers into smaller parts so that the micro can deal with them.
+
+The format is easy:
+
+- 2,000 is upper word 2, lower word 0
+- 156,783 is upper word 156, lower word 783
+- 650 is upper word 0, lower word 650
+
+And so on...
+
+As for the status words 1 & 2, you need to convert them to binary (least significant bit on the right) to get the motor status.
+
+For example, 4408 (drop the 0x - just shows the user that the following value is in hex) translates to:
+```
+0100 0100 0000 1000
+```
+
+In the corresponding AMCI manuals linked above, the values for the bits may be found under the *Input Data Format* sections.
+
+For example, using the Status Word 1 guide in the manual:
+
+![Input Registers Screenshot](https://raw.githubusercontent.com/davisjp1822/SMD_Control_Server/master/Screenshots/input-registers-example.png)
+
+The binary string *0100 0100 0000 1000* tells us that (remember, least significant bit is on the right):
+
+Bit 15 - (0) The motor is in command mode
+Bit 14 - (1) The controller is "OK"
+Bit 13 - (0) There is no configuration error
+Bit 12 - (0) There is no command error
+Bit 11 - (0) There is no input error
+Bit 10 - (1) The motor position is invalid and needs preset
+Bit 9 - (0) Tx move segment bit (used in programmed moves)
+Bit 8 - (0) Program move mode bit (used in programmed moves)
+Bit 7 - (0) Move complete bit
+Bit 6 - (0) Drive decelerating bit
+Bit 5 - (0) Drive accelerating bit
+Bit 4 - (0) Homing complete bit
+Bit 3 - (1) Axis stopped
+Bit 2 - (0) Hold state bit
+Bit 1 - (0) CCW move bit
+Bit 0 - (0) CW move bit
 
 Of course, full documentation may be found in *docs/html*. I **highly** recommend browsing the docs, as they will provide all of the motion commands available!
 
