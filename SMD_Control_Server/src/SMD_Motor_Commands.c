@@ -30,22 +30,22 @@
 
 #define POT_SCALE 30
 
-typedef enum SMD_JOG_DIRECTION {
+typedef enum SMD_JOG_DIRECTION
+{
 	
 	NO_DIRECTION = 100,
 	CLOCKWISE = 0,
-	COUNTER_CLOCKWISE = 1
-	
+	COUNTER_CLOCKWISE = 1	
 } SMD_JOG_DIRECTION;
 
-typedef struct assembled_move_segment {
+typedef struct assembled_move_segment
+{
 	
 	int32_t target_pos_inches;
 	int32_t programmed_speed;
 	int16_t accel;
 	int16_t decel;
-	int16_t jerk;
-	
+	int16_t jerk;	
 } assembled_move_segment;
 
 static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl);
@@ -56,7 +56,8 @@ static void *_manual_mode_controller();
 
 /***** MOTOR COMMAND CONNECTION FUNCTIONS *****/
 
-SMD_RESPONSE_CODES  SMD_open_command_connection() {
+SMD_RESPONSE_CODES  SMD_open_command_connection() 
+{
 	
 	smd_command_connection = modbus_new_tcp(DEVICE_IP, 502);
 	
@@ -80,7 +81,8 @@ SMD_RESPONSE_CODES  SMD_open_command_connection() {
 	return SMD_RETURN_UNKNOWN_ERROR;
 }
 
-void SMD_close_command_connection() {
+void SMD_close_command_connection() 
+{
 	
 	if( smd_command_connection != NULL && SMD_CONNECTED == 1) {
 		
@@ -95,10 +97,10 @@ void SMD_close_command_connection() {
 	}
 }
 
-
 /***** MOTOR MOVE FUNCTIONS *****/
 
-SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
+SMD_RESPONSE_CODES SMD_read_input_registers(int cl)
+{
 	
 	char registers[10][INPUT_REGISTER_STRING_SIZE];
 	
@@ -114,11 +116,11 @@ SMD_RESPONSE_CODES SMD_read_input_registers(int cl) {
 		//read_modbus_registers writes the string to the client
 		//TODO - write to client here instead of in read_modbus_registers
 		return SMD_RETURN_HANDLED_BY_CLIENT;
-	}
-	
+	}	
 }
 
-SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) {
+SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) 
+{
 	
 	int registers[10] = {1025, 1024, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033};
 	int values[10] =	{34816, 32768, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -131,7 +133,8 @@ SMD_RESPONSE_CODES SMD_load_current_configuration(int cl) {
 		return SMD_RETURN_READ_CURRENT_CONFIG_FAIL;
 }
 
-SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
+SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) 
+{
 
 	char tab_status_words_reg[10][INPUT_REGISTER_STRING_SIZE];
 	
@@ -145,11 +148,11 @@ SMD_RESPONSE_CODES SMD_read_current_configuration(int cl) {
 		
 		//read_modbus_registers writes the string to the client
 		return SMD_RETURN_HANDLED_BY_CLIENT;
-	}
-	
+	}	
 }
 
-SMD_RESPONSE_CODES SMD_jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
+SMD_RESPONSE_CODES SMD_jog(int direction, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) 
+{
 	
 	//do input checking
 	if(direction < 0 || direction > 1) {
@@ -193,15 +196,16 @@ SMD_RESPONSE_CODES SMD_jog(int direction, int16_t accel, int16_t decel, int16_t 
 			speed_LW = speed;
 		}
 		
-		int registers[10] = {1024, 1025, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1024};
-		int values[10] = {0, 32768, 0, speed_UW, speed_LW, accel, decel, 0, jerk, direc};
+		int registers[11] = {1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1024};
+		int values[11] = {0, 32768, 0, 0, speed_UW, speed_LW, accel, decel, 0, jerk, direc};
 		
-		return send_modbus_command(registers, values, 10, "jog");
+		return send_modbus_command(registers, values, 11, "jog");
 		
 	}
 }
 
-SMD_RESPONSE_CODES SMD_relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) {
+SMD_RESPONSE_CODES SMD_relative_move(int32_t rel_pos, int16_t accel, int16_t decel, int16_t jerk, int32_t speed) 
+{
 	
 	if(rel_pos < -8388607 || rel_pos > 8388607) {
 		log_message("Relative Move: Position Invalid\n");
@@ -234,14 +238,15 @@ SMD_RESPONSE_CODES SMD_relative_move(int32_t rel_pos, int16_t accel, int16_t dec
 		struct Words speedWords = convert_int_to_words(speed);
 		
 		//write the registers
-		int registers[9] = {1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
-		int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 2};
+		int registers[10] = {1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1033, 1024};
+		int values[10] = {0, 32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 2};
 		
-		return send_modbus_command(registers, values, 9, "relative_move");
+		return send_modbus_command(registers, values, 10, "relative_move");
 	}
 }
 
-SMD_RESPONSE_CODES SMD_drive_enable() {
+SMD_RESPONSE_CODES SMD_drive_enable() 
+{
 	
 	int registers[2] = {1025, 1024};
 	int values[2] =	{32768, 0};
@@ -252,11 +257,11 @@ SMD_RESPONSE_CODES SMD_drive_enable() {
 	
 	else {
 		return SMD_RETURN_COMMAND_FAILED;
-	}
-	
+	}	
 }
 
-SMD_RESPONSE_CODES SMD_drive_disable() {
+SMD_RESPONSE_CODES SMD_drive_disable() 
+{
 	
 	int registers[2] = {1025, 1024};
 	int values[2] =	{0, 0};
@@ -270,7 +275,8 @@ SMD_RESPONSE_CODES SMD_drive_disable() {
 	}
 }
 
-SMD_RESPONSE_CODES SMD_hold_move() {
+SMD_RESPONSE_CODES SMD_hold_move()
+{
 	
 	int registers[3] = {1024, 1025, 1024};
 	int values[3] =	{0, 32768, 4};
@@ -278,7 +284,8 @@ SMD_RESPONSE_CODES SMD_hold_move() {
 	return send_modbus_command(registers, values, 3, "hold_move");
 }
 
-SMD_RESPONSE_CODES SMD_immed_stop() {
+SMD_RESPONSE_CODES SMD_immed_stop()
+{
 	
 	int registers[2] = {1025, 1024};
 	int values[2] =	{32768, 16};
@@ -286,7 +293,8 @@ SMD_RESPONSE_CODES SMD_immed_stop() {
 	return send_modbus_command(registers, values, 2, "immediate_stop");
 }
 
-SMD_RESPONSE_CODES SMD_reset_errors() {
+SMD_RESPONSE_CODES SMD_reset_errors()
+{
 	
 	int registers[3] = {1024, 1024, 1025};
 	int values[3] = {0, 1024, 32768};
@@ -294,7 +302,8 @@ SMD_RESPONSE_CODES SMD_reset_errors() {
 	return send_modbus_command(registers, values, 3, "reset_errors");
 }
 
-SMD_RESPONSE_CODES SMD_preset_encoder_position(int32_t pos) {
+SMD_RESPONSE_CODES SMD_preset_encoder_position(int32_t pos)
+{
 	
 	if(pos < -8388607 || pos > 8388607) {
 		log_message("Preset Encoder: Position Invalid\n");
@@ -317,11 +326,11 @@ SMD_RESPONSE_CODES SMD_preset_encoder_position(int32_t pos) {
 			return SMD_RETURN_PRESET_ENC_FAIL;
 		}
 		
-	}
-	
+	}	
 }
 
-SMD_RESPONSE_CODES SMD_preset_motor_position(int32_t pos) {
+SMD_RESPONSE_CODES SMD_preset_motor_position(int32_t pos)
+{
 	
 	if(pos < -8388607 || pos > 8388607) {
 		log_message("Preset Motor Position: Position Invalid\n");
@@ -346,7 +355,8 @@ SMD_RESPONSE_CODES SMD_preset_motor_position(int32_t pos) {
 	}
 }
 
-SMD_RESPONSE_CODES SMD_set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current) {
+SMD_RESPONSE_CODES SMD_set_configuration(int32_t control_word, int32_t config_word, int32_t starting_speed, int16_t steps_per_turn, int16_t enc_pulses_per_turn, int16_t idle_current_percentage, int16_t motor_current)
+{
 	
 	if(starting_speed < 1 || starting_speed > 1999999) {
 		log_message("Set Config: Speed invalid\n");
@@ -401,7 +411,8 @@ SMD_RESPONSE_CODES SMD_set_configuration(int32_t control_word, int32_t config_wo
 	}
 }
 
-SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
+SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, int16_t decel, int16_t jerk)
+{
 	
 	//do input checking
 	if(direction < 0 || direction > 1) {
@@ -442,7 +453,8 @@ SMD_RESPONSE_CODES SMD_find_home(int direction, int32_t speed, int16_t accel, in
 	}
 }
 
-SMD_RESPONSE_CODES SMD_program_assembled_move(int cl) {
+SMD_RESPONSE_CODES SMD_program_assembled_move(int cl)
+{
 	
 	if(_SMD_program_block_first_block(cl) == SMD_RETURN_COMMAND_SUCCESS) {
 		
@@ -456,7 +468,8 @@ SMD_RESPONSE_CODES SMD_program_assembled_move(int cl) {
 	}
 }
 
-SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, int cl) {
+SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, int cl)
+{
 	
 	/*
 	 *	Steps for success!
@@ -613,7 +626,8 @@ SMD_RESPONSE_CODES SMD_parse_and_upload_assembled_move(const char *json_string, 
 	return SMD_RETURN_COMMAND_SUCCESS;
 }
 
-SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type) {
+SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t dwell_time, SMD_ASSEMBLED_MOVE_TYPE move_type)
+{
 	
 	int32_t LSW = 0;
 	
@@ -642,11 +656,11 @@ SMD_RESPONSE_CODES SMD_run_assembled_move(int16_t blend_move_direction, int32_t 
 	int registers[3] = {1025, 1033, 1024};
 	int values[3] =	{LSW, dwell_time, 8192};
 	
-	return send_modbus_command(registers, values, 3, "run_assembled_move");
-	
+	return send_modbus_command(registers, values, 3, "run_assembled_move");	
 }
 
-SMD_RESPONSE_CODES SMD_set_manual_mode() {
+SMD_RESPONSE_CODES SMD_set_manual_mode()
+{
 	
 	pthread_t tid;
 	
@@ -663,7 +677,8 @@ SMD_RESPONSE_CODES SMD_set_manual_mode() {
 
 /***** ASSEMBLED MOVE FUNCTIONS *****/
 
-static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
+static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl)
+{
 	
 	int rc;
 	
@@ -728,7 +743,8 @@ static SMD_RESPONSE_CODES _SMD_program_block_first_block(int cl) {
 	return SMD_RETURN_COMMAND_FAILED;
 }
 
-static SMD_RESPONSE_CODES _SMD_program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk) {
+static SMD_RESPONSE_CODES _SMD_program_move_segment(int32_t target_pos, int32_t speed, int16_t accel, int16_t decel, int16_t jerk)
+{
 	
 	struct Words posWords = convert_int_to_words(target_pos);
 	struct Words speedWords = convert_int_to_words(speed);
@@ -737,10 +753,10 @@ static SMD_RESPONSE_CODES _SMD_program_move_segment(int32_t target_pos, int32_t 
 	int values[9] = {32768, posWords.upper_word, posWords.lower_word, speedWords.upper_word, speedWords.lower_word, accel, decel, jerk, 6144};
 		
 	return send_modbus_command(registers, values, 9, "program_move_segment");
-	
 }
 
-static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment() {
+static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment()
+{
 		
 	int registers[2] = {1025, 1024};
 	int values[2] =	{32768, 2048};
@@ -750,7 +766,8 @@ static SMD_RESPONSE_CODES _SMD_prepare_for_next_segment() {
 
 /***** MANUAL MODE FUNCTIONS *****/
 
-static void *_manual_mode_controller() {
+static void *_manual_mode_controller()
+{
 
 	log_message("Starting manual mode...\n");
 	

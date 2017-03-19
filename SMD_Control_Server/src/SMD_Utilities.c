@@ -63,7 +63,7 @@ int number_of_tokens(const char *command_string) {
 	
 	int num_tokens = 0;
 	char *token, *string, *tofree;
-	tofree = string = (char *)strdup(command_string);
+	tofree = string = strdup(command_string);
 	
 	//check to see if there are spaces - abort if yes
 	if(strchr(command_string, ' ') != NULL) {
@@ -71,7 +71,7 @@ int number_of_tokens(const char *command_string) {
 		return -1;
 	}
 	
-	while ((token = (char *)strsep(&string, ",")) != NULL) {
+	while ((token = strsep(&string, ",")) != NULL) {
 		num_tokens++;
 	}
 	
@@ -82,12 +82,12 @@ int number_of_tokens(const char *command_string) {
 int tokenize_client_input(char **array_of_commands, const char *input, int num_tokens, const size_t array_of_commands_size) {
 
 	char *token, *string, *tofree;
-	tofree = string = (char *)strdup(input);
+	tofree = string = strdup(input);
 	
 	num_tokens = 0;
 	int return_array_size = 0;
 	
-	while ((token = (char *)strsep(&string, ",")) != NULL) {
+	while ((token = strsep(&string, ",")) != NULL) {
 		array_of_commands[num_tokens] = (char*)malloc(sizeof(char) * (strlen(token) + 1 ) );
 		strcpy(array_of_commands[num_tokens], token);
 		num_tokens++;

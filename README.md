@@ -86,7 +86,7 @@ connect,10.20.6.50
 SMD_CONNECT_SUCCESS
 resetErrors
 COMMAND_SUCCESS
-jogCW,250,250,5000,0 # jog clockwise with 250 accel, 250 decel, 5000 steps/rev velocity, and 0 jerk
+jogCW,250,250,0,5000 # jog clockwise with 250 accel, 250 decel, 0 jerk, and 5000 steps/rev velocity
 COMMAND_SUCCESS
 holdMove # stops the move
 COMMAND_SUCCESS
