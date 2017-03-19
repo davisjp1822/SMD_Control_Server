@@ -1,4 +1,4 @@
-# SMD_Control_Server
+# SMD Control Server
 ## An elegant and speedy cross platform motion controller for [AMCI](www.amci.com) SMD series stepper motors and ANG1E Networked Stepper Drives.
 
 Designed as a portable motion controller for AMCI SMD series integrated stepper motors and networked drives, SMD_Control_Server (SMDCS) is a socket-based motion control server that follows a handful of rules:
@@ -93,7 +93,7 @@ Once the build is complete, there should be a newly created "docs" directory in 
 3. Configure your motor in the configuration screen to fit your application.
 4. Power cycle the motor.
 
-Creating Motion and Usage
+Creating Motion/ Usage
 ------
 BEFORE DOING ANYTHING - READ THE DOCUMENTATION at `docs/html/index.html`.
 
